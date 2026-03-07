@@ -42,9 +42,9 @@ import Layout from "../layouts/Layout.astro";
             scrollbar-width: none;
         }
     </style>
-    <main class="flex-1 px-6 py-12 lg:px-20 max-w-7xl mx-auto w-full pt-20">
+    <main class="flex-1 px-4 sm:px-6 py-10 sm:py-12 lg:px-20 max-w-7xl mx-auto w-full pt-16 sm:pt-20">
         <!-- Hero Title Section -->
-        <div class="mb-20 space-y-4 max-w-4xl">
+        <div class="mb-14 sm:mb-20 space-y-4 max-w-4xl">
             <div
                 class="inline-block bg-primary/20 border-l-4 border-primary px-4 py-1"
             >
@@ -54,14 +54,14 @@ import Layout from "../layouts/Layout.astro";
                 >
             </div>
             <h1
-                class="text-6xl md:text-8xl font-black uppercase leading-none tracking-tighter"
+                class="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-none tracking-tighter"
             >
                 Education <span class="text-primary">&amp;</span>
                 <br />
                 Certifications
             </h1>
             <p
-                class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-slate-300 dark:border-slate-700 pl-6 py-2"
+                class="text-base sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-slate-300 dark:border-slate-700 pl-4 sm:pl-6 py-2"
             >
                 This timeline presents my progress in software engineering,
                 from core learning to applied technical experience.
@@ -81,7 +81,7 @@ import Layout from "../layouts/Layout.astro";
                 class="flex gap-12 overflow-x-auto pb-12 pt-4 snap-x snap-mandatory no-scrollbar scroll-smooth relative z-10"
             >
                 <!-- Path Card 1 -->
-                <div class="min-w-[350px] snap-center group">
+                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
                     <div
                         class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-primary p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
                     >
@@ -121,7 +121,7 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <!-- Path Card 2 -->
-                <div class="min-w-[350px] snap-center group">
+                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
                     <div
                         class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-slate-100 p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
                     >
@@ -160,7 +160,7 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <!-- Path Card 3 (Active/Highlight) -->
-                <div class="min-w-[350px] snap-center group">
+                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
                     <div
                         class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-primary p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
                     >
@@ -200,7 +200,7 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <!-- Path Card 4 (Active/Highlight) -->
-                <div class="min-w-[400px] snap-center group">
+                <div class="min-w-[90vw] sm:min-w-[400px] snap-center group">
                     <div
                         class="relative bg-primary text-white border-4 border-primary p-8 transition-all group-hover:-translate-y-2 group-hover:translate-x-2 shadow-[20px_20px_0px_#1a0f23] dark:shadow-[20px_20px_0px_#9000ff33]"
                     >
@@ -240,13 +240,13 @@ import Layout from "../layouts/Layout.astro";
             </div>
         </div>
         <!-- Stats/Grid Layout Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-            <div class="border-4 border-primary p-8 bg-primary/5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-14 sm:mt-20">
+            <div class="border-4 border-primary p-6 sm:p-8 bg-primary/5">
                 <span
                     class="material-symbols-outlined text-5xl text-primary mb-4"
                     >workspace_premium</span
                 >
-                <h4 class="text-5xl font-black uppercase tracking-tighter">
+                <h4 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter">
                     1
                 </h4>
                 <p
@@ -256,11 +256,11 @@ import Layout from "../layouts/Layout.astro";
                 </p>
             </div>
             <div
-                class="border-4 border-slate-900 dark:border-slate-100 p-8 bg-slate-900 dark:bg-slate-100 text-white dark:text-background-dark"
+                class="border-4 border-slate-900 dark:border-slate-100 p-6 sm:p-8 bg-slate-900 dark:bg-slate-100 text-white dark:text-background-dark"
             >
                 <span class="material-symbols-outlined text-5xl mb-4">deployed_code</span
                 >
-                <h4 class="text-5xl font-black uppercase tracking-tighter">
+                <h4 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter">
                     20+
                 </h4>
                 <p
@@ -269,12 +269,12 @@ import Layout from "../layouts/Layout.astro";
                     Academic Projects
                 </p>
             </div>
-            <div class="border-4 border-primary p-8">
+            <div class="border-4 border-primary p-6 sm:p-8">
                 <span
                     class="material-symbols-outlined text-5xl text-primary mb-4"
                     >school</span
                 >
-                <h4 class="text-5xl font-black uppercase tracking-tighter">
+                <h4 class="text-3xl sm:text-5xl font-black uppercase tracking-tighter">
                     In Progress
                 </h4>
                 <p

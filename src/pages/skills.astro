@@ -142,6 +142,8 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
     month: "short",
     day: "2-digit",
 }).format(new Date());
+
+const nodeCategories = [...new Set(nodeCards.map((card) => card.category))];
 ---
 
 <Layout title="Diogo Pires | Skills">
@@ -169,9 +171,15 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
             height: 1px;
             opacity: 0.3;
         }
+        @media (max-width: 640px) {
+            #constellation-area .tech-node > div > div {
+                transform: scale(0.72);
+                transform-origin: center;
+            }
+        }
     </style>
     <main
-        class="flex-1 flex flex-col p-6 lg:p-12 gap-8 max-w-7xl mx-auto w-full pt-16"
+        class="flex-1 flex flex-col p-4 sm:p-6 lg:p-12 gap-6 sm:gap-8 max-w-7xl mx-auto w-full pt-14 sm:pt-16"
     >
         <!-- Hero Header -->
         <div
@@ -184,12 +192,12 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
                     Status: Core_Online
                 </p>
                 <h1
-                    class="text-5xl md:text-7xl font-display font-black leading-none uppercase italic"
+                    class="text-3xl sm:text-5xl md:text-7xl font-display font-black leading-none uppercase italic"
                 >
                     Tech_Stack.<br />Constellation
                 </h1>
             </div>
-            <div class="bg-primary text-white p-4 max-w-xs brutalist-border">
+            <div class="bg-primary text-white p-4 w-full max-w-xs brutalist-border">
                 <p class="text-[10px] leading-tight font-bold uppercase mb-2">
                     System Instructions:
                 </p>
@@ -200,37 +208,80 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
             </div>
         </div>
         <!-- Filters -->
-        <div class="flex flex-wrap gap-3" id="filter-container">
+        <div class="hidden sm:flex flex-wrap gap-3" id="filter-container">
             <button
                 data-filter="All Nodes"
-                class="filter-btn px-6 py-2 bg-primary text-white font-bold text-sm tracking-widest hover:invert transition-all uppercase"
+                class="filter-btn px-4 sm:px-6 py-2 bg-primary text-white font-bold text-xs sm:text-sm tracking-widest hover:invert transition-all uppercase"
                 >All Nodes</button
             >
             <button
                 data-filter="Languages"
-                class="filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Languages</button
             >
             <button
                 data-filter="Frameworks"
-                class="filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Frameworks</button
             >
             <button
                 data-filter="Databases"
-                class="filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Databases</button
             >
             <button
                 data-filter="Tools"
-                class="filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Tools</button
             >
         </div>
         <!-- Constellation Visualizer Area -->
         <div
+            class="sm:hidden grid grid-cols-1 gap-4"
+            aria-label="Mobile skills node list"
+        >
+            {
+                nodeCategories.map((category) => (
+                    <section class="border-2 border-primary p-4 bg-background-light/70 dark:bg-background-dark/60">
+                        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-primary mb-3">
+                            {category}
+                        </h2>
+                        <div class="grid grid-cols-1 gap-3">
+                            {nodeCards
+                                .filter((card) => card.category === category)
+                                .map((card) => (
+                                    <article class="border border-primary/40 p-3 bg-primary/5">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <h3 class="font-bold text-sm uppercase tracking-wide">
+                                                {card.name}
+                                            </h3>
+                                            <span class="text-[10px] opacity-60 font-bold">
+                                                {card.id}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] opacity-70 uppercase mt-1">
+                                            {card.detail}
+                                        </p>
+                                        <div class="w-full bg-slate-800 h-2 mt-3 border border-primary/40 overflow-hidden">
+                                            <div
+                                                class="bg-primary h-full"
+                                                style={`width: ${card.proficiency}%;`}
+                                            >
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] font-bold uppercase mt-2">
+                                            Proficiency: <span class="text-primary">{card.proficiency}%</span>
+                                        </p>
+                                    </article>
+                                ))}
+                        </div>
+                    </section>
+                ))
+            }
+        </div>
+        <div
             id="constellation-area"
-            class="relative w-full aspect-[4/3] md:aspect-[16/9] border-2 border-primary bg-background-light dark:bg-slate-900/50 overflow-hidden group select-none"
+            class="hidden sm:block relative w-full aspect-[4/3] md:aspect-[16/9] border-2 border-primary bg-background-light dark:bg-slate-900/50 overflow-hidden group select-none"
         >
             <svg
                 id="connections-svg"
@@ -540,7 +591,7 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
 
             <!-- Floating UI HUD -->
             <div
-                class="absolute bottom-4 left-4 flex flex-col gap-1 pointer-events-none"
+                class="absolute bottom-4 left-4 hidden sm:flex flex-col gap-1 pointer-events-none"
             >
                 <div
                     class="text-[10px] font-bold text-primary flex items-center gap-2"
@@ -552,7 +603,7 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
                     X: 0.1245 Y: -0.8812 Z: 4.441
                 </div>
             </div>
-            <div class="absolute top-4 right-4 flex flex-col items-end gap-2">
+            <div class="absolute top-4 right-4 hidden sm:flex flex-col items-end gap-2">
                 <div
                     class="p-2 border border-primary/30 bg-background-dark/80 backdrop-blur-sm text-[10px]"
                 >
@@ -567,34 +618,34 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
         <div class="flex flex-wrap gap-3" id="card-filter-container">
             <button
                 data-filter="All Nodes"
-                class="card-filter-btn px-6 py-2 bg-primary text-white font-bold text-sm tracking-widest hover:invert transition-all uppercase"
+                class="card-filter-btn px-4 sm:px-6 py-2 bg-primary text-white font-bold text-xs sm:text-sm tracking-widest hover:invert transition-all uppercase"
                 >All Nodes</button
             >
             <button
                 data-filter="Languages"
-                class="card-filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Languages</button
             >
             <button
                 data-filter="Frameworks"
-                class="card-filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Frameworks</button
             >
             <button
                 data-filter="Databases"
-                class="card-filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Databases</button
             >
             <button
                 data-filter="Tools"
-                class="card-filter-btn px-6 py-2 border-2 border-primary text-primary font-bold text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
+                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
                 >Tools</button
             >
         </div>
         <div class="flex items-center gap-3">
             <button
                 id="cards-scroll-left"
-                class="h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0"
+                class="hidden sm:inline-flex h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0 items-center justify-center"
                 aria-label="Scroll cards left"
             >
                 ←
@@ -606,7 +657,7 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
             {
                     nodeCards.map((card) => (
                     <div
-                        class="skill-card border-2 border-primary p-6 flex flex-col gap-4 bg-background-light dark:bg-background-dark hover:bg-primary/5 transition-colors group shrink-0 basis-[290px] max-w-[290px]"
+                        class="skill-card border-2 border-primary p-5 sm:p-6 flex flex-col gap-4 bg-background-light dark:bg-background-dark hover:bg-primary/5 transition-colors group shrink-0 basis-[250px] max-w-[250px] sm:basis-[290px] sm:max-w-[290px]"
                         data-category={card.category}
                     >
                         <div class="flex justify-between items-start">
@@ -644,7 +695,7 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
             </div>
             <button
                 id="cards-scroll-right"
-                class="h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0"
+                class="hidden sm:inline-flex h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0 items-center justify-center"
                 aria-label="Scroll cards right"
             >
                 →
@@ -690,10 +741,9 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
             );
             const cardsScrollLeft = document.getElementById("cards-scroll-left");
             const cardsScrollRight = document.getElementById("cards-scroll-right");
+            const isMobile = window.matchMedia("(max-width: 639px)").matches;
             let activeFilter = "All Nodes";
             const containerPadding = 30;
-
-            nodeCountLabel.textContent = `NODE_COUNT: ${nodes.length}`;
 
             function layoutVisibleNodes() {
                 const areaRect = area.getBoundingClientRect();
@@ -899,55 +949,6 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
                 }
             }
 
-            // Filtering logic
-            filterBtns.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    filterBtns.forEach((b) => {
-                        b.classList.remove(
-                            "bg-primary",
-                            "text-white",
-                            "invert"
-                        );
-                        b.classList.add(
-                            "border-primary",
-                            "text-primary",
-                            "hover:bg-primary/10"
-                        );
-                    });
-                    btn.classList.add(
-                        "bg-primary",
-                        "text-white",
-                        "hover:invert"
-                    );
-                    btn.classList.remove(
-                        "border-primary",
-                        "text-primary",
-                        "hover:bg-primary/10"
-                    );
-
-                    const cat = btn.dataset.filter;
-                    activeFilter = cat;
-                    nodes.forEach((node) => {
-                        if (
-                            cat === "All Nodes" ||
-                            node.dataset.category === cat
-                        ) {
-                            node.style.display = "block";
-                        } else {
-                            node.style.display = "none";
-                        }
-                    });
-
-                    // Allow DOM to update visibility, then re-layout and redraw.
-                    requestAnimationFrame(() =>
-                        requestAnimationFrame(() => {
-                            layoutVisibleNodes();
-                            drawConnections();
-                        })
-                    );
-                });
-            });
-
             cardFilterBtns.forEach((btn) => {
                 btn.addEventListener("click", () => {
                     cardFilterBtns.forEach((b) => {
@@ -1000,6 +1001,61 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
                 cardsScrollContainer?.scrollBy({
                     left: 360,
                     behavior: "smooth",
+                });
+            });
+
+            if (isMobile || !area || !svg || !nodeCountLabel) {
+                return;
+            }
+
+            nodeCountLabel.textContent = `NODE_COUNT: ${nodes.length}`;
+
+            // Filtering logic
+            filterBtns.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    filterBtns.forEach((b) => {
+                        b.classList.remove(
+                            "bg-primary",
+                            "text-white",
+                            "invert"
+                        );
+                        b.classList.add(
+                            "border-primary",
+                            "text-primary",
+                            "hover:bg-primary/10"
+                        );
+                    });
+                    btn.classList.add(
+                        "bg-primary",
+                        "text-white",
+                        "hover:invert"
+                    );
+                    btn.classList.remove(
+                        "border-primary",
+                        "text-primary",
+                        "hover:bg-primary/10"
+                    );
+
+                    const cat = btn.dataset.filter;
+                    activeFilter = cat;
+                    nodes.forEach((node) => {
+                        if (
+                            cat === "All Nodes" ||
+                            node.dataset.category === cat
+                        ) {
+                            node.style.display = "block";
+                        } else {
+                            node.style.display = "none";
+                        }
+                    });
+
+                    // Allow DOM to update visibility, then re-layout and redraw.
+                    requestAnimationFrame(() =>
+                        requestAnimationFrame(() => {
+                            layoutVisibleNodes();
+                            drawConnections();
+                        })
+                    );
                 });
             });
 
