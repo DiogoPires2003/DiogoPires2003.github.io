@@ -615,7 +615,7 @@ const nodeCategories = [...new Set(nodeCards.map((card) => card.category))];
             </div>
         </div>
         <!-- Detail Breakdown Cards -->
-        <div class="flex flex-wrap gap-3" id="card-filter-container">
+        <div class="hidden sm:flex flex-wrap gap-3" id="card-filter-container">
             <button
                 data-filter="All Nodes"
                 class="card-filter-btn px-4 sm:px-6 py-2 bg-primary text-white font-bold text-xs sm:text-sm tracking-widest hover:invert transition-all uppercase"
@@ -642,7 +642,7 @@ const nodeCategories = [...new Set(nodeCards.map((card) => card.category))];
                 >Tools</button
             >
         </div>
-        <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-3">
             <button
                 id="cards-scroll-left"
                 class="hidden sm:inline-flex h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0 items-center justify-center"

@@ -190,7 +190,7 @@ const {
             </header>
             <nav
                 id="mobile-menu"
-                class="md:hidden hidden border-b-2 border-primary/30 bg-background-light/95 dark:bg-background-dark/95 px-4 py-4"
+                class="md:hidden hidden fixed left-0 right-0 top-[72px] z-40 border-b-2 border-primary/30 bg-background-light/95 dark:bg-background-dark/95 px-4 py-4 backdrop-blur-md max-h-[calc(100vh-72px)] overflow-y-auto"
             >
                 <div class="flex flex-col gap-3">
                     <a
@@ -249,6 +249,11 @@ const {
             const mobileToggle = document.getElementById("mobile-menu-toggle");
             const mobileMenu = document.getElementById("mobile-menu");
             if (mobileToggle && mobileMenu) {
+                const closeMenu = () => {
+                    mobileMenu.classList.add("hidden");
+                    mobileToggle.setAttribute("aria-expanded", "false");
+                };
+
                 mobileToggle.addEventListener("click", () => {
                     const isExpanded =
                         mobileToggle.getAttribute("aria-expanded") === "true";
@@ -257,6 +262,14 @@ const {
                         String(!isExpanded)
                     );
                     mobileMenu.classList.toggle("hidden");
+                });
+
+                mobileMenu.querySelectorAll("a").forEach((link) => {
+                    link.addEventListener("click", closeMenu);
+                });
+
+                window.addEventListener("resize", () => {
+                    if (window.innerWidth >= 768) closeMenu();
                 });
             }
         </script>
