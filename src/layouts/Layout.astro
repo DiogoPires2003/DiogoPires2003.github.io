@@ -120,7 +120,7 @@ const {
     >
         <div class="relative flex min-h-screen flex-col mesh-bg">
             <header
-                class="flex items-center justify-between border-b-2 border-primary/30 px-6 py-4 lg:px-20 backdrop-blur-md sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80"
+                class="flex items-center justify-between border-b-2 border-primary/30 px-4 py-4 sm:px-6 lg:px-20 backdrop-blur-md sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80"
             >
                 <a href="/" class="flex items-center gap-3 group">
                     <span
@@ -128,7 +128,7 @@ const {
                         >terminal</span
                     >
                     <h2
-                        class="text-xl font-bold tracking-tighter uppercase group-hover:text-primary transition-colors"
+                        class="text-base sm:text-xl font-bold tracking-tighter uppercase group-hover:text-primary transition-colors"
                     >
                         Diogo Pires
                     </h2>
@@ -151,23 +151,56 @@ const {
                         href="/contact">/Contact</a
                     >
                 </nav>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4">
                     <a
                         href="/contact"
-                        class="brutalist-button-primary px-6 py-2 text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center p-2"
+                        class="brutalist-button-primary px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center"
                     >
                         Contact Me
                     </a>
+                    <button
+                        id="mobile-menu-toggle"
+                        type="button"
+                        class="md:hidden inline-flex items-center justify-center w-10 h-10 border-2 border-primary text-primary"
+                        aria-label="Toggle navigation menu"
+                        aria-expanded="false"
+                        aria-controls="mobile-menu"
+                    >
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
                 </div>
             </header>
+            <nav
+                id="mobile-menu"
+                class="md:hidden hidden border-b-2 border-primary/30 bg-background-light/95 dark:bg-background-dark/95 px-4 py-4"
+            >
+                <div class="flex flex-col gap-3">
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/">/About</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/skills">/Stack</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/academic">/Academic</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/contact">/Contact</a
+                    >
+                </div>
+            </nav>
 
             <slot />
 
             <footer
-                class="p-10 flex flex-col md:flex-row justify-between items-center gap-8 border-t-2 border-primary/10 mt-auto"
+                class="px-4 py-8 sm:px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8 border-t-2 border-primary/10 mt-auto"
             >
                 <div
-                    class="flex items-center gap-4 text-xs font-bold uppercase tracking-widest opacity-50"
+                    class="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-50 text-center md:text-left"
                 >
                     <span>© 2026 SYSTEM_ARCHIVE</span>
                     <span class="material-symbols-outlined text-[10px]"
@@ -175,7 +208,7 @@ const {
                     >
                     <span>LOC: 42.5063° N, 1.5218° E</span>
                 </div>
-                <div class="flex gap-8 text-slate-500">
+                <div class="flex gap-6 sm:gap-8 text-slate-500">
                     <a
                         class="material-symbols-outlined hover:text-primary transition-colors"
                         href="https://github.com/DiogoPires2003"
@@ -194,6 +227,21 @@ const {
                 </div>
             </footer>
         </div>
+        <script is:inline>
+            const mobileToggle = document.getElementById("mobile-menu-toggle");
+            const mobileMenu = document.getElementById("mobile-menu");
+            if (mobileToggle && mobileMenu) {
+                mobileToggle.addEventListener("click", () => {
+                    const isExpanded =
+                        mobileToggle.getAttribute("aria-expanded") === "true";
+                    mobileToggle.setAttribute(
+                        "aria-expanded",
+                        String(!isExpanded)
+                    );
+                    mobileMenu.classList.toggle("hidden");
+                });
+            }
+        </script>
 
         <div
             class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03]"
