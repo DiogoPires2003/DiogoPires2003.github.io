@@ -1,0 +1,163 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Diogo Pires | Contact">
+    <style is:inline>
+        .liquid-fill {
+            position: relative;
+            overflow: hidden;
+        }
+        .liquid-fill::after {
+            content: "";
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #9000ff;
+            transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1);
+            z-index: -1;
+            transform: translateY(0);
+        }
+        .liquid-fill:hover::after {
+            transform: translateY(-100%);
+        }
+        .distort-box {
+            clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
+        }
+    </style>
+    <main
+        class="flex-1 flex flex-col items-center justify-center px-4 py-20 max-w-7xl mx-auto w-full pt-20"
+    >
+        <div class="max-w-6xl w-full">
+            <!-- Hero Title -->
+            <div class="mb-12">
+                <p class="text-primary font-bold tracking-[0.3em] mb-4">
+                    INITIALIZING_CONNECTION_PROTOCOL...
+                </p>
+                <h1
+                    class="text-7xl md:text-9xl font-black uppercase leading-[0.85] tracking-tighter mb-8"
+                >
+                    GET_IN_<br />
+                    <span class="text-primary">TOUCH</span>
+                </h1>
+            </div>
+            <!-- Main Interactive Section -->
+            <div
+                class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch relative z-10"
+            >
+                <!-- Email Area: Liquid Fill Effect -->
+                <div
+                    class="border-4 border-slate-900 dark:border-primary p-12 flex flex-col justify-between items-start liquid-fill group min-h-[400px] bg-background-light dark:bg-background-dark"
+                >
+                    <span
+                        class="material-symbols-outlined text-6xl mb-8 dark:text-primary group-hover:text-white transition-colors"
+                        >alternate_email</span
+                    >
+                    <div>
+                        <p
+                            class="text-sm font-bold uppercase tracking-widest mb-2 dark:text-slate-400 group-hover:text-white/70"
+                        >
+                            Inbox_Uplink
+                        </p>
+                        <a
+                            class="block w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black group-hover:text-white transition-colors"
+                            href="mailto:dfalvesp@gmail.com"
+                        >
+                            DFALVESP@GMAIL.COM
+                        </a>
+                    </div>
+                </div>
+                <!-- Distorted Content Area -->
+                <div
+                    class="bg-slate-900 dark:bg-primary/10 border-r-8 border-primary p-8 md:p-12 flex flex-col gap-8 distort-box"
+                >
+                    <div class="space-y-4">
+                        <h3
+                            class="text-2xl font-black uppercase tracking-tight text-white dark:text-white"
+                        >
+                            [SYSTEM_READY]
+                        </h3>
+                        <p
+                            class="text-lg leading-relaxed text-slate-300 dark:text-slate-300"
+                        >
+                            Need to reach me? Use the contact channels below
+                            and share your project idea, role, or question.
+                        </p>
+                    </div>
+                    <!-- Social Grid / Large Pulsating Buttons -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <a
+                            href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="group relative flex items-center justify-between bg-background-light dark:bg-background-dark border-2 border-primary p-6 transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <span
+                                class="text-xl font-black uppercase italic group-hover:translate-x-2 transition-transform"
+                                >Linkedin</span
+                            >
+                            <span
+                                class="material-symbols-outlined text-primary text-3xl group-hover:animate-pulse"
+                                >broadcast_on_home</span
+                            >
+                        </a>
+                        <a
+                            href="https://github.com/DiogoPires2003"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="group relative flex items-center justify-between bg-background-light dark:bg-background-dark border-2 border-primary p-6 transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <span
+                                class="text-xl font-black uppercase italic group-hover:translate-x-2 transition-transform"
+                                >Github_Repos</span
+                            >
+                            <span
+                                class="material-symbols-outlined text-primary text-3xl group-hover:animate-pulse"
+                                >deployed_code</span
+                            >
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- Status Bar -->
+            <div
+                class="mt-20 flex flex-wrap gap-8 items-center justify-between border-t-2 border-slate-900 dark:border-primary/20 pt-8 opacity-60 mb-12"
+            >
+                <div class="flex items-center gap-4">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-ping">
+                    </div>
+                    <span class="text-xs font-bold tracking-[0.2em] uppercase"
+                        >Status: Core_Online</span
+                    >
+                </div>
+                <div class="text-xs font-mono">
+                    COORD: 42.5063° N, 1.5218° E // TIME: <span
+                        id="current-time">00:00:00</span
+                    >
+                </div>
+                <div class="flex gap-6">
+                    <span class="material-symbols-outlined">security</span>
+                    <span class="material-symbols-outlined">network_check</span>
+                    <span class="material-symbols-outlined">bolt</span>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script is:inline>
+        function updateClock() {
+            const now = new Date();
+            const timeStr =
+                now.getHours().toString().padStart(2, "0") +
+                ":" +
+                now.getMinutes().toString().padStart(2, "0") +
+                ":" +
+                now.getSeconds().toString().padStart(2, "0");
+            const element = document.getElementById("current-time");
+            if (element) element.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</Layout>

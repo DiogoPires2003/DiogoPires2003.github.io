@@ -1,0 +1,205 @@
+---
+interface Props {
+    title: string;
+    description?: string;
+}
+
+const {
+    title,
+    description = "Diogo Pires - Software Engineer portfolio.",
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <script
+            is:inline
+            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
+        ></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#9000ff", // Electric Violet
+                            accent: "#ccff00", // Acid Yellow
+                            "neutral-dark": "#1a1a1a", // Deep Charcoal
+                            "background-light": "#f7f5f8",
+                            "background-dark": "#0a0a0a",
+                        },
+                        fontFamily: {
+                            display: ["Space Grotesk", "sans-serif"],
+                            mono: ["JetBrains Mono", "monospace"],
+                        },
+                        borderRadius: {
+                            DEFAULT: "0rem",
+                            lg: "0rem",
+                            xl: "0rem",
+                            full: "9999px",
+                        },
+                        animation: {
+                            marquee: "marquee 40s linear infinite",
+                        },
+                        keyframes: {
+                            marquee: {
+                                "0%": { transform: "translateX(0%)" },
+                                "100%": { transform: "translateX(-50%)" },
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+        <style is:inline>
+            /* Global styles from index.astro */
+            .glitch-text {
+                position: relative;
+                text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                    -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
+                    0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+            }
+            .mesh-bg {
+                background-color: #0a0a0a;
+                background-image: radial-gradient(
+                        at 0% 0%,
+                        rgba(144, 0, 255, 0.15) 0px,
+                        transparent 50%
+                    ),
+                    radial-gradient(
+                        at 100% 0%,
+                        rgba(204, 255, 0, 0.1) 0px,
+                        transparent 50%
+                    ),
+                    radial-gradient(
+                        at 100% 100%,
+                        rgba(144, 0, 255, 0.15) 0px,
+                        transparent 50%
+                    ),
+                    radial-gradient(
+                        at 0% 100%,
+                        rgba(204, 255, 0, 0.1) 0px,
+                        transparent 50%
+                    );
+            }
+            .brutalist-border {
+                border: 2px solid #9000ff;
+                box-shadow: 4px 4px 0px #ccff00;
+            }
+            .brutalist-button-primary {
+                background-color: #9000ff;
+                color: white;
+                border: 2px solid #9000ff;
+                transition: all 0.1s;
+            }
+            .brutalist-button-primary:hover {
+                background-color: #ccff00;
+                color: #0a0a0a;
+                border-color: #ccff00;
+                transform: translate(-2px, -2px);
+                box-shadow: 4px 4px 0px #9000ff;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background-light dark:bg-background-dark font-mono text-slate-900 dark:text-slate-100 overflow-x-hidden"
+    >
+        <div class="relative flex min-h-screen flex-col mesh-bg">
+            <header
+                class="flex items-center justify-between border-b-2 border-primary/30 px-6 py-4 lg:px-20 backdrop-blur-md sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80"
+            >
+                <a href="/" class="flex items-center gap-3 group">
+                    <span
+                        class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform"
+                        >terminal</span
+                    >
+                    <h2
+                        class="text-xl font-bold tracking-tighter uppercase group-hover:text-primary transition-colors"
+                    >
+                        Diogo Pires
+                    </h2>
+                </a>
+                <nav class="hidden md:flex items-center gap-10">
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/">/About</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/skills">/Stack</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/academic">/Academic</a
+                    >
+                    <a
+                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
+                        href="/contact">/Contact</a
+                    >
+                </nav>
+                <div class="flex items-center gap-4">
+                    <a
+                        href="/contact"
+                        class="brutalist-button-primary px-6 py-2 text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center p-2"
+                    >
+                        Contact Me
+                    </a>
+                </div>
+            </header>
+
+            <slot />
+
+            <footer
+                class="p-10 flex flex-col md:flex-row justify-between items-center gap-8 border-t-2 border-primary/10 mt-auto"
+            >
+                <div
+                    class="flex items-center gap-4 text-xs font-bold uppercase tracking-widest opacity-50"
+                >
+                    <span>© 2026 SYSTEM_ARCHIVE</span>
+                    <span class="material-symbols-outlined text-[10px]"
+                        >circle</span
+                    >
+                    <span>LOC: 42.5063° N, 1.5218° E</span>
+                </div>
+                <div class="flex gap-8 text-slate-500">
+                    <a
+                        class="material-symbols-outlined hover:text-primary transition-colors"
+                        href="https://github.com/DiogoPires2003"
+                        target="_blank"
+                        rel="noopener noreferrer">code</a
+                    >
+                    <a
+                        class="material-symbols-outlined hover:text-primary transition-colors"
+                        href="/contact">alternate_email</a
+                    >
+                    <button
+                        class="material-symbols-outlined hover:text-primary transition-colors cursor-pointer"
+                        onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');"
+                        title="Copy website link">share</button
+                    >
+                </div>
+            </footer>
+        </div>
+
+        <div
+            class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03]"
+            data-alt="Subtle noise and grain texture overlay"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZ6xr8DhHrQIg6w0Und8oeicC8w6wL01L_5Se1FTQ15aO-b5QXGf9yyZFrLVt7dIN167_aQ6_Z6Srp5FQyS5ZZD1MriSMOtj45b10oj3fvZGdOQMbu60N7D33Gw7DKMgkNH30rGOVX-xGexLfyQsGRZm0bX7lPPzBUP3C5QG7pgK8t17bvxxbi5j6LQeJUpJItOy0CDaEuiet7lSa3CKHP1NOodbkGoH_O1Kc6e2aImvVMji-no6JnS1Uc8P4GEWrtgMFAHTbnSIaP');"
+        >
+        </div>
+    </body>
+</html>

@@ -1,17 +1,280 @@
 ---
-
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Diogo Pires | Home">
+	<main
+		class="flex-1 flex flex-col items-start justify-center px-6 lg:px-20 py-20 relative"
+	>
+		<div class="absolute top-20 right-20 opacity-20 hidden lg:block">
+			<span
+				class="material-symbols-outlined text-[20rem] text-primary rotate-12"
+				>select_check_box</span
+			>
+		</div>
+		<div
+			class="z-10 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20"
+		>
+			<div class="flex-1">
+				<div
+					class="mb-6 inline-block bg-primary text-white px-3 py-1 text-xs font-bold uppercase tracking-[0.3em]"
+				>
+					System Status: Operational
+				</div>
+				<h1
+					class="text-6xl md:text-8xl lg:text-9xl font-black leading-none uppercase tracking-tighter mb-8 group cursor-default"
+				>
+					<span class="block text-primary glitch-text">Software</span>
+					<span class="block text-slate-100 dark:text-slate-100"
+						>Engineer</span
+					>
+					<span
+						class="block text-accent outline-text"
+						style="-webkit-text-stroke: 2px #ccff00; color: transparent;"
+						>Diogo Pires</span
+					>
+				</h1>
+				<p
+					class="max-w-2xl text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed border-l-4 border-accent pl-6"
+				>
+					Computer Science student and full-stack developer
+					engineering efficient, scalable systems. Combining academic
+					knowledge with hands-on internship experience to build
+					high-performance data pipelines and modern web platforms.
+				</p>
+				<div class="flex flex-wrap gap-6">
+					<a
+						href="/skills"
+						class="brutalist-button-primary px-10 py-5 text-lg font-bold uppercase tracking-widest flex items-center gap-3"
+					>
+						View Stack <span class="material-symbols-outlined"
+							>arrow_forward</span
+						>
+					</a>
+				</div>
+			</div>
+
+			<div
+				class="relative w-64 md:w-80 lg:w-96 aspect-[3/4] flex-shrink-0 group hidden sm:block"
+			>
+				<div
+					class="absolute -inset-4 border-2 border-primary/20 z-0 transition-transform duration-500 group-hover:scale-105"
+				>
+				</div>
+				<div
+					class="absolute -bottom-6 -right-6 w-32 h-32 border-b-4 border-r-4 border-accent z-0 transition-all duration-500 group-hover:border-primary group-hover:translate-x-2 group-hover:translate-y-2"
+				>
+				</div>
+				<div
+					class="absolute -top-6 -left-6 w-32 h-32 border-t-4 border-l-4 border-primary z-0 transition-all duration-500 group-hover:border-accent group-hover:-translate-x-2 group-hover:-translate-y-2"
+				>
+				</div>
+
+				<div
+					class="relative w-full h-full z-10 overflow-hidden border-4 border-slate-800 dark:border-slate-200 bg-slate-100 dark:bg-slate-900"
+				>
+					<div
+						class="absolute inset-0 bg-primary/20 mix-blend-overlay z-20 group-hover:opacity-0 transition-opacity duration-500"
+					>
+					</div>
+					<img
+						src="/profile.jpg"
+						alt="Diogo Pires"
+						class="w-full h-full object-contain filter grayscale contrast-125 group-hover:filter-none transition-all duration-700 group-hover:scale-105 bg-slate-200 dark:bg-slate-800"
+					/>
+				</div>
+			</div>
+		</div>
+	</main>
+	<section
+		class="grid grid-cols-1 md:grid-cols-3 border-t-2 border-primary/30"
+	>
+		<div
+			class="p-8 border-b-2 md:border-b-0 md:border-r-2 border-primary/30 group hover:bg-primary/5 transition-colors"
+		>
+			<div class="flex justify-between items-start mb-4">
+				<span
+					class="text-xs font-bold text-primary uppercase tracking-widest"
+					>Ambition</span
+				>
+				<span class="material-symbols-outlined text-accent">flare</span>
+			</div>
+			<h3 class="text-2xl font-black uppercase mb-2">Driven</h3>
+			<p class="text-sm text-slate-500 uppercase tracking-tight">
+				Constantly pushing boundaries to build scalable and modern web
+				platforms.
+			</p>
+		</div>
+		<div
+			class="p-8 border-b-2 md:border-b-0 md:border-r-2 border-primary/30 group hover:bg-primary/5 transition-colors"
+		>
+			<div class="flex justify-between items-start mb-4">
+				<span
+					class="text-xs font-bold text-primary uppercase tracking-widest"
+					>Coverage</span
+				>
+				<span class="material-symbols-outlined text-accent"
+					>language</span
+				>
+			</div>
+			<h3 class="text-2xl font-black uppercase mb-2">Full Stack</h3>
+			<p class="text-sm text-slate-500 uppercase tracking-tight">
+				End-to-end architecture from low-level systems to GLSL shaders.
+			</p>
+		</div>
+		<div class="p-8 group hover:bg-primary/5 transition-colors">
+			<div class="flex justify-between items-start mb-4">
+				<span
+					class="text-xs font-bold text-primary uppercase tracking-widest"
+					>Experience</span
+				>
+				<span class="material-symbols-outlined text-accent">school</span
+				>
+			</div>
+			<h3 class="text-2xl font-black uppercase mb-2">Student & Intern</h3>
+			<p class="text-sm text-slate-500 uppercase tracking-tight">
+				Combining academic rigor with hands-on internship experience.
+			</p>
+		</div>
+	</section>
+	<section
+		class="bg-primary p-4 overflow-hidden whitespace-nowrap border-y-4 border-neutral-dark flex"
+	>
+		<div class="flex w-max animate-marquee">
+			<div class="flex items-center pr-4">
+				<span
+					class="text-white text-xl font-black uppercase italic tracking-widest flex items-center gap-4"
+				>
+					PYTHON <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					JAVA <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					JAVASCRIPT <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					TYPESCRIPT <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					C <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ASSEMBLY <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					DJANGO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					REACT <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					SOLID JS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ASTRO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					SCALA <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					HTML <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					CSS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ARDUINO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					POSTGRESQL <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					MY SQL <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					DOCKER <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					BASH SCRIPTING <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					THREE.JS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+				</span>
+			</div>
+			<div class="flex items-center pr-4" aria-hidden="true">
+				<span
+					class="text-white text-xl font-black uppercase italic tracking-widest flex items-center gap-4"
+				>
+					PYTHON <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					JAVA <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					JAVASCRIPT <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					TYPESCRIPT <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					C <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ASSEMBLY <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					DJANGO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					REACT <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					SOLID JS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ASTRO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					SCALA <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					HTML <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					CSS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					ARDUINO <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					POSTGRESQL <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					MY SQL <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					DOCKER <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					BASH SCRIPTING <span
+						class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+					THREE.JS <span class="material-symbols-outlined text-accent"
+						>asterisk</span
+					>
+				</span>
+			</div>
+		</div>
+	</section>
+</Layout>
