@@ -113,6 +113,24 @@ const {
                 transform: translate(-2px, -2px);
                 box-shadow: 4px 4px 0px #9000ff;
             }
+            .noise-overlay {
+                background-image: radial-gradient(
+                        circle at 15% 25%,
+                        rgba(255, 255, 255, 0.2) 0.5px,
+                        transparent 1px
+                    ),
+                    radial-gradient(
+                        circle at 75% 70%,
+                        rgba(255, 255, 255, 0.14) 0.5px,
+                        transparent 1px
+                    ),
+                    radial-gradient(
+                        circle at 45% 50%,
+                        rgba(255, 255, 255, 0.1) 0.5px,
+                        transparent 1px
+                    );
+                background-size: 3px 3px, 4px 4px, 5px 5px;
+            }
         </style>
     </head>
     <body
@@ -244,9 +262,8 @@ const {
         </script>
 
         <div
-            class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03]"
+            class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] noise-overlay"
             data-alt="Subtle noise and grain texture overlay"
-            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZ6xr8DhHrQIg6w0Und8oeicC8w6wL01L_5Se1FTQ15aO-b5QXGf9yyZFrLVt7dIN167_aQ6_Z6Srp5FQyS5ZZD1MriSMOtj45b10oj3fvZGdOQMbu60N7D33Gw7DKMgkNH30rGOVX-xGexLfyQsGRZm0bX7lPPzBUP3C5QG7pgK8t17bvxxbi5j6LQeJUpJItOy0CDaEuiet7lSa3CKHP1NOodbkGoH_O1Kc6e2aImvVMji-no6JnS1Uc8P4GEWrtgMFAHTbnSIaP');"
         >
         </div>
     </body>
