@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import profileImage from "../assets/profile.jpg";
 ---
 
 <Layout title="Diogo Pires | Home">
@@ -71,11 +73,14 @@ import Layout from "../layouts/Layout.astro";
 						class="absolute inset-0 bg-primary/20 mix-blend-overlay z-20 group-hover:opacity-0 transition-opacity duration-500"
 					>
 					</div>
-					<img
-						src="/profile.jpg"
-						alt="Diogo Pires"
-						class="w-full h-full object-contain filter grayscale contrast-125 group-hover:filter-none transition-all duration-700 group-hover:scale-105 bg-slate-200 dark:bg-slate-800"
-					/>
+						<Image
+							src={profileImage}
+							alt="Diogo Pires"
+							sizes="(min-width: 1024px) 24rem, (min-width: 768px) 20rem, 16rem"
+							loading="lazy"
+							decoding="async"
+							class="w-full h-full object-contain filter grayscale contrast-125 group-hover:filter-none transition-all duration-700 group-hover:scale-105 bg-slate-200 dark:bg-slate-800"
+						/>
 				</div>
 			</div>
 		</div>
