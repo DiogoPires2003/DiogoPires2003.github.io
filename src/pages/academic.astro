@@ -70,11 +70,15 @@ import Layout from "../layouts/Layout.astro";
         <!-- Diagonal Path Container -->
         <div class="relative py-20 overflow-visible">
             <div
-                class="sm:hidden mb-4 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] font-bold text-primary"
+                class="mb-4 flex items-center justify-center gap-3 text-[11px] sm:text-xs uppercase tracking-[0.18em] font-bold text-primary"
             >
-                <span>Swipe Timeline</span>
                 <span class="material-symbols-outlined text-base animate-pulse"
-                    >swipe_right</span
+                    >chevron_left</span
+                >
+                <span class="sm:hidden">Swipe Timeline</span>
+                <span class="hidden sm:inline">Scroll Timeline Horizontally</span>
+                <span class="material-symbols-outlined text-base animate-pulse"
+                    >chevron_right</span
                 >
             </div>
             <!-- Main Path Line -->
@@ -245,6 +249,17 @@ import Layout from "../layouts/Layout.astro";
                         </div>
                     </div>
                 </div>
+            </div>
+            <div
+                class="mt-2 flex items-center justify-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.16em] font-bold text-primary/80"
+            >
+                <span class="material-symbols-outlined text-sm"
+                    >arrow_back</span
+                >
+                <span>Keep Scrolling</span>
+                <span class="material-symbols-outlined text-sm"
+                    >arrow_forward</span
+                >
             </div>
             <div
                 class="sm:hidden pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background-light dark:from-background-dark to-transparent z-20"

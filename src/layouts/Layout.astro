@@ -190,9 +190,9 @@ const {
             </header>
             <nav
                 id="mobile-menu"
-                class="md:hidden hidden fixed left-0 right-0 top-[72px] z-40 border-b-2 border-primary/30 bg-background-light/95 dark:bg-background-dark/95 px-4 py-4 backdrop-blur-md max-h-[calc(100vh-72px)] overflow-y-auto"
+                class="md:hidden hidden fixed inset-0 z-[60] bg-background-light/95 dark:bg-background-dark/95 px-4 pt-20 pb-6 backdrop-blur-md overflow-y-auto"
             >
-                <div class="flex flex-col gap-3">
+                <div class="mx-auto w-full max-w-md flex flex-col gap-3 border-2 border-primary/30 p-4 bg-background-light/90 dark:bg-background-dark/90">
                     <a
                         class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
                         href="/">/About</a
@@ -252,6 +252,7 @@ const {
                 const closeMenu = () => {
                     mobileMenu.classList.add("hidden");
                     mobileToggle.setAttribute("aria-expanded", "false");
+                    document.body.style.overflow = "";
                 };
 
                 mobileToggle.addEventListener("click", () => {
@@ -262,6 +263,7 @@ const {
                         String(!isExpanded)
                     );
                     mobileMenu.classList.toggle("hidden");
+                    document.body.style.overflow = isExpanded ? "" : "hidden";
                 });
 
                 mobileMenu.querySelectorAll("a").forEach((link) => {
@@ -270,6 +272,13 @@ const {
 
                 window.addEventListener("resize", () => {
                     if (window.innerWidth >= 768) closeMenu();
+                });
+
+                mobileMenu.addEventListener("click", (event) => {
+                    if (event.target === mobileMenu) {
+                        closeMenu();
+                        document.body.style.overflow = "";
+                    }
                 });
             }
         </script>
