@@ -1,4 +1,6 @@
 ---
+import { ClientRouter } from "astro:transitions";
+
 interface Props {
     title: string;
     description?: string;
@@ -8,22 +10,52 @@ const {
     title,
     description = "Diogo Pires - Software Engineer portfolio.",
 } = Astro.props;
+
+const ogImage = new URL("/og-image.jpg", Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
         <title>{title}</title>
         <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalURL} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalURL} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={canonicalURL} />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        <ClientRouter />
+        <script is:inline>
+            (function () {
+                var stored = localStorage.getItem("theme");
+                var prefersDark = window.matchMedia(
+                    "(prefers-color-scheme: dark)"
+                ).matches;
+                var isDark = stored ? stored === "dark" : prefersDark;
+                document.documentElement.classList.toggle("dark", isDark);
+            })();
+        </script>
         <script
             is:inline
             src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
         ></script>
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
         <link
@@ -36,24 +68,24 @@ const {
                 theme: {
                     extend: {
                         colors: {
-                            primary: "#9000ff", // Electric Violet
-                            accent: "#ccff00", // Acid Yellow
-                            "neutral-dark": "#1a1a1a", // Deep Charcoal
-                            "background-light": "#f7f5f8",
-                            "background-dark": "#0a0a0a",
+                            ink: "#0a0a0a",
+                            paper: "#ffffff",
+                            accent: "#e63946",
+                            "accent-dark": "#c1121f",
                         },
                         fontFamily: {
-                            display: ["Space Grotesk", "sans-serif"],
+                            sans: ["Archivo", "sans-serif"],
                             mono: ["JetBrains Mono", "monospace"],
                         },
                         borderRadius: {
-                            DEFAULT: "0rem",
-                            lg: "0rem",
-                            xl: "0rem",
+                            none: "0px",
+                            DEFAULT: "0px",
+                            lg: "0px",
+                            xl: "0px",
                             full: "9999px",
                         },
                         animation: {
-                            marquee: "marquee 40s linear infinite",
+                            marquee: "marquee 32s linear infinite",
                         },
                         keyframes: {
                             marquee: {
@@ -66,120 +98,89 @@ const {
             };
         </script>
         <style is:inline>
-            /* Global styles from index.astro */
-            .glitch-text {
-                position: relative;
-                text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                    -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-                    0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+            html {
+                scrollbar-gutter: stable;
             }
-            .mesh-bg {
+            ::selection {
+                background-color: #e63946;
+                color: #ffffff;
+            }
+            .command-item.is-active {
                 background-color: #0a0a0a;
-                background-image: radial-gradient(
-                        at 0% 0%,
-                        rgba(144, 0, 255, 0.15) 0px,
-                        transparent 50%
-                    ),
-                    radial-gradient(
-                        at 100% 0%,
-                        rgba(204, 255, 0, 0.1) 0px,
-                        transparent 50%
-                    ),
-                    radial-gradient(
-                        at 100% 100%,
-                        rgba(144, 0, 255, 0.15) 0px,
-                        transparent 50%
-                    ),
-                    radial-gradient(
-                        at 0% 100%,
-                        rgba(204, 255, 0, 0.1) 0px,
-                        transparent 50%
-                    );
+                color: #ffffff;
             }
-            .brutalist-border {
-                border: 2px solid #9000ff;
-                box-shadow: 4px 4px 0px #ccff00;
-            }
-            .brutalist-button-primary {
-                background-color: #9000ff;
-                color: white;
-                border: 2px solid #9000ff;
-                transition: all 0.1s;
-            }
-            .brutalist-button-primary:hover {
-                background-color: #ccff00;
+            :is(.dark) .command-item.is-active {
+                background-color: #ffffff;
                 color: #0a0a0a;
-                border-color: #ccff00;
-                transform: translate(-2px, -2px);
-                box-shadow: 4px 4px 0px #9000ff;
-            }
-            .noise-overlay {
-                background-image: radial-gradient(
-                        circle at 15% 25%,
-                        rgba(255, 255, 255, 0.2) 0.5px,
-                        transparent 1px
-                    ),
-                    radial-gradient(
-                        circle at 75% 70%,
-                        rgba(255, 255, 255, 0.14) 0.5px,
-                        transparent 1px
-                    ),
-                    radial-gradient(
-                        circle at 45% 50%,
-                        rgba(255, 255, 255, 0.1) 0.5px,
-                        transparent 1px
-                    );
-                background-size: 3px 3px, 4px 4px, 5px 5px;
             }
         </style>
     </head>
-    <body
-        class="bg-background-light dark:bg-background-dark font-mono text-slate-900 dark:text-slate-100 overflow-x-hidden"
-    >
-        <div class="relative flex min-h-screen flex-col mesh-bg">
+    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased">
+        <div
+            id="scroll-progress"
+            class="fixed top-0 left-0 h-[3px] bg-accent z-[70]"
+            style="width: 0%"
+        >
+        </div>
+        <div class="relative flex min-h-screen flex-col">
             <header
-                class="flex items-center justify-between border-b-2 border-primary/30 px-4 py-4 sm:px-6 lg:px-20 backdrop-blur-md sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80"
+                class="flex items-center justify-between border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-4 sticky top-0 z-50 bg-paper/95 dark:bg-ink/95 backdrop-blur-sm"
             >
                 <a href="/" class="flex items-center gap-3 group">
                     <span
-                        class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform"
-                        >terminal</span
+                        class="flex items-center justify-center w-8 h-8 border-2 border-ink dark:border-paper font-black text-xs group-hover:bg-ink group-hover:text-paper dark:group-hover:bg-paper dark:group-hover:text-ink transition-colors"
+                        >DP</span
                     >
-                    <h2
-                        class="text-base sm:text-xl font-bold tracking-tighter uppercase group-hover:text-primary transition-colors"
-                    >
+                    <span class="font-black uppercase tracking-tight text-base sm:text-lg">
                         Diogo Pires
-                    </h2>
+                    </span>
                 </a>
-                <nav class="hidden md:flex items-center gap-10">
+                <nav class="hidden md:flex items-center h-full">
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/">/About</a
+                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
+                        href="/"><span class="text-accent mr-2">01</span>About</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/skills">/Stack</a
+                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
+                        href="/skills"><span class="text-accent mr-2">02</span>Skills</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/academic">/Academic</a
+                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
+                        href="/academic"><span class="text-accent mr-2">03</span>Academic</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/contact">/Contact</a
+                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
+                        href="/contact"><span class="text-accent mr-2">04</span>Contact</a
                     >
                 </nav>
-                <div class="flex items-center gap-2 sm:gap-4">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button
+                        id="command-trigger"
+                        type="button"
+                        class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2.5 border-2 border-ink dark:border-paper text-xs text-neutral-500 hover:text-accent hover:border-accent transition-colors"
+                        aria-label="Open command menu"
+                    >
+                        <span class="material-symbols-outlined text-base">search</span>
+                        <kbd class="font-mono text-[10px]">&#8984;K</kbd>
+                    </button>
                     <a
                         href="/contact"
-                        class="brutalist-button-primary px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center"
+                        class="hidden sm:inline-flex px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                     >
-                        Contact Me
+                        Get in touch
                     </a>
+                    <button
+                        id="theme-toggle"
+                        type="button"
+                        class="inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        aria-label="Toggle color theme"
+                    >
+                        <span class="material-symbols-outlined text-lg" id="theme-toggle-icon">dark_mode</span>
+                    </button>
                     <button
                         id="mobile-menu-toggle"
                         type="button"
-                        class="md:hidden inline-flex items-center justify-center w-10 h-10 border-2 border-primary text-primary"
+                        class="md:hidden inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper"
                         aria-label="Toggle navigation menu"
                         aria-expanded="false"
                         aria-controls="mobile-menu"
@@ -190,103 +191,393 @@ const {
             </header>
             <nav
                 id="mobile-menu"
-                class="md:hidden hidden fixed inset-0 z-[60] bg-background-light/95 dark:bg-background-dark/95 px-4 pt-20 pb-6 backdrop-blur-md overflow-y-auto"
+                class="md:hidden hidden fixed inset-0 z-[60] bg-paper dark:bg-ink px-4 pt-20 pb-6 overflow-y-auto"
             >
-                <div class="mx-auto w-full max-w-md flex flex-col gap-3 border-2 border-primary/30 p-4 bg-background-light/90 dark:bg-background-dark/90">
+                <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/">/About</a
+                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                        href="/"><span class="text-accent mr-3">01</span>About</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/skills">/Stack</a
+                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                        href="/skills"><span class="text-accent mr-3">02</span>Skills</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/academic">/Academic</a
+                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                        href="/academic"><span class="text-accent mr-3">03</span>Academic</a
                     >
                     <a
-                        class="text-sm font-bold hover:text-primary uppercase tracking-widest transition-colors"
-                        href="/contact">/Contact</a
+                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                        href="/contact"><span class="text-accent mr-3">04</span>Contact</a
                     >
+                    <button
+                        id="command-trigger-mobile"
+                        type="button"
+                        class="w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                    >
+                        <span class="material-symbols-outlined text-base">search</span>Search
+                    </button>
                 </div>
             </nav>
 
             <slot />
 
-            <footer
-                class="px-4 py-8 sm:px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8 border-t-2 border-primary/10 mt-auto"
-            >
-                <div
-                    class="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-50 text-center md:text-left"
-                >
-                    <span>© 2026 SYSTEM_ARCHIVE</span>
-                    <span class="material-symbols-outlined text-[10px]"
-                        >circle</span
-                    >
-                    <span>LOC: 42.5063° N, 1.5218° E</span>
-                </div>
-                <div class="flex gap-6 sm:gap-8 text-slate-500">
-                    <a
-                        class="material-symbols-outlined hover:text-primary transition-colors"
-                        href="https://github.com/DiogoPires2003"
-                        target="_blank"
-                        rel="noopener noreferrer">code</a
-                    >
-                    <a
-                        class="material-symbols-outlined hover:text-primary transition-colors"
-                        href="/contact">alternate_email</a
-                    >
-                    <button
-                        class="material-symbols-outlined hover:text-primary transition-colors cursor-pointer"
-                        onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');"
-                        title="Copy website link">share</button
-                    >
+            <footer class="border-t-2 border-ink dark:border-paper mt-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-3">
+                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500">
+                        © 2026 Diogo Pires
+                    </div>
+                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 flex items-center gap-6">
+                        <a
+                            class="hover:text-accent transition-colors"
+                            href="https://github.com/DiogoPires2003"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="GitHub profile"
+                        >
+                            <span class="material-symbols-outlined text-lg">code</span>
+                        </a>
+                        <a
+                            class="hover:text-accent transition-colors"
+                            href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="LinkedIn profile"
+                        >
+                            <span class="material-symbols-outlined text-lg">work</span>
+                        </a>
+                        <a
+                            class="hover:text-accent transition-colors"
+                            href="/contact"
+                            aria-label="Contact page"
+                        >
+                            <span class="material-symbols-outlined text-lg">alternate_email</span>
+                        </a>
+                    </div>
+                    <div class="px-4 sm:px-6 lg:px-12 py-6 border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500">
+                        Based in Andorra
+                    </div>
                 </div>
             </footer>
         </div>
+
+        <div
+            id="command-palette"
+            class="hidden fixed inset-0 z-[100] bg-ink/60 dark:bg-black/70 backdrop-blur-sm items-start justify-center pt-24 sm:pt-32 px-4"
+        >
+            <div class="w-full max-w-xl border-2 border-ink dark:border-paper bg-paper dark:bg-ink shadow-2xl">
+                <div class="flex items-center gap-3 px-4 py-3 border-b-2 border-ink dark:border-paper">
+                    <span class="material-symbols-outlined text-lg text-neutral-500">search</span>
+                    <input
+                        id="command-input"
+                        type="text"
+                        placeholder="Type a command or search..."
+                        class="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-neutral-400"
+                        autocomplete="off"
+                    />
+                    <kbd class="font-mono text-[10px] uppercase text-neutral-500 border border-neutral-300 dark:border-neutral-700 px-1.5 py-0.5">Esc</kbd>
+                </div>
+                <div id="command-list" class="max-h-80 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-800">
+                    <a
+                        href="/"
+                        data-command-label="go to about home"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span><span class="text-accent mr-2">01</span>Go to About</span>
+                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
+                    </a>
+                    <a
+                        href="/skills"
+                        data-command-label="go to skills technical stack"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span><span class="text-accent mr-2">02</span>Go to Skills</span>
+                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
+                    </a>
+                    <a
+                        href="/academic"
+                        data-command-label="go to academic education certifications"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span><span class="text-accent mr-2">03</span>Go to Academic</span>
+                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
+                    </a>
+                    <a
+                        href="/contact"
+                        data-command-label="go to contact email"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span><span class="text-accent mr-2">04</span>Go to Contact</span>
+                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
+                    </a>
+                    <button
+                        type="button"
+                        id="command-theme-toggle"
+                        data-command-label="toggle theme dark light mode"
+                        class="command-item w-full text-left flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span>Toggle theme</span>
+                        <span class="material-symbols-outlined text-base opacity-50">contrast</span>
+                    </button>
+                    <a
+                        href="https://github.com/DiogoPires2003"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-command-label="open github"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span>Open GitHub</span>
+                        <span class="material-symbols-outlined text-base opacity-50">open_in_new</span>
+                    </a>
+                    <a
+                        href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-command-label="open linkedin"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span>Open LinkedIn</span>
+                        <span class="material-symbols-outlined text-base opacity-50">open_in_new</span>
+                    </a>
+                    <a
+                        href="mailto:dfalvesp@gmail.com"
+                        data-command-label="email diogo contact mail"
+                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
+                    >
+                        <span>Email Diogo</span>
+                        <span class="material-symbols-outlined text-base opacity-50">mail</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <script is:inline>
-            const mobileToggle = document.getElementById("mobile-menu-toggle");
-            const mobileMenu = document.getElementById("mobile-menu");
-            if (mobileToggle && mobileMenu) {
-                const closeMenu = () => {
-                    mobileMenu.classList.add("hidden");
-                    mobileToggle.setAttribute("aria-expanded", "false");
+            function bindPerPageInteractions() {
+                var countEls = document.querySelectorAll(".count-up");
+                if (countEls.length && "IntersectionObserver" in window) {
+                    var animateCount = function (el) {
+                        var to = parseFloat(el.dataset.countTo || "0");
+                        var suffix = el.dataset.countSuffix || "";
+                        var decimals = parseInt(el.dataset.countDecimals || "0", 10);
+                        var duration = 1200;
+                        var start = performance.now();
+                        var step = function (now) {
+                            var progress = Math.min((now - start) / duration, 1);
+                            var eased = 1 - Math.pow(1 - progress, 3);
+                            el.textContent = (to * eased).toFixed(decimals) + suffix;
+                            if (progress < 1) {
+                                requestAnimationFrame(step);
+                            } else {
+                                el.textContent = to.toFixed(decimals) + suffix;
+                            }
+                        };
+                        requestAnimationFrame(step);
+                    };
+                    var countObserver = new IntersectionObserver(
+                        function (entries) {
+                            entries.forEach(function (entry) {
+                                if (entry.isIntersecting) {
+                                    animateCount(entry.target);
+                                    countObserver.unobserve(entry.target);
+                                }
+                            });
+                        },
+                        { threshold: 0.4 }
+                    );
+                    countEls.forEach(function (el) {
+                        countObserver.observe(el);
+                    });
+                }
+
+                var themeToggleBtn = document.getElementById("theme-toggle");
+                var themeToggleIcon = document.getElementById("theme-toggle-icon");
+                var updateThemeIcon = function () {
+                    if (!themeToggleIcon) return;
+                    themeToggleIcon.textContent = document.documentElement.classList.contains(
+                        "dark"
+                    )
+                        ? "light_mode"
+                        : "dark_mode";
+                };
+                var toggleTheme = function () {
+                    var isDark = document.documentElement.classList.toggle("dark");
+                    localStorage.setItem("theme", isDark ? "dark" : "light");
+                    updateThemeIcon();
+                };
+                updateThemeIcon();
+                themeToggleBtn?.addEventListener("click", toggleTheme);
+
+                var mobileToggle = document.getElementById("mobile-menu-toggle");
+                var mobileMenu = document.getElementById("mobile-menu");
+                if (mobileToggle && mobileMenu) {
+                    var closeMenu = function () {
+                        mobileMenu.classList.add("hidden");
+                        mobileToggle.setAttribute("aria-expanded", "false");
+                        document.body.style.overflow = "";
+                    };
+
+                    mobileToggle.addEventListener("click", function () {
+                        var isExpanded =
+                            mobileToggle.getAttribute("aria-expanded") === "true";
+                        mobileToggle.setAttribute("aria-expanded", String(!isExpanded));
+                        mobileMenu.classList.toggle("hidden");
+                        document.body.style.overflow = isExpanded ? "" : "hidden";
+                    });
+
+                    mobileMenu.querySelectorAll("a").forEach(function (link) {
+                        link.addEventListener("click", closeMenu);
+                    });
+
+                    mobileMenu.addEventListener("click", function (event) {
+                        if (event.target === mobileMenu) {
+                            closeMenu();
+                            document.body.style.overflow = "";
+                        }
+                    });
+                }
+
+                var palette = document.getElementById("command-palette");
+                var paletteInput = document.getElementById("command-input");
+                var paletteItems = Array.from(
+                    document.querySelectorAll(".command-item")
+                );
+                var activeIndex = -1;
+
+                var setActive = function (index) {
+                    var visible = paletteItems.filter(
+                        (item) => !item.classList.contains("hidden")
+                    );
+                    paletteItems.forEach((item) => item.classList.remove("is-active"));
+                    if (!visible.length) {
+                        activeIndex = -1;
+                        return;
+                    }
+                    activeIndex = ((index % visible.length) + visible.length) % visible.length;
+                    visible[activeIndex].classList.add("is-active");
+                    visible[activeIndex].scrollIntoView({ block: "nearest" });
+                };
+
+                var openPalette = function () {
+                    if (!palette) return;
+                    palette.classList.remove("hidden");
+                    palette.classList.add("flex");
+                    document.body.style.overflow = "hidden";
+                    if (paletteInput) {
+                        paletteInput.value = "";
+                        paletteItems.forEach((item) => item.classList.remove("hidden"));
+                        setActive(0);
+                        paletteInput.focus();
+                    }
+                };
+
+                var closePalette = function () {
+                    if (!palette) return;
+                    palette.classList.add("hidden");
+                    palette.classList.remove("flex");
                     document.body.style.overflow = "";
                 };
 
-                mobileToggle.addEventListener("click", () => {
-                    const isExpanded =
-                        mobileToggle.getAttribute("aria-expanded") === "true";
-                    mobileToggle.setAttribute(
-                        "aria-expanded",
-                        String(!isExpanded)
+                document
+                    .getElementById("command-trigger")
+                    ?.addEventListener("click", openPalette);
+                document
+                    .getElementById("command-trigger-mobile")
+                    ?.addEventListener("click", openPalette);
+                document
+                    .getElementById("command-theme-toggle")
+                    ?.addEventListener("click", function () {
+                        toggleTheme();
+                        closePalette();
+                    });
+
+                palette?.addEventListener("click", function (event) {
+                    if (event.target === palette) closePalette();
+                });
+
+                paletteItems.forEach((item) => {
+                    item.addEventListener("click", () => closePalette());
+                });
+
+                paletteInput?.addEventListener("input", () => {
+                    var query = paletteInput.value.trim().toLowerCase();
+                    paletteItems.forEach((item) => {
+                        var label = (item.dataset.commandLabel || "").toLowerCase();
+                        item.classList.toggle("hidden", query.length > 0 && !label.includes(query));
+                    });
+                    setActive(0);
+                });
+
+                paletteInput?.addEventListener("keydown", (event) => {
+                    var visible = paletteItems.filter(
+                        (item) => !item.classList.contains("hidden")
                     );
-                    mobileMenu.classList.toggle("hidden");
-                    document.body.style.overflow = isExpanded ? "" : "hidden";
+                    if (event.key === "ArrowDown") {
+                        event.preventDefault();
+                        setActive(activeIndex + 1);
+                    } else if (event.key === "ArrowUp") {
+                        event.preventDefault();
+                        setActive(activeIndex - 1);
+                    } else if (event.key === "Enter") {
+                        event.preventDefault();
+                        if (activeIndex >= 0 && visible[activeIndex]) {
+                            visible[activeIndex].click();
+                        }
+                    } else if (event.key === "Escape") {
+                        closePalette();
+                    }
                 });
 
-                mobileMenu.querySelectorAll("a").forEach((link) => {
-                    link.addEventListener("click", closeMenu);
-                });
+                window.__closeCommandPalette = closePalette;
+                window.__openCommandPalette = openPalette;
+            }
 
-                window.addEventListener("resize", () => {
-                    if (window.innerWidth >= 768) closeMenu();
-                });
+            document.addEventListener("astro:page-load", bindPerPageInteractions);
 
-                mobileMenu.addEventListener("click", (event) => {
-                    if (event.target === mobileMenu) {
-                        closeMenu();
-                        document.body.style.overflow = "";
+            if (!window.__portfolioGlobalInit) {
+                window.__portfolioGlobalInit = true;
+
+                var updateScrollProgress = function () {
+                    var bar = document.getElementById("scroll-progress");
+                    if (!bar) return;
+                    var docHeight =
+                        document.documentElement.scrollHeight - window.innerHeight;
+                    var pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+                    bar.style.width = pct + "%";
+                };
+                updateScrollProgress();
+                window.addEventListener("scroll", updateScrollProgress, {
+                    passive: true,
+                });
+                window.addEventListener("resize", function () {
+                    updateScrollProgress();
+                    if (window.innerWidth >= 768) {
+                        var menu = document.getElementById("mobile-menu");
+                        var toggle = document.getElementById("mobile-menu-toggle");
+                        if (menu && !menu.classList.contains("hidden")) {
+                            menu.classList.add("hidden");
+                            toggle?.setAttribute("aria-expanded", "false");
+                            document.body.style.overflow = "";
+                        }
+                    }
+                });
+                document.addEventListener("astro:after-swap", updateScrollProgress);
+
+                document.addEventListener("keydown", function (event) {
+                    var isK = event.key === "k" || event.key === "K";
+                    if ((event.metaKey || event.ctrlKey) && isK) {
+                        event.preventDefault();
+                        var palette = document.getElementById("command-palette");
+                        if (!palette) return;
+                        if (palette.classList.contains("hidden")) {
+                            window.__openCommandPalette?.();
+                        } else {
+                            window.__closeCommandPalette?.();
+                        }
+                    } else if (event.key === "Escape") {
+                        window.__closeCommandPalette?.();
                     }
                 });
             }
         </script>
-
-        <div
-            class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] noise-overlay"
-            data-alt="Subtle noise and grain texture overlay"
-        >
-        </div>
     </body>
 </html>

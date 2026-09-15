@@ -2,278 +2,206 @@
 import Layout from "../layouts/Layout.astro";
 import { Image } from "astro:assets";
 import profileImage from "../assets/profile.jpg";
+
+const stack = [
+	"Python", "Java", "JavaScript", "TypeScript", "C", "Assembly", "Django",
+	"React", "Solid JS", "Astro", "Scala", "HTML", "CSS", "Arduino",
+	"PostgreSQL", "MySQL", "Docker", "Bash", "Three.js",
+];
+
+const facts = [
+	{ label: "Status", value: "Available" },
+	{ label: "Focus", value: "Full-Stack" },
+	{ label: "Based", value: "Andorra" },
+	{ label: "Latest", value: "—", id: "gh-latest" },
+];
+
+const highlights = [
+	{
+		n: "01",
+		title: "Driven",
+		text: "Constantly pushing boundaries to build scalable and modern web platforms.",
+	},
+	{
+		n: "02",
+		title: "Full Stack",
+		text: "End-to-end architecture, from low-level systems to modern web interfaces.",
+	},
+	{
+		n: "03",
+		title: "Student & Intern",
+		text: "Combining academic rigor with hands-on internship experience.",
+	},
+];
 ---
 
 <Layout title="Diogo Pires | Home">
-	<main
-		class="flex-1 flex flex-col items-start justify-center px-4 sm:px-6 lg:px-20 py-12 sm:py-16 lg:py-20 relative"
-	>
-		<div
-			class="z-10 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20"
-		>
-			<div class="flex-1">
-				<div
-					class="mb-6 inline-block bg-primary text-white px-3 py-1 text-xs font-bold uppercase tracking-[0.3em]"
-				>
-					System Status: Operational
-				</div>
+	<section class="border-b-2 border-ink dark:border-paper">
+		<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12">
+			<div
+				class="lg:col-span-8 px-4 sm:px-6 lg:px-12 py-16 sm:py-20 lg:py-28 border-b-2 lg:border-b-0 lg:border-r-2 border-ink dark:border-paper"
+			>
+				<p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+					N&deg; 01 &mdash; Introduction
+				</p>
 				<h1
-					class="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black leading-none uppercase tracking-tighter mb-6 sm:mb-8 group cursor-default"
+					class="text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.92] tracking-tight mb-8"
 				>
-					<span class="block text-primary glitch-text">Software</span>
-					<span class="block text-slate-100 dark:text-slate-100"
-						>Engineer</span
-					>
-					<span
-						class="block text-accent outline-text"
-						style="-webkit-text-stroke: 2px #ccff00; color: transparent;"
-						>Diogo Pires</span
-					>
+					Software<br />
+					Engineer<span class="text-accent">.</span>
 				</h1>
 				<p
-					class="max-w-2xl text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-8 sm:mb-10 leading-relaxed border-l-4 border-accent pl-4 sm:pl-6"
+					class="max-w-xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-10 leading-relaxed"
 				>
 					Computer Science student and full-stack developer
 					engineering efficient, scalable systems. Combining academic
 					knowledge with hands-on internship experience to build
 					high-performance data pipelines and modern web platforms.
 				</p>
-				<div class="flex flex-wrap gap-4 sm:gap-6 w-full sm:w-auto">
+				<div class="flex flex-wrap">
 					<a
 						href="/skills"
-						class="brutalist-button-primary w-full sm:w-auto px-6 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold uppercase tracking-widest flex items-center justify-center gap-3"
+						class="px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-paper hover:text-ink dark:hover:bg-ink dark:hover:text-paper transition-colors flex items-center gap-2"
 					>
-						View Stack <span class="material-symbols-outlined"
-							>arrow_forward</span
-						>
+						View Stack
+						<span class="material-symbols-outlined text-lg">arrow_forward</span>
+					</a>
+					<a
+						href="/contact"
+						class="px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-l-0 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors flex items-center"
+					>
+						Contact
 					</a>
 				</div>
 			</div>
 
-			<div
-				class="relative w-64 md:w-80 lg:w-96 aspect-[3/4] flex-shrink-0 group hidden sm:block"
-			>
-				<div
-					class="absolute -inset-4 border-2 border-primary/20 z-0 transition-transform duration-500 group-hover:scale-105"
-				>
+			<div class="lg:col-span-4 flex flex-col">
+				<div class="aspect-[4/5] overflow-hidden border-b-2 border-ink dark:border-paper">
+					<Image
+						src={profileImage}
+						alt="Diogo Pires"
+						sizes="(min-width: 1024px) 28rem, 100vw"
+						loading="eager"
+						decoding="async"
+						class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500 bg-neutral-200 dark:bg-neutral-900"
+					/>
 				</div>
-				<div
-					class="absolute -bottom-6 -right-6 w-32 h-32 border-b-4 border-r-4 border-accent z-0 transition-all duration-500 group-hover:border-primary group-hover:translate-x-2 group-hover:translate-y-2"
-				>
-				</div>
-				<div
-					class="absolute -top-6 -left-6 w-32 h-32 border-t-4 border-l-4 border-primary z-0 transition-all duration-500 group-hover:border-accent group-hover:-translate-x-2 group-hover:-translate-y-2"
-				>
-				</div>
+				<dl class="font-mono text-xs flex-1">
+					{facts.map((fact, i) => (
+						<div
+							class:list={[
+								"flex items-center justify-between px-4 sm:px-6 py-5",
+								i !== facts.length - 1 && "border-b border-neutral-300 dark:border-neutral-700",
+							]}
+						>
+							<dt class="uppercase text-neutral-500 tracking-widest shrink-0">{fact.label}</dt>
+							<dd
+								id={fact.id}
+								class:list={[
+									"font-bold uppercase text-right truncate max-w-[65%]",
+									fact.label === "Status" && "text-accent",
+								]}
+							>{fact.value}</dd>
+						</div>
+					))}
+				</dl>
+			</div>
+		</div>
+	</section>
 
-				<div
-					class="relative w-full h-full z-10 overflow-hidden border-4 border-slate-800 dark:border-slate-200 bg-slate-100 dark:bg-slate-900"
-				>
-					<div
-						class="absolute inset-0 bg-primary/20 mix-blend-overlay z-20 group-hover:opacity-0 transition-opacity duration-500"
-					>
-					</div>
-						<Image
-							src={profileImage}
-							alt="Diogo Pires"
-							sizes="(min-width: 1024px) 24rem, (min-width: 768px) 20rem, 16rem"
-							loading="lazy"
-							decoding="async"
-							class="w-full h-full object-contain filter grayscale contrast-125 group-hover:filter-none transition-all duration-700 group-hover:scale-105 bg-slate-200 dark:bg-slate-800"
-						/>
-				</div>
-			</div>
-		</div>
-	</main>
-	<section
-		class="grid grid-cols-1 md:grid-cols-3 border-t-2 border-primary/30"
-	>
-		<div
-			class="p-8 border-b-2 md:border-b-0 md:border-r-2 border-primary/30 group hover:bg-primary/5 transition-colors"
-		>
-			<div class="flex justify-between items-start mb-4">
-				<span
-					class="text-xs font-bold text-primary uppercase tracking-widest"
-					>Ambition</span
-				>
-				<span class="material-symbols-outlined text-accent">flare</span>
-			</div>
-			<h3 class="text-2xl font-black uppercase mb-2">Driven</h3>
-			<p class="text-sm text-slate-500 uppercase tracking-tight">
-				Constantly pushing boundaries to build scalable and modern web
-				platforms.
+	<section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-16">
+		<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 max-w-5xl">
+			<p class="lg:col-span-3 font-mono text-xs text-accent uppercase tracking-[0.25em]">
+				N&deg; 01.1 &mdash; About
 			</p>
-		</div>
-		<div
-			class="p-8 border-b-2 md:border-b-0 md:border-r-2 border-primary/30 group hover:bg-primary/5 transition-colors"
-		>
-			<div class="flex justify-between items-start mb-4">
-				<span
-					class="text-xs font-bold text-primary uppercase tracking-widest"
-					>Coverage</span
-				>
-				<span class="material-symbols-outlined text-accent"
-					>language</span
-				>
-			</div>
-			<h3 class="text-2xl font-black uppercase mb-2">Full Stack</h3>
-			<p class="text-sm text-slate-500 uppercase tracking-tight">
-				End-to-end architecture from low-level systems to GLSL shaders.
-			</p>
-		</div>
-		<div class="p-8 group hover:bg-primary/5 transition-colors">
-			<div class="flex justify-between items-start mb-4">
-				<span
-					class="text-xs font-bold text-primary uppercase tracking-widest"
-					>Experience</span
-				>
-				<span class="material-symbols-outlined text-accent">school</span
-				>
-			</div>
-			<h3 class="text-2xl font-black uppercase mb-2">Student & Intern</h3>
-			<p class="text-sm text-slate-500 uppercase tracking-tight">
-				Combining academic rigor with hands-on internship experience.
+			<p class="lg:col-span-9 text-lg sm:text-xl leading-relaxed text-neutral-700 dark:text-neutral-300">
+				I'm a Software Engineering student at Universitat de Lleida,
+				currently applying what I learn as an intern at IFR Group. My
+				focus spans the full stack &mdash; from low-level C and
+				Assembly to modern frameworks like Django, React and Astro
+				&mdash; and I like moving fast: a 24-hour hackathon win and
+				20+ academic projects along the way. Outside of coursework,
+				I'm drawn to embedded systems and 3D web graphics.
 			</p>
 		</div>
 	</section>
-	<section
-		class="bg-primary p-4 overflow-hidden whitespace-nowrap border-y-4 border-neutral-dark flex"
-	>
-		<div class="flex w-max animate-marquee">
-			<div class="flex items-center pr-4">
-				<span
-					class="text-white text-base sm:text-xl font-black uppercase italic tracking-widest flex items-center gap-3 sm:gap-4"
-				>
-					PYTHON <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					JAVA <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					JAVASCRIPT <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					TYPESCRIPT <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					C <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ASSEMBLY <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					DJANGO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					REACT <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					SOLID JS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ASTRO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					SCALA <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					HTML <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					CSS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ARDUINO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					POSTGRESQL <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					MY SQL <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					DOCKER <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					BASH SCRIPTING <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					THREE.JS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-				</span>
+
+	<section class="grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
+		{highlights.map((item, i) => (
+			<div
+				class:list={[
+					"p-8 sm:p-10",
+					i !== highlights.length - 1 && "border-b-2 md:border-b-0 md:border-r-2 border-ink dark:border-paper",
+				]}
+			>
+				<span class="font-mono text-xs text-accent">{item.n}</span>
+				<h3 class="text-2xl font-black uppercase mt-3 mb-3">{item.title}</h3>
+				<p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+					{item.text}
+				</p>
 			</div>
-			<div class="flex items-center pr-4" aria-hidden="true">
-				<span
-					class="text-white text-base sm:text-xl font-black uppercase italic tracking-widest flex items-center gap-3 sm:gap-4"
-				>
-					PYTHON <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					JAVA <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					JAVASCRIPT <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					TYPESCRIPT <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					C <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ASSEMBLY <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					DJANGO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					REACT <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					SOLID JS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ASTRO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					SCALA <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					HTML <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					CSS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					ARDUINO <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					POSTGRESQL <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					MY SQL <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					DOCKER <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					BASH SCRIPTING <span
-						class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-					THREE.JS <span class="material-symbols-outlined text-accent"
-						>asterisk</span
-					>
-				</span>
+		))}
+	</section>
+
+	<section class="bg-ink text-paper dark:bg-paper dark:text-ink py-4 overflow-hidden whitespace-nowrap">
+		<div class="flex w-max animate-marquee font-mono text-sm uppercase tracking-widest">
+			<div class="flex items-center pr-6">
+				{stack.map((tech) => (
+					<>
+						{tech}
+						<span class="text-accent mx-6">/</span>
+					</>
+				))}
+			</div>
+			<div class="flex items-center pr-6" aria-hidden="true">
+				{stack.map((tech) => (
+					<>
+						{tech}
+						<span class="text-accent mx-6">/</span>
+					</>
+				))}
 			</div>
 		</div>
 	</section>
+
+	<script is:inline>
+		document.addEventListener("astro:page-load", () => {
+			const el = document.getElementById("gh-latest");
+			if (!el || el.dataset.loaded) return;
+			el.dataset.loaded = "pending";
+
+			const timeAgo = (date) => {
+				const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+				const intervals = [
+					["y", 31536000],
+					["mo", 2592000],
+					["d", 86400],
+					["h", 3600],
+					["m", 60],
+				];
+				for (const [label, secs] of intervals) {
+					const count = Math.floor(seconds / secs);
+					if (count >= 1) return `${count}${label} ago`;
+				}
+				return "just now";
+			};
+
+			fetch(
+				"https://api.github.com/users/DiogoPires2003/repos?sort=pushed&direction=desc&per_page=1"
+			)
+				.then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+				.then((repos) => {
+					const repo = repos[0];
+					if (!repo) {
+						el.textContent = "No activity";
+						return;
+					}
+					el.textContent = `${repo.name} · ${timeAgo(new Date(repo.pushed_at))}`;
+					el.title = `Last push to ${repo.full_name}`;
+				})
+				.catch(() => {
+					el.textContent = "Unavailable";
+				});
+		});
+	</script>
 </Layout>

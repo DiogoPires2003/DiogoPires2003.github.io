@@ -3,136 +3,117 @@ import Layout from "../layouts/Layout.astro";
 
 const nodeCards = [
     {
-        id: "0x101",
         name: "Java",
         category: "Languages",
-        detail: "Object-Oriented Systems",
+        detail: "Object-oriented systems",
         proficiency: 60,
     },
     {
-        id: "0x102",
         name: "Python",
         category: "Languages",
-        detail: "Automation & Scripting",
+        detail: "Automation & scripting",
         proficiency: 60,
     },
     {
-        id: "0x103",
         name: "JavaScript",
         category: "Languages",
-        detail: "Web Application Logic",
+        detail: "Web application logic",
         proficiency: 70,
     },
     {
-        id: "0x104",
         name: "TypeScript",
         category: "Languages",
-        detail: "Typed Frontend Architecture",
+        detail: "Typed frontend architecture",
         proficiency: 50,
     },
     {
-        id: "0x105",
         name: "C",
         category: "Languages",
-        detail: "Low-Level Programming",
+        detail: "Low-level programming",
         proficiency: 85,
     },
     {
-        id: "0x106",
         name: "Assembly",
         category: "Languages",
-        detail: "Hardware-Adjacent Optimization",
+        detail: "Hardware-adjacent optimization",
         proficiency: 40,
     },
     {
-        id: "0x107",
         name: "Scala",
         category: "Languages",
-        detail: "Functional JVM Development",
+        detail: "Functional JVM development",
         proficiency: 20,
     },
     {
-        id: "0x108",
         name: "HTML",
         category: "Languages",
-        detail: "Semantic Document Structure",
+        detail: "Semantic document structure",
         proficiency: 90,
     },
     {
-        id: "0x109",
         name: "CSS",
         category: "Languages",
-        detail: "Responsive UI Styling",
+        detail: "Responsive UI styling",
         proficiency: 90,
     },
     {
-        id: "0x110",
         name: "React",
         category: "Frameworks",
-        detail: "Component-Driven UI Development",
+        detail: "Component-driven UI development",
         proficiency: 60,
     },
     {
-        id: "0x111",
         name: "Solid JS",
         category: "Frameworks",
-        detail: "Fine-Grained Reactive Interfaces",
+        detail: "Fine-grained reactive interfaces",
         proficiency: 60,
     },
     {
-        id: "0x112",
         name: "Astro",
         category: "Frameworks",
-        detail: "Content-Focused Web Architecture",
+        detail: "Content-focused web architecture",
         proficiency: 70,
     },
     {
-        id: "0x113",
         name: "Django",
         category: "Frameworks",
-        detail: "Backend Framework Engineering",
+        detail: "Backend framework engineering",
         proficiency: 95,
     },
     {
-        id: "0x114",
         name: "Three.js",
         category: "Frameworks",
-        detail: "3D Web Scene Programming",
+        detail: "3D web scene programming",
         proficiency: 50,
     },
     {
-        id: "0x115",
         name: "MySQL",
         category: "Databases",
-        detail: "Relational Data Modeling",
+        detail: "Relational data modeling",
         proficiency: 90,
     },
     {
-        id: "0x116",
         name: "PostgreSQL",
         category: "Databases",
-        detail: "Advanced SQL Workloads",
+        detail: "Advanced SQL workloads",
         proficiency: 90,
     },
     {
-        id: "0x117",
         name: "Docker",
         category: "Tools",
-        detail: "Containerized Deployment Pipelines",
+        detail: "Containerized deployment pipelines",
         proficiency: 75,
     },
     {
-        id: "0x118",
         name: "Bash Script",
         category: "Tools",
-        detail: "Shell Automation",
+        detail: "Shell automation",
         proficiency: 75,
     },
     {
-        id: "0x119",
         name: "Arduino",
         category: "Tools",
-        detail: "Embedded Prototyping",
+        detail: "Embedded prototyping",
         proficiency: 75,
     },
 ];
@@ -144,1000 +125,225 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
 }).format(new Date());
 
 const nodeCategories = [...new Set(nodeCards.map((card) => card.category))];
+const filters = ["All", ...nodeCategories];
+
+const stats = [
+    {
+        n: "01",
+        value: "1.2M+",
+        label: "Lines of code",
+        countTo: 1.2,
+        countSuffix: "M+",
+        countDecimals: 1,
+    },
+    { n: "02", value: lastUpdated, label: "Last updated" },
+    { n: "03", value: "Web & Systems", label: "Core focus" },
+];
 ---
 
 <Layout title="Diogo Pires | Skills">
-    <style is:inline>
-        .cyber-grid {
-            background-image: linear-gradient(
-                    to right,
-                    rgba(144, 0, 255, 0.05) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    to bottom,
-                    rgba(144, 0, 255, 0.05) 1px,
-                    transparent 1px
-                );
-            background-size: 40px 40px;
-        }
-        .node-line {
-            background: linear-gradient(
-                90deg,
-                transparent,
-                #9000ff,
-                transparent
-            );
-            height: 1px;
-            opacity: 0.3;
-        }
-        @media (max-width: 640px) {
-            #constellation-area .tech-node > div > div {
-                transform: scale(0.72);
-                transform-origin: center;
-            }
-        }
-    </style>
-    <main
-        class="flex-1 flex flex-col p-4 sm:p-6 lg:p-12 gap-6 sm:gap-8 max-w-7xl mx-auto w-full pt-14 sm:pt-16"
-    >
-        <!-- Hero Header -->
-        <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-l-4 border-primary pl-6 py-4"
-        >
-            <div class="space-y-2">
-                <p
-                    class="text-primary font-bold text-xs tracking-[0.3em] uppercase"
-                >
-                    Status: Core_Online
-                </p>
-                <h1
-                    class="text-3xl sm:text-5xl md:text-7xl font-display font-black leading-none uppercase italic"
-                >
-                    Tech_Stack.<br />Constellation
-                </h1>
-            </div>
-            <div class="bg-primary text-white p-4 w-full max-w-xs brutalist-border">
-                <p class="text-[10px] leading-tight font-bold uppercase mb-2">
-                    System Instructions:
-                </p>
-                <p class="text-xs">
-                    INTERACT WITH NODES TO DECODE PROFICIENCY LEVELS. DRAG
-                    ELEMENTS TO RECONFIGURE ARCHITECTURE.
-                </p>
-            </div>
+    <section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
+        <p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+            N&deg; 02 &mdash; Technical Stack
+        </p>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight mb-6 max-w-3xl">
+            Skills &amp; Tools
+        </h1>
+        <p class="max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            Languages, frameworks and tools I use regularly. Proficiency
+            reflects hands-on academic and internship experience.
+        </p>
+    </section>
+
+    <section class="px-4 sm:px-6 lg:px-12 py-6 border-b-2 border-ink dark:border-paper flex flex-wrap gap-0" id="filter-container">
+        {filters.map((filter, i) => (
+            <button
+                data-filter={filter}
+                class:list={[
+                    "filter-btn px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper transition-colors",
+                    i > 0 && "border-l-0",
+                    filter === "All"
+                        ? "bg-ink text-paper dark:bg-paper dark:text-ink"
+                        : "hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink",
+                ]}
+            >
+                {filter}
+            </button>
+        ))}
+    </section>
+
+    <section class="border-b-2 border-ink dark:border-paper" id="skill-grid">
+        <div class="hidden lg:grid grid-cols-12 px-4 sm:px-6 lg:px-12 py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-500 border-b border-neutral-300 dark:border-neutral-700">
+            <span class="col-span-1">No.</span>
+            <button
+                type="button"
+                id="sort-name"
+                class="sort-btn col-span-3 text-left flex items-center gap-1.5 hover:text-accent transition-colors"
+            >
+                Name <span class="sort-arrow" data-for="name"></span>
+            </button>
+            <span class="col-span-3">Detail</span>
+            <span class="col-span-2">Category</span>
+            <button
+                type="button"
+                id="sort-proficiency"
+                class="sort-btn col-span-2 text-left flex items-center gap-1.5 hover:text-accent transition-colors"
+            >
+                Proficiency <span class="sort-arrow" data-for="proficiency"></span>
+            </button>
+            <span class="col-span-1 text-right">%</span>
         </div>
-        <!-- Filters -->
-        <div class="hidden sm:flex flex-wrap gap-3" id="filter-container">
-            <button
-                data-filter="All Nodes"
-                class="filter-btn px-4 sm:px-6 py-2 bg-primary text-white font-bold text-xs sm:text-sm tracking-widest hover:invert transition-all uppercase"
-                >All Nodes</button
+        {nodeCards.map((card, i) => (
+            <div
+                class="skill-row grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 transition-colors"
+                data-category={card.category}
+                data-name={card.name}
+                data-proficiency={card.proficiency}
             >
-            <button
-                data-filter="Languages"
-                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Languages</button
-            >
-            <button
-                data-filter="Frameworks"
-                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Frameworks</button
-            >
-            <button
-                data-filter="Databases"
-                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Databases</button
-            >
-            <button
-                data-filter="Tools"
-                class="filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Tools</button
-            >
-        </div>
-        <!-- Constellation Visualizer Area -->
-        <div
-            class="sm:hidden grid grid-cols-1 gap-4"
-            aria-label="Mobile skills node list"
-        >
-            {
-                nodeCategories.map((category) => (
-                    <section class="border-2 border-primary p-4 bg-background-light/70 dark:bg-background-dark/60">
-                        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-primary mb-3">
-                            {category}
-                        </h2>
-                        <div class="grid grid-cols-1 gap-3">
-                            {nodeCards
-                                .filter((card) => card.category === category)
-                                .map((card) => (
-                                    <article class="border border-primary/40 p-3 bg-primary/5">
-                                        <div class="flex items-center justify-between gap-3">
-                                            <h3 class="font-bold text-sm uppercase tracking-wide">
-                                                {card.name}
-                                            </h3>
-                                            <span class="text-[10px] opacity-60 font-bold">
-                                                {card.id}
-                                            </span>
-                                        </div>
-                                        <p class="text-[11px] opacity-70 uppercase mt-1">
-                                            {card.detail}
-                                        </p>
-                                        <div class="w-full bg-slate-800 h-2 mt-3 border border-primary/40 overflow-hidden">
-                                            <div
-                                                class="bg-primary h-full"
-                                                style={`width: ${card.proficiency}%;`}
-                                            >
-                                            </div>
-                                        </div>
-                                        <p class="text-[10px] font-bold uppercase mt-2">
-                                            Proficiency: <span class="text-primary">{card.proficiency}%</span>
-                                        </p>
-                                    </article>
-                                ))}
+                <span class="hidden sm:block col-span-1 font-mono text-xs text-neutral-400">
+                    {String(i + 1).padStart(2, "0")}
+                </span>
+                <span class="col-span-6 sm:col-span-3">
+                    <span class="font-bold uppercase text-sm sm:text-base block">{card.name}</span>
+                    <span class="sm:hidden text-xs text-neutral-500">{card.detail}</span>
+                </span>
+                <span class="hidden sm:block col-span-3 text-sm text-neutral-500">
+                    {card.detail}
+                </span>
+                <span class="hidden sm:block col-span-2 font-mono text-[11px] uppercase text-accent">
+                    [{card.category}]
+                </span>
+                <span class="col-span-5 sm:col-span-2">
+                    <div class="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800">
+                        <div
+                            class="h-full bg-ink dark:bg-paper"
+                            style={`width: ${card.proficiency}%;`}
+                        >
                         </div>
-                    </section>
-                ))
-            }
-        </div>
-        <div
-            id="constellation-area"
-            class="hidden sm:block relative w-full aspect-[4/3] md:aspect-[16/9] border-2 border-primary bg-background-light dark:bg-slate-900/50 overflow-hidden group select-none"
-        >
-            <svg
-                id="connections-svg"
-                class="absolute inset-0 w-full h-full pointer-events-none z-0"
-            ></svg>
-            <!-- Decorative Grid/Elements -->
-            <div
-                class="absolute inset-0 mesh-bg opacity-20 pointer-events-none z-0"
-            >
-            </div>
-            <!-- Floating Nodes -->
-            <!-- Languages -->
-            <div
-                class="tech-node absolute top-[20%] left-[15%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >JAVA</span
-                        >
                     </div>
-                </div>
+                </span>
+                <span class="col-span-1 text-right font-mono text-xs font-bold">
+                    {card.proficiency}%
+                </span>
             </div>
+        ))}
+    </section>
 
+    <section class="grid grid-cols-1 sm:grid-cols-3">
+        {stats.map((stat, i) => (
             <div
-                class="tech-node absolute top-[15%] left-[50%] group cursor-move z-10"
-                data-category="Languages"
+                class:list={[
+                    "px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
+                    i !== stats.length - 1 && "sm:border-r border-neutral-300 dark:border-neutral-700",
+                ]}
             >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-20 h-20 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 pointer-events-auto group-hover:scale-110 transition-transform"
+                <span class="font-mono text-xs text-accent">{stat.n}</span>
+                {stat.countTo !== undefined ? (
+                    <p
+                        class="count-up text-2xl sm:text-3xl font-black uppercase mt-3"
+                        data-count-to={stat.countTo}
+                        data-count-suffix={stat.countSuffix}
+                        data-count-decimals={stat.countDecimals}
                     >
-                        <span
-                            class="text-sm md:text-lg font-black text-white italic"
-                            >PYTHON</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[30%] left-[5%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-20 h-20 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-[10px] md:text-sm font-black text-white italic"
-                            >JAVASCRIPT</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[70%] left-[10%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-28 h-28 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-[10px] md:text-sm font-black text-white italic"
-                            >TYPESCRIPT</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[10%] left-[80%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-16 h-16 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 pointer-events-auto group-hover:scale-110 transition-transform"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >C</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[80%] left-[80%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-sm md:text-md font-black text-white italic"
-                            >ASSEMBLY</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[25%] left-[65%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-lg font-black text-white italic"
-                            >SCALA</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[45%] left-[10%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-16 h-16 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 pointer-events-auto group-hover:scale-110 transition-transform"
-                    >
-                        <span class="text-md font-black text-white italic"
-                            >HTML</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[55%] left-[20%] group cursor-move z-10"
-                data-category="Languages"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-16 h-16 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 pointer-events-auto group-hover:scale-110 transition-transform"
-                    >
-                        <span class="text-md font-black text-white italic"
-                            >CSS</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <!-- Frameworks -->
-            <div
-                class="tech-node absolute top-[40%] left-[45%] group cursor-move z-10"
-                data-category="Frameworks"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-32 h-32 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >REACT</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[80%] left-[30%] group cursor-move z-10"
-                data-category="Frameworks"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-sm font-black text-white italic"
-                            >SOLID JS</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[60%] left-[60%] group cursor-move z-10"
-                data-category="Frameworks"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-28 h-28 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >ASTRO</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[35%] left-[75%] group cursor-move z-10"
-                data-category="Frameworks"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-sm md:text-lg font-black text-white italic"
-                            >DJANGO</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[10%] left-[30%] group cursor-move z-10"
-                data-category="Frameworks"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-sm md:text-md font-black text-white italic"
-                            >THREE.JS</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <!-- Databases -->
-            <div
-                class="tech-node absolute top-[50%] left-[80%] group cursor-move z-10"
-                data-category="Databases"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >MYSQL</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[25%] left-[85%] group cursor-move z-10"
-                data-category="Databases"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-sm font-black text-white italic"
-                            >POSTGRESQL</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tools -->
-            <div
-                class="tech-node absolute top-[70%] left-[45%] group cursor-move z-10"
-                data-category="Tools"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-28 h-28 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span class="text-xl font-black text-white italic"
-                            >DOCKER</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="tech-node absolute top-[85%] left-[60%] group cursor-move z-10"
-                data-category="Tools"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-[10px] md:text-sm font-black text-white italic text-center leading-tight"
-                            >BASH<br />SCRIPT</span
-                        >
-                    </div>
-                </div>
-            </div>
-            <div
-                class="tech-node absolute top-[75%] left-[80%] group cursor-move z-10"
-                data-category="Tools"
-            >
-                <div class="flex flex-col items-center pointer-events-none">
-                    <div
-                        class="w-24 h-24 border-2 border-primary bg-background-dark flex items-center justify-center brutalist-border p-2 group-hover:scale-110 transition-transform pointer-events-auto"
-                    >
-                        <span
-                            class="text-sm md:text-lg font-black text-white italic"
-                            >ARDUINO</span
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <!-- Floating UI HUD -->
-            <div
-                class="absolute bottom-4 left-4 hidden sm:flex flex-col gap-1 pointer-events-none"
-            >
-                <div
-                    class="text-[10px] font-bold text-primary flex items-center gap-2"
-                >
-                    <span class="w-2 h-2 bg-primary animate-pulse"></span> SYSTEM_LIVE_FEED:
-                    ACTIVE
-                </div>
-                <div class="text-[8px] opacity-50 font-mono">
-                    X: 0.1245 Y: -0.8812 Z: 4.441
-                </div>
-            </div>
-            <div class="absolute top-4 right-4 hidden sm:flex flex-col items-end gap-2">
-                <div
-                    class="p-2 border border-primary/30 bg-background-dark/80 backdrop-blur-sm text-[10px]"
-                >
-                    <p id="node-count-label" class="text-primary font-bold">
-                        NODE_COUNT: 0
+                        0{stat.countSuffix}
                     </p>
-                    <p class="opacity-70 text-slate-400">CONNECTIVITY: 94%</p>
-                </div>
+                ) : (
+                    <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
+                )}
+                <p class="text-xs uppercase tracking-widest text-neutral-500 mt-1">{stat.label}</p>
             </div>
-        </div>
-        <!-- Detail Breakdown Cards -->
-        <div class="hidden sm:flex flex-wrap gap-3" id="card-filter-container">
-            <button
-                data-filter="All Nodes"
-                class="card-filter-btn px-4 sm:px-6 py-2 bg-primary text-white font-bold text-xs sm:text-sm tracking-widest hover:invert transition-all uppercase"
-                >All Nodes</button
-            >
-            <button
-                data-filter="Languages"
-                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Languages</button
-            >
-            <button
-                data-filter="Frameworks"
-                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Frameworks</button
-            >
-            <button
-                data-filter="Databases"
-                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Databases</button
-            >
-            <button
-                data-filter="Tools"
-                class="card-filter-btn px-4 sm:px-6 py-2 border-2 border-primary text-primary font-bold text-xs sm:text-sm tracking-widest hover:bg-primary/10 transition-all uppercase"
-                >Tools</button
-            >
-        </div>
-        <div class="hidden sm:flex items-center gap-3">
-            <button
-                id="cards-scroll-left"
-                class="hidden sm:inline-flex h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0 items-center justify-center"
-                aria-label="Scroll cards left"
-            >
-                ←
-            </button>
-            <div
-                id="cards-scroll-container"
-                class="flex gap-6 overflow-x-auto scroll-smooth flex-nowrap w-full py-1"
-            >
-            {
-                    nodeCards.map((card) => (
-                    <div
-                        class="skill-card border-2 border-primary p-5 sm:p-6 flex flex-col gap-4 bg-background-light dark:bg-background-dark hover:bg-primary/5 transition-colors group shrink-0 basis-[250px] max-w-[250px] sm:basis-[290px] sm:max-w-[290px]"
-                        data-category={card.category}
-                    >
-                        <div class="flex justify-between items-start">
-                            <span class="material-symbols-outlined text-primary group-hover:scale-125 transition-transform">
-                                code
-                            </span>
-                            <span class="text-[10px] opacity-50 font-bold">
-                                {card.id}
-                            </span>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg uppercase tracking-tighter">
-                                {card.name}
-                            </h3>
-                            <p class="text-xs opacity-70 mt-1 uppercase">
-                                {card.detail}
-                            </p>
-                        </div>
-                        <div class="w-full bg-slate-800 h-4 mt-2 border border-primary overflow-hidden">
-                            <div
-                                class="bg-primary h-full"
-                                style={`width: ${card.proficiency}%; box-shadow: 0 0 10px #9000ff;`}
-                            >
-                            </div>
-                        </div>
-                        <div class="flex justify-between text-[10px] font-bold uppercase">
-                            <span>Proficiency</span>
-                            <span class="text-primary">
-                                {card.proficiency}%
-                            </span>
-                        </div>
-                    </div>
-                ))
-            }
-            </div>
-            <button
-                id="cards-scroll-right"
-                class="hidden sm:inline-flex h-11 w-11 border-2 border-primary text-primary font-black text-xl hover:bg-primary/10 transition-colors shrink-0 items-center justify-center"
-                aria-label="Scroll cards right"
-            >
-                →
-            </button>
-        </div>
-        <!-- Footer Stats -->
-        <div
-            class="mt-8 border-t-2 border-primary pt-6 grid grid-cols-1 md:grid-cols-3 gap-4 mb-12"
-        >
-            <div class="flex flex-col">
-                <span class="text-[10px] uppercase opacity-50 font-bold"
-                    >Total_Lines_Code</span
-                >
-                <span class="text-xl font-bold tracking-tight">1.2M+</span>
-            </div>
-            <div class="flex flex-col">
-                <span class="text-[10px] uppercase opacity-50 font-bold"
-                    >Last_Updated</span
-                >
-                <span class="text-xl font-bold tracking-tight text-green-500"
-                    >{lastUpdated}</span
-                >
-            </div>
-            <div class="flex flex-col">
-                <span class="text-[10px] uppercase opacity-50 font-bold"
-                    >Core_Focus</span
-                >
-                <span class="text-xl font-bold tracking-tight">Web & Systems</span>
-            </div>
-        </div>
-    </main>
+        ))}
+    </section>
+
     <script is:inline>
-        document.addEventListener("DOMContentLoaded", () => {
-            const area = document.getElementById("constellation-area");
-            const nodes = Array.from(document.querySelectorAll(".tech-node"));
-            const svg = document.getElementById("connections-svg");
+        document.addEventListener("astro:page-load", () => {
             const filterBtns = document.querySelectorAll(".filter-btn");
-            const nodeCountLabel = document.getElementById("node-count-label");
-            const cardFilterBtns = document.querySelectorAll(".card-filter-btn");
-            const skillCards = Array.from(document.querySelectorAll(".skill-card"));
-            const cardsScrollContainer = document.getElementById(
-                "cards-scroll-container"
-            );
-            const cardsScrollLeft = document.getElementById("cards-scroll-left");
-            const cardsScrollRight = document.getElementById("cards-scroll-right");
-            const isMobile = window.matchMedia("(max-width: 639px)").matches;
-            let activeFilter = "All Nodes";
-            const containerPadding = 30;
+            const rows = Array.from(document.querySelectorAll(".skill-row"));
 
-            function layoutVisibleNodes() {
-                const areaRect = area.getBoundingClientRect();
-                const activeNodes = nodes.filter(
-                    (node) => node.style.display !== "none"
-                );
-
-                if (!activeNodes.length || areaRect.width === 0) return;
-
-                const centerX = areaRect.width / 2;
-                const centerY = areaRect.height / 2;
-                const spacing = 36;
-                const isAllNodes = activeFilter === "All Nodes";
-                const edgePadding = isAllNodes ? 62 : 36;
-                const usableW = Math.max(1, areaRect.width - edgePadding * 2);
-                const usableH = Math.max(1, areaRect.height - edgePadding * 2);
-                const clampValue = (value, min, max) =>
-                    Math.max(min, Math.min(max, value));
-                const protectedZones = [
-                    // Bottom-left telemetry text block
-                    {
-                        x: 8,
-                        y: Math.max(0, areaRect.height - 96),
-                        w: 250,
-                        h: 92,
-                    },
-                    // Top-right stats text block
-                    {
-                        x: Math.max(0, areaRect.width - 210),
-                        y: 8,
-                        w: 202,
-                        h: 84,
-                    },
-                ];
-                const seed = activeNodes.length * 131 + activeFilter.length * 17;
-                const rand = (n) => {
-                    const v = Math.sin((n + seed) * 12.9898) * 43758.5453;
-                    return v - Math.floor(v);
-                };
-
-                const state = activeNodes.map((node, index) => {
-                    const rect = node.getBoundingClientRect();
-                    const tx =
-                        edgePadding +
-                        rand(index * 2 + 1) * usableW +
-                        (0.5 - rand(index * 2 + 3)) * 36;
-                    const ty =
-                        edgePadding +
-                        rand(index * 2 + 2) * usableH +
-                        (0.5 - rand(index * 2 + 4)) * 36;
-
-                    const angle = index * 2.399963229728653; // Golden angle
-                    const radius = Math.sqrt(index + 1) * 74;
-                    return {
-                        node,
-                        w: rect.width,
-                        h: rect.height,
-                        r: Math.hypot(rect.width, rect.height) / 2 + spacing,
-                        x: isAllNodes
-                            ? tx
-                            : centerX + Math.cos(angle) * radius,
-                        y: isAllNodes
-                            ? ty
-                            : centerY + Math.sin(angle) * radius,
-                        tx,
-                        ty,
-                    };
-                });
-
-                for (let step = 0; step < 280; step++) {
-                    for (let i = 0; i < state.length; i++) {
-                        const a = state[i];
-
-                        if (isAllNodes) {
-                            const chaosX = (rand(step * 911 + i * 31) - 0.5) * 0.7;
-                            const chaosY = (rand(step * 733 + i * 47) - 0.5) * 0.7;
-                            a.x += (a.tx - a.x) * 0.038 + chaosX;
-                            a.y += (a.ty - a.y) * 0.038 + chaosY;
-                        } else {
-                            a.x += (centerX - a.x) * 0.016;
-                            a.y += (centerY - a.y) * 0.016;
-                        }
-
-                        for (let j = i + 1; j < state.length; j++) {
-                            const b = state[j];
-                            let dx = b.x - a.x;
-                            let dy = b.y - a.y;
-                            let dist = Math.hypot(dx, dy);
-                            const minDist = a.r + b.r;
-
-                            if (dist < 0.001) {
-                                const jitter = 0.5 - Math.random();
-                                dx = jitter;
-                                dy = 0.5 - Math.random();
-                                dist = Math.hypot(dx, dy);
-                            }
-
-                            if (dist < minDist) {
-                                const push = (minDist - dist) * 0.5;
-                                const ux = dx / dist;
-                                const uy = dy / dist;
-                                a.x -= ux * push;
-                                a.y -= uy * push;
-                                b.x += ux * push;
-                                b.y += uy * push;
-                            }
-                        }
-
-                        const minX = a.w / 2 + containerPadding;
-                        const maxX = areaRect.width - a.w / 2 - containerPadding;
-                        const minY = a.h / 2 + containerPadding;
-                        const maxY = areaRect.height - a.h / 2 - containerPadding;
-
-                        for (const zone of protectedZones) {
-                            const nearestX = clampValue(
-                                a.x,
-                                zone.x,
-                                zone.x + zone.w
-                            );
-                            const nearestY = clampValue(
-                                a.y,
-                                zone.y,
-                                zone.y + zone.h
-                            );
-                            let dx = a.x - nearestX;
-                            let dy = a.y - nearestY;
-                            let dist = Math.hypot(dx, dy);
-
-                            if (dist < 0.001) {
-                                dx = a.x - (zone.x + zone.w / 2);
-                                dy = a.y - (zone.y + zone.h / 2);
-                                dist = Math.hypot(dx, dy) || 1;
-                            }
-
-                            if (dist < a.r) {
-                                const push = a.r - dist;
-                                a.x += (dx / dist) * push;
-                                a.y += (dy / dist) * push;
-                            }
-                        }
-
-                        a.x = clampValue(a.x, minX, maxX);
-                        a.y = clampValue(a.y, minY, maxY);
-                    }
-                }
-
-                state.forEach((item) => {
-                    const left = item.x - item.w / 2;
-                    const top = item.y - item.h / 2;
-                    item.node.style.left = `${(left / areaRect.width) * 100}%`;
-                    item.node.style.top = `${(top / areaRect.height) * 100}%`;
-                });
-            }
-
-            function drawConnections() {
-                svg.innerHTML = "";
-                const activeNodes = nodes.filter(
-                    (n) => n.style.display !== "none"
-                );
-
-                for (let i = 0; i < activeNodes.length; i++) {
-                    for (let j = i + 1; j < activeNodes.length; j++) {
-                        const n1 = activeNodes[i];
-                        const n2 = activeNodes[j];
-
-                        const rect1 = n1.getBoundingClientRect();
-                        const rect2 = n2.getBoundingClientRect();
-                        const areaRect = area.getBoundingClientRect();
-
-                        // Get centers
-                        const x1 = rect1.left + rect1.width / 2 - areaRect.left;
-                        const y1 = rect1.top + rect1.height / 2 - areaRect.top;
-                        const x2 = rect2.left + rect2.width / 2 - areaRect.left;
-                        const y2 = rect2.top + rect2.height / 2 - areaRect.top;
-
-                        const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-
-                        // Connect nodes within a reasonable visual distance
-                        if (
-                            dist < areaRect.width * 0.45 ||
-                            activeNodes.length <= 3
-                        ) {
-                            const line = document.createElementNS(
-                                "http://www.w3.org/2000/svg",
-                                "line"
-                            );
-                            line.setAttribute("x1", x1);
-                            line.setAttribute("y1", y1);
-                            line.setAttribute("x2", x2);
-                            line.setAttribute("y2", y2);
-                            line.setAttribute("stroke", "#9000ff");
-                            line.setAttribute("stroke-width", "1.5");
-                            line.setAttribute(
-                                "opacity",
-                                Math.max(
-                                    0.1,
-                                    1 - dist / (areaRect.width * 0.45)
-                                )
-                            );
-                            svg.appendChild(line);
-                        }
-                    }
-                }
-            }
-
-            cardFilterBtns.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    cardFilterBtns.forEach((b) => {
-                        b.classList.remove(
-                            "bg-primary",
-                            "text-white",
-                            "hover:invert"
-                        );
-                        b.classList.add(
-                            "border-primary",
-                            "text-primary",
-                            "hover:bg-primary/10"
-                        );
-                    });
-
-                    btn.classList.add(
-                        "bg-primary",
-                        "text-white",
-                        "hover:invert"
-                    );
-                    btn.classList.remove(
-                        "border-primary",
-                        "text-primary",
-                        "hover:bg-primary/10"
-                    );
-
-                    const cat = btn.dataset.filter;
-                    skillCards.forEach((card) => {
-                        if (
-                            cat === "All Nodes" ||
-                            card.dataset.category === cat
-                        ) {
-                            card.style.display = "flex";
-                        } else {
-                            card.style.display = "none";
-                        }
-                    });
-                    cardsScrollContainer.scrollTo({ left: 0, behavior: "smooth" });
-                });
-            });
-
-            cardsScrollLeft?.addEventListener("click", () => {
-                cardsScrollContainer?.scrollBy({
-                    left: -360,
-                    behavior: "smooth",
-                });
-            });
-
-            cardsScrollRight?.addEventListener("click", () => {
-                cardsScrollContainer?.scrollBy({
-                    left: 360,
-                    behavior: "smooth",
-                });
-            });
-
-            if (isMobile || !area || !svg || !nodeCountLabel) {
-                return;
-            }
-
-            nodeCountLabel.textContent = `NODE_COUNT: ${nodes.length}`;
-
-            // Filtering logic
             filterBtns.forEach((btn) => {
                 btn.addEventListener("click", () => {
                     filterBtns.forEach((b) => {
                         b.classList.remove(
-                            "bg-primary",
-                            "text-white",
-                            "invert"
+                            "bg-ink",
+                            "text-paper",
+                            "dark:bg-paper",
+                            "dark:text-ink"
                         );
                         b.classList.add(
-                            "border-primary",
-                            "text-primary",
-                            "hover:bg-primary/10"
+                            "hover:bg-ink",
+                            "hover:text-paper",
+                            "dark:hover:bg-paper",
+                            "dark:hover:text-ink"
                         );
                     });
                     btn.classList.add(
-                        "bg-primary",
-                        "text-white",
-                        "hover:invert"
+                        "bg-ink",
+                        "text-paper",
+                        "dark:bg-paper",
+                        "dark:text-ink"
                     );
                     btn.classList.remove(
-                        "border-primary",
-                        "text-primary",
-                        "hover:bg-primary/10"
+                        "hover:bg-ink",
+                        "hover:text-paper",
+                        "dark:hover:bg-paper",
+                        "dark:hover:text-ink"
                     );
 
                     const cat = btn.dataset.filter;
-                    activeFilter = cat;
-                    nodes.forEach((node) => {
-                        if (
-                            cat === "All Nodes" ||
-                            node.dataset.category === cat
-                        ) {
-                            node.style.display = "block";
-                        } else {
-                            node.style.display = "none";
-                        }
+                    rows.forEach((row) => {
+                        row.style.display =
+                            cat === "All" || row.dataset.category === cat
+                                ? "grid"
+                                : "none";
                     });
+                });
+            });
 
-                    // Allow DOM to update visibility, then re-layout and redraw.
-                    requestAnimationFrame(() =>
-                        requestAnimationFrame(() => {
-                            layoutVisibleNodes();
-                            drawConnections();
-                        })
+            const skillGrid = document.getElementById("skill-grid");
+            const sortButtons = document.querySelectorAll(".sort-btn");
+            let sortState = { field: null, dir: 1 };
+
+            const updateSortArrows = () => {
+                document
+                    .querySelectorAll(".sort-arrow")
+                    .forEach((el) => (el.textContent = ""));
+                if (sortState.field) {
+                    const arrow = document.querySelector(
+                        `.sort-arrow[data-for="${sortState.field}"]`
                     );
-                });
-            });
-
-            // Dragging capability logic
-            let isDragging = false;
-            let draggedNode = null;
-            let offsetX = 0;
-            let offsetY = 0;
-
-            nodes.forEach((node) => {
-                const mousedown = (e) => {
-                    // Only start drag if interacting with the node itself, ignore right click
-                    if (e.button !== undefined && e.button !== 0) return;
-                    isDragging = true;
-                    draggedNode = node;
-
-                    const rect = node.getBoundingClientRect();
-                    const clientX = e.touches
-                        ? e.touches[0].clientX
-                        : e.clientX;
-                    const clientY = e.touches
-                        ? e.touches[0].clientY
-                        : e.clientY;
-
-                    offsetX = clientX - rect.left;
-                    offsetY = clientY - rect.top;
-
-                    node.style.zIndex = 30; // Bring to front while dragging
-                };
-
-                node.addEventListener("mousedown", mousedown);
-                node.addEventListener("touchstart", mousedown, {
-                    passive: true,
-                });
-            });
-
-            const move = (e) => {
-                if (!isDragging || !draggedNode) return;
-
-                const areaRect = area.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-                let newX = clientX - areaRect.left - offsetX;
-                let newY = clientY - areaRect.top - offsetY;
-
-                const nodeRect = draggedNode.getBoundingClientRect();
-                const maxX = areaRect.width - nodeRect.width - containerPadding;
-                const maxY =
-                    areaRect.height - nodeRect.height - containerPadding;
-                newX = Math.max(containerPadding, Math.min(maxX, newX));
-                newY = Math.max(containerPadding, Math.min(maxY, newY));
-
-                draggedNode.style.left = `${(newX / areaRect.width) * 100}%`;
-                draggedNode.style.top = `${(newY / areaRect.height) * 100}%`;
-
-                drawConnections();
-            };
-
-            const up = () => {
-                if (draggedNode) {
-                    draggedNode.style.zIndex = 10;
+                    if (arrow) arrow.textContent = sortState.dir === 1 ? "▲" : "▼";
                 }
-                isDragging = false;
-                draggedNode = null;
             };
 
-            document.addEventListener("mousemove", move);
-            document.addEventListener("touchmove", move, { passive: false }); // passive false to prevent scrolling if needed
-            document.addEventListener("mouseup", up);
-            document.addEventListener("touchend", up);
+            const sortRows = (field) => {
+                if (sortState.field === field) {
+                    sortState.dir *= -1;
+                } else {
+                    sortState.field = field;
+                    sortState.dir = 1;
+                }
 
-            // Initial Drawing
-            requestAnimationFrame(() =>
-                requestAnimationFrame(() => {
-                    layoutVisibleNodes();
-                    drawConnections();
-                })
-            );
-            window.addEventListener("resize", () => {
-                layoutVisibleNodes();
-                drawConnections();
+                const sorted = [...rows].sort((a, b) => {
+                    if (field === "name") {
+                        const av = a.dataset.name.toLowerCase();
+                        const bv = b.dataset.name.toLowerCase();
+                        if (av < bv) return -1 * sortState.dir;
+                        if (av > bv) return 1 * sortState.dir;
+                        return 0;
+                    }
+                    const av = parseFloat(a.dataset.proficiency);
+                    const bv = parseFloat(b.dataset.proficiency);
+                    return (av - bv) * sortState.dir;
+                });
+
+                sorted.forEach((row) => skillGrid.appendChild(row));
+                updateSortArrows();
+            };
+
+            sortButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    sortRows(btn.id === "sort-name" ? "name" : "proficiency");
+                });
             });
         });
     </script>

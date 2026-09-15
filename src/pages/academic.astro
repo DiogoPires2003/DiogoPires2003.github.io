@@ -1,319 +1,126 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const milestones = [
+    {
+        date: "2021 — 2027",
+        title: "Software Engineering Degree",
+        description: "Studying Software Engineering at Universitat de Lleida.",
+        tags: ["Universitat de Lleida", "Software Engineering"],
+    },
+    {
+        date: "2022",
+        title: "Docker Certificate",
+        description: "Certificate completed at Universitat de Lleida.",
+        tags: ["Docker", "Universitat de Lleida"],
+    },
+    {
+        date: "March 2026",
+        title: "Internship at IFR Group",
+        description:
+            "Started internship experience focused on real-world software engineering.",
+        tags: ["IFR Group", "Internship"],
+    },
+    {
+        date: "2027",
+        title: "Expected Graduation",
+        description: "Planned completion of the Software Engineering degree.",
+        tags: ["Milestone"],
+    },
+];
+
+const stats = [
+    {
+        n: "01",
+        value: "1",
+        label: "Hackathon win",
+        countTo: 1,
+        countSuffix: "",
+        countDecimals: 0,
+    },
+    {
+        n: "02",
+        value: "20+",
+        label: "Academic projects",
+        countTo: 20,
+        countSuffix: "+",
+        countDecimals: 0,
+    },
+    { n: "03", value: "In progress", label: "Software Engineering degree" },
+];
 ---
 
 <Layout title="Diogo Pires | Academic">
-    <style is:inline>
-        .cyber-grid {
-            background-image: linear-gradient(
-                    to right,
-                    rgba(144, 0, 255, 0.05) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    to bottom,
-                    rgba(144, 0, 255, 0.05) 1px,
-                    transparent 1px
-                );
-            background-size: 40px 40px;
-        }
-        .path-line {
-            background: linear-gradient(
-                90deg,
-                transparent,
-                #9000ff,
-                transparent
-            );
-        }
-        .marker-glow {
-            box-shadow: 0 0 15px #9000ff, 0 0 30px #9000ff;
-        }
-        .oblique-scroll {
-            transform: skewY(-2deg);
-        }
-        .inner-content {
-            transform: skewY(2deg);
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-    <main class="flex-1 px-4 sm:px-6 py-10 sm:py-12 lg:px-20 max-w-7xl mx-auto w-full pt-16 sm:pt-20">
-        <!-- Hero Title Section -->
-        <div class="mb-14 sm:mb-20 space-y-4 max-w-4xl">
+    <section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
+        <p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+            N&deg; 03 &mdash; Journey
+        </p>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight mb-6 max-w-3xl">
+            Education &amp;<br />Certifications
+        </h1>
+        <p class="max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            A record of my progress in software engineering, from core
+            learning to applied technical experience.
+        </p>
+    </section>
+
+    <section class="border-b-2 border-ink dark:border-paper">
+        {milestones.map((item, i) => (
             <div
-                class="inline-block bg-primary/20 border-l-4 border-primary px-4 py-1"
+                class:list={[
+                    "grid grid-cols-1 sm:grid-cols-12",
+                    i !== milestones.length - 1 && "border-b border-neutral-300 dark:border-neutral-700",
+                ]}
             >
-                <span
-                    class="text-primary font-bold uppercase tracking-widest text-sm italic"
-                    >Professional Journey Record v2.0</span
-                >
-            </div>
-            <h1
-                class="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-none tracking-tighter"
-            >
-                Education <span class="text-primary">&amp;</span>
-                <br />
-                Certifications
-            </h1>
-            <p
-                class="text-base sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-slate-300 dark:border-slate-700 pl-4 sm:pl-6 py-2"
-            >
-                This timeline presents my progress in software engineering,
-                from core learning to applied technical experience.
-            </p>
-        </div>
-        <!-- Diagonal Path Container -->
-        <div class="relative py-20 overflow-visible">
-            <div
-                class="mb-4 flex items-center justify-center gap-3 text-[11px] sm:text-xs uppercase tracking-[0.18em] font-bold text-primary"
-            >
-                <span class="material-symbols-outlined text-base animate-pulse"
-                    >chevron_left</span
-                >
-                <span class="sm:hidden">Swipe Timeline</span>
-                <span class="hidden sm:inline">Scroll Timeline Horizontally</span>
-                <span class="material-symbols-outlined text-base animate-pulse"
-                    >chevron_right</span
-                >
-            </div>
-            <!-- Main Path Line -->
-            <div
-                class="absolute top-1/2 left-0 w-full h-1 bg-primary/20 -translate-y-1/2 oblique-scroll"
-            >
-                <div class="h-full bg-primary shadow-[0_0_20px_#9000ff] w-2/3">
+                <div class="sm:col-span-3 lg:col-span-2 px-4 sm:px-6 lg:px-12 py-6 sm:py-8 flex sm:flex-col justify-between sm:justify-start gap-2 border-b sm:border-b-0 sm:border-r border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/40">
+                    <span class="font-mono text-xs text-accent">{String(i + 1).padStart(2, "0")}</span>
+                    <span class="font-mono text-xs uppercase tracking-widest text-neutral-500">
+                        {item.date}
+                    </span>
                 </div>
-            </div>
-            <!-- Horizontal/Oblique Scroll Section -->
-            <div
-                class="flex gap-12 overflow-x-auto pb-12 pt-4 snap-x snap-mandatory no-scrollbar scroll-smooth relative z-10"
-            >
-                <!-- Path Card 1 -->
-                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
-                    <div
-                        class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-primary p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
-                    >
-                        <div
-                            class="absolute -top-6 -left-6 bg-primary text-white p-4 marker-glow"
-                        >
-                            <span class="material-symbols-outlined text-3xl"
-                                >school</span
-                            >
-                        </div>
-                        <div class="mt-8 space-y-4">
-                            <div
-                                class="text-primary font-black uppercase text-xs tracking-widest italic"
-                            >
-                                2021 — 2027
-                            </div>
-                            <h3
-                                class="text-3xl font-black uppercase leading-tight italic"
-                            >
-                                Software Engineering Degree
-                            </h3>
-                            <p class="text-slate-500 font-medium">
-                                Studying Software Engineering at Universitat de
-                                Lleida.
-                            </p>
-                            <div class="flex flex-wrap gap-2 pt-4">
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >UNIVERSITAT DE LLEIDA</span
-                                >
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >SOFTWARE ENGINEERING</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Path Card 2 -->
-                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
-                    <div
-                        class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-slate-100 p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
-                    >
-                        <div
-                            class="absolute -top-6 -left-6 bg-slate-900 dark:bg-slate-100 dark:text-background-dark text-white p-4"
-                        >
-                            <span class="material-symbols-outlined text-3xl"
-                                >cloud</span
-                            >
-                        </div>
-                        <div class="mt-8 space-y-4">
-                            <div
-                                class="text-primary font-black uppercase text-xs tracking-widest italic"
-                            >
-                                2022
-                            </div>
-                            <h3
-                                class="text-3xl font-black uppercase leading-tight italic"
-                            >
-                                Docker Certificate
-                            </h3>
-                            <p class="text-slate-500 font-medium">
-                                Certificate completed at Universitat de Lleida.
-                            </p>
-                            <div class="flex flex-wrap gap-2 pt-4">
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >DOCKER</span
-                                >
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >UNIVERSITAT DE LLEIDA</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Path Card 3 (Active/Highlight) -->
-                <div class="min-w-[85vw] sm:min-w-[350px] snap-center group">
-                    <div
-                        class="relative bg-background-light dark:bg-slate-900 border-4 border-slate-900 dark:border-primary p-6 transition-all group-hover:-translate-y-2 group-hover:translate-x-2"
-                    >
-                        <div
-                            class="absolute -top-6 -left-6 bg-primary text-white p-4"
-                        >
-                            <span class="material-symbols-outlined text-3xl"
-                                >work</span
-                            >
-                        </div>
-                        <div class="mt-8 space-y-4">
-                            <div
-                                class="text-primary font-black uppercase text-xs tracking-widest italic"
-                            >
-                                March 2026
-                            </div>
-                            <h3
-                                class="text-3xl font-black uppercase leading-tight italic"
-                            >
-                                Internship Start at IFR GROUP
-                            </h3>
-                            <p class="text-slate-500 font-medium">
-                                Started internship experience focused on
-                                real-world software engineering.
-                            </p>
-                            <div class="flex flex-wrap gap-2 pt-4">
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >IFR GROUP</span
-                                >
-                                <span
-                                    class="bg-primary/10 text-primary px-2 py-1 text-xs font-bold border border-primary/20"
-                                    >INTERNSHIP</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Path Card 4 (Active/Highlight) -->
-                <div class="min-w-[90vw] sm:min-w-[400px] snap-center group">
-                    <div
-                        class="relative bg-primary text-white border-4 border-primary p-8 transition-all group-hover:-translate-y-2 group-hover:translate-x-2 shadow-[20px_20px_0px_#1a0f23] dark:shadow-[20px_20px_0px_#9000ff33]"
-                    >
-                        <div
-                            class="absolute -top-8 -left-8 bg-white text-primary p-5 marker-glow"
-                        >
-                            <span class="material-symbols-outlined text-4xl"
-                                >brush</span
-                            >
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div
-                                class="text-white/80 font-black uppercase text-xs tracking-widest italic"
-                            >
-                                2027
-                            </div>
-                            <h3
-                                class="text-4xl font-black uppercase leading-tight italic"
-                            >
-                                Expected Graduation
-                            </h3>
-                            <p class="text-white/90 font-medium text-lg italic">
-                                Planned completion of Software Engineering
-                                degree.
-                            </p>
-                            <div class="h-2 w-full bg-white/20 mt-6">
-                                <div class="h-full bg-white w-full"></div>
-                            </div>
-                            <p
-                                class="text-xs uppercase font-bold tracking-[0.2em] text-white"
-                            >
-                                Degree progress milestone
-                            </p>
-                        </div>
+                <div class="sm:col-span-9 lg:col-span-10 px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+                    <h3 class="text-xl sm:text-3xl font-black uppercase tracking-tight mb-3">
+                        {item.title}
+                    </h3>
+                    <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 max-w-2xl">
+                        {item.description}
+                    </p>
+                    <div class="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+                        {item.tags.map((tag) => (
+                            <span class="flex items-center gap-2">
+                                <span class="text-accent">/</span>
+                                {tag}
+                            </span>
+                        ))}
                     </div>
                 </div>
             </div>
+        ))}
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-3">
+        {stats.map((stat, i) => (
             <div
-                class="mt-2 flex items-center justify-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.16em] font-bold text-primary/80"
+                class:list={[
+                    "px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
+                    i !== stats.length - 1 && "sm:border-r border-neutral-300 dark:border-neutral-700",
+                ]}
             >
-                <span class="material-symbols-outlined text-sm"
-                    >arrow_back</span
-                >
-                <span>Keep Scrolling</span>
-                <span class="material-symbols-outlined text-sm"
-                    >arrow_forward</span
-                >
+                <span class="font-mono text-xs text-accent">{stat.n}</span>
+                {stat.countTo !== undefined ? (
+                    <p
+                        class="count-up text-2xl sm:text-3xl font-black uppercase mt-3"
+                        data-count-to={stat.countTo}
+                        data-count-suffix={stat.countSuffix}
+                        data-count-decimals={stat.countDecimals}
+                    >
+                        0{stat.countSuffix}
+                    </p>
+                ) : (
+                    <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
+                )}
+                <p class="text-xs uppercase tracking-widest text-neutral-500 mt-1">{stat.label}</p>
             </div>
-            <div
-                class="sm:hidden pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background-light dark:from-background-dark to-transparent z-20"
-            >
-            </div>
-            <div
-                class="sm:hidden pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background-light dark:from-background-dark to-transparent z-20"
-            >
-            </div>
-        </div>
-        <!-- Stats/Grid Layout Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-14 sm:mt-20">
-            <div class="border-4 border-primary p-6 sm:p-8 bg-primary/5">
-                <span
-                    class="material-symbols-outlined text-5xl text-primary mb-4"
-                    >workspace_premium</span
-                >
-                <h4 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter">
-                    1
-                </h4>
-                <p
-                    class="text-slate-500 uppercase font-bold text-sm tracking-widest"
-                >
-                    Hackathon Win
-                </p>
-            </div>
-            <div
-                class="border-4 border-slate-900 dark:border-slate-100 p-6 sm:p-8 bg-slate-900 dark:bg-slate-100 text-white dark:text-background-dark"
-            >
-                <span class="material-symbols-outlined text-5xl mb-4">deployed_code</span
-                >
-                <h4 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter">
-                    20+
-                </h4>
-                <p
-                    class="uppercase font-bold text-sm tracking-widest opacity-80"
-                >
-                    Academic Projects
-                </p>
-            </div>
-            <div class="border-4 border-primary p-6 sm:p-8">
-                <span
-                    class="material-symbols-outlined text-5xl text-primary mb-4"
-                    >school</span
-                >
-                <h4 class="text-3xl sm:text-5xl font-black uppercase tracking-tighter">
-                    In Progress
-                </h4>
-                <p
-                    class="text-slate-500 uppercase font-bold text-sm tracking-widest"
-                >
-                    Software Engineering Degree
-                </p>
-            </div>
-        </div>
-    </main>
+        ))}
+    </section>
 </Layout>
