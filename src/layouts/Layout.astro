@@ -189,14 +189,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <div
             id="welcome-overlay"
             class="fixed inset-0 z-[200] overflow-hidden"
-            style="display:none"
             aria-hidden="true"
         >
             <div
-                class="welcome-half welcome-half-top absolute inset-x-0 top-0 h-1/2 bg-ink dark:bg-paper border-b-2 border-accent"
+                class="welcome-half welcome-half-top absolute inset-x-0 top-0 h-1/2 bg-paper dark:bg-ink border-b-2 border-accent"
             >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:8%;top:18%;--tech-op:0.35;--tech-duration:4400ms;--tech-delay:80ms;"
                     >Python</span
                 >
@@ -206,12 +205,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     >React</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:16%;top:60%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:420ms;"
                     >Docker</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:66%;top:64%;--tech-op:0.32;--tech-duration:4200ms;--tech-delay:180ms;"
                     >TypeScript</span
                 >
@@ -221,16 +220,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     >Astro</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:4%;top:80%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:500ms;"
                     >PostgreSQL</span
                 >
             </div>
             <div
-                class="welcome-half welcome-half-bottom absolute inset-x-0 bottom-0 h-1/2 bg-ink dark:bg-paper"
+                class="welcome-half welcome-half-bottom absolute inset-x-0 bottom-0 h-1/2 bg-paper dark:bg-ink"
             >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:12%;top:26%;--tech-op:0.3;--tech-duration:4400ms;--tech-delay:140ms;"
                     >Three.js</span
                 >
@@ -240,12 +239,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     >Django</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:34%;top:66%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:460ms;"
                     >Scala</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:82%;top:72%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:200ms;"
                     >Bash</span
                 >
@@ -255,7 +254,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     >JavaScript</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
                     style="left:55%;top:40%;--tech-op:0.3;--tech-duration:4600ms;--tech-delay:520ms;"
                     >C</span
                 >
@@ -263,10 +262,41 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             <div class="absolute inset-0 flex items-center justify-center px-6">
                 <span
                     id="welcome-word"
-                    class="welcome-word font-black uppercase text-paper dark:text-ink"
+                    class="welcome-word font-black uppercase text-ink dark:text-paper"
                 ></span>
             </div>
         </div>
+        <script is:inline>
+            (function () {
+                var overlay = document.getElementById("welcome-overlay");
+                if (!overlay) return;
+
+                var onHome = window.location.pathname === "/";
+                var seen;
+                try {
+                    seen = localStorage.getItem("welcomed");
+                } catch (e) {
+                    seen = "1";
+                }
+                var reduced = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches;
+
+                var shouldPlay = onHome && !seen && !reduced;
+
+                if (!shouldPlay) {
+                    overlay.style.display = "none";
+                    if (onHome && !seen && reduced) {
+                        try {
+                            localStorage.setItem("welcomed", "1");
+                        } catch (e) {}
+                    }
+                } else {
+                    document.body.style.overflow = "hidden";
+                    window.__playWelcome = true;
+                }
+            })();
+        </script>
         <div
             id="scroll-progress"
             class="fixed top-0 left-0 h-[3px] bg-accent z-[70]"
@@ -504,26 +534,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
         <script is:inline>
             function playWelcomeAnimation() {
+                if (!window.__playWelcome) return;
+                window.__playWelcome = false;
+
                 var overlay = document.getElementById("welcome-overlay");
                 if (!overlay) return;
-                if (window.location.pathname !== "/") return;
-
-                var seen;
-                try {
-                    seen = localStorage.getItem("welcomed");
-                } catch (e) {
-                    seen = "1";
-                }
-                if (seen) return;
 
                 try {
                     localStorage.setItem("welcomed", "1");
                 } catch (e) {}
-
-                var reduced = window.matchMedia(
-                    "(prefers-reduced-motion: reduce)"
-                ).matches;
-                if (reduced) return;
 
                 var wordEl = document.getElementById("welcome-word");
                 var setWord = function (html, stamp) {
@@ -535,9 +554,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                         wordEl.classList.add("is-stamped");
                     }
                 };
-
-                overlay.style.display = "block";
-                document.body.style.overflow = "hidden";
 
                 setWord("DRIVEN.");
 
