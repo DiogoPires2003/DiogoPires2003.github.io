@@ -113,9 +113,160 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 background-color: #ffffff;
                 color: #0a0a0a;
             }
+            #welcome-overlay .welcome-half {
+                transition: transform 750ms cubic-bezier(0.65, 0, 0.35, 1);
+                position: relative;
+                overflow: hidden;
+            }
+            #welcome-overlay .welcome-tech {
+                position: absolute;
+                pointer-events: none;
+                opacity: 0;
+                animation: welcome-tech-float var(--tech-duration, 4400ms) ease-in-out
+                    infinite;
+                animation-delay: var(--tech-delay, 0ms);
+            }
+            @keyframes welcome-tech-float {
+                0% {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                12% {
+                    opacity: var(--tech-op, 0.35);
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
+                88% {
+                    opacity: var(--tech-op, 0.35);
+                }
+                100% {
+                    opacity: var(--tech-op, 0.35);
+                    transform: translateY(0);
+                }
+            }
+            #welcome-overlay.is-leaving .welcome-half-top {
+                transform: translateY(-100%);
+            }
+            #welcome-overlay.is-leaving .welcome-half-bottom {
+                transform: translateY(100%);
+            }
+            #welcome-overlay .welcome-word {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 0.35em;
+                letter-spacing: -0.02em;
+                white-space: nowrap;
+                font-size: clamp(1.75rem, 7vw, 4rem);
+                line-height: 1;
+                transition: opacity 250ms ease, transform 250ms ease;
+            }
+            #welcome-overlay.is-leaving .welcome-word {
+                opacity: 0;
+                transform: translateY(-6px) scale(0.98);
+            }
+            #welcome-overlay .welcome-word.is-stamped {
+                animation: welcome-stamp 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            @keyframes welcome-stamp {
+                0% {
+                    transform: scale(1.4);
+                    opacity: 0;
+                }
+                55% {
+                    transform: scale(0.94);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
         </style>
     </head>
     <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased">
+        <div
+            id="welcome-overlay"
+            class="fixed inset-0 z-[200] overflow-hidden"
+            style="display:none"
+            aria-hidden="true"
+        >
+            <div
+                class="welcome-half welcome-half-top absolute inset-x-0 top-0 h-1/2 bg-ink dark:bg-paper border-b-2 border-accent"
+            >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:8%;top:18%;--tech-op:0.35;--tech-duration:4400ms;--tech-delay:80ms;"
+                    >Python</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    style="left:78%;top:14%;--tech-op:0.45;--tech-duration:4000ms;--tech-delay:260ms;"
+                    >React</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:16%;top:60%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:420ms;"
+                    >Docker</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:66%;top:64%;--tech-op:0.32;--tech-duration:4200ms;--tech-delay:180ms;"
+                    >TypeScript</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    style="left:42%;top:8%;--tech-op:0.4;--tech-duration:4600ms;--tech-delay:340ms;"
+                    >Astro</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:4%;top:80%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:500ms;"
+                    >PostgreSQL</span
+                >
+            </div>
+            <div
+                class="welcome-half welcome-half-bottom absolute inset-x-0 bottom-0 h-1/2 bg-ink dark:bg-paper"
+            >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:12%;top:26%;--tech-op:0.3;--tech-duration:4400ms;--tech-delay:140ms;"
+                    >Three.js</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    style="left:76%;top:20%;--tech-op:0.4;--tech-duration:4200ms;--tech-delay:300ms;"
+                    >Django</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:34%;top:66%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:460ms;"
+                    >Scala</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:82%;top:72%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:200ms;"
+                    >Bash</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    style="left:8%;top:84%;--tech-op:0.36;--tech-duration:4000ms;--tech-delay:380ms;"
+                    >JavaScript</span
+                >
+                <span
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-paper dark:text-ink"
+                    style="left:55%;top:40%;--tech-op:0.3;--tech-duration:4600ms;--tech-delay:520ms;"
+                    >C</span
+                >
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center px-6">
+                <span
+                    id="welcome-word"
+                    class="welcome-word font-black uppercase text-paper dark:text-ink"
+                ></span>
+            </div>
+        </div>
         <div
             id="scroll-progress"
             class="fixed top-0 left-0 h-[3px] bg-accent z-[70]"
@@ -138,7 +289,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 <nav class="hidden md:flex items-center h-full">
                     <a
                         class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
-                        href="/"><span class="text-accent mr-2">01</span>About</a
+                        href="/"><span class="text-accent mr-2">01</span>Profile</a
                     >
                     <a
                         class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
@@ -196,7 +347,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
                     <a
                         class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
-                        href="/"><span class="text-accent mr-3">01</span>About</a
+                        href="/"><span class="text-accent mr-3">01</span>Profile</a
                     >
                     <a
                         class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
@@ -280,10 +431,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 <div id="command-list" class="max-h-80 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-800">
                     <a
                         href="/"
-                        data-command-label="go to about home"
+                        data-command-label="go to profile about home"
                         class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
                     >
-                        <span><span class="text-accent mr-2">01</span>Go to About</span>
+                        <span><span class="text-accent mr-2">01</span>Go to Profile</span>
                         <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
                     </a>
                     <a
@@ -352,7 +503,73 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         </div>
 
         <script is:inline>
+            function playWelcomeAnimation() {
+                var overlay = document.getElementById("welcome-overlay");
+                if (!overlay) return;
+                if (window.location.pathname !== "/") return;
+
+                var seen;
+                try {
+                    seen = localStorage.getItem("welcomed");
+                } catch (e) {
+                    seen = "1";
+                }
+                if (seen) return;
+
+                try {
+                    localStorage.setItem("welcomed", "1");
+                } catch (e) {}
+
+                var reduced = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches;
+                if (reduced) return;
+
+                var wordEl = document.getElementById("welcome-word");
+                var setWord = function (html, stamp) {
+                    if (!wordEl) return;
+                    wordEl.innerHTML = html;
+                    if (stamp) {
+                        wordEl.classList.remove("is-stamped");
+                        void wordEl.offsetWidth;
+                        wordEl.classList.add("is-stamped");
+                    }
+                };
+
+                overlay.style.display = "block";
+                document.body.style.overflow = "hidden";
+
+                setWord("DRIVEN.");
+
+                var t = 0;
+                t += 650;
+                setTimeout(function () {
+                    setWord("CURIOUS.");
+                }, t);
+                t += 650;
+                setTimeout(function () {
+                    setWord("RELENTLESS.");
+                }, t);
+                t += 700;
+                setTimeout(function () {
+                    setWord(
+                        'DIOGO PIRES<span class="text-accent">.</span>',
+                        true
+                    );
+                }, t);
+                t += 950;
+                setTimeout(function () {
+                    overlay.classList.add("is-leaving");
+                    document.body.style.overflow = "";
+                    setTimeout(function () {
+                        overlay.remove();
+                    }, 800);
+                }, t);
+            }
+
             function bindPerPageInteractions() {
+                playWelcomeAnimation();
+
                 var countEls = document.querySelectorAll(".count-up");
                 if (countEls.length && "IntersectionObserver" in window) {
                     var animateCount = function (el) {
