@@ -721,42 +721,6 @@ const editorialPageTransition = {
             function bindPerPageInteractions() {
                 playWelcomeAnimation();
 
-                var countEls = document.querySelectorAll(".count-up");
-                if (countEls.length && "IntersectionObserver" in window) {
-                    var animateCount = function (el) {
-                        var to = parseFloat(el.dataset.countTo || "0");
-                        var suffix = el.dataset.countSuffix || "";
-                        var decimals = parseInt(el.dataset.countDecimals || "0", 10);
-                        var duration = 1200;
-                        var start = performance.now();
-                        var step = function (now) {
-                            var progress = Math.min((now - start) / duration, 1);
-                            var eased = 1 - Math.pow(1 - progress, 3);
-                            el.textContent = (to * eased).toFixed(decimals) + suffix;
-                            if (progress < 1) {
-                                requestAnimationFrame(step);
-                            } else {
-                                el.textContent = to.toFixed(decimals) + suffix;
-                            }
-                        };
-                        requestAnimationFrame(step);
-                    };
-                    var countObserver = new IntersectionObserver(
-                        function (entries) {
-                            entries.forEach(function (entry) {
-                                if (entry.isIntersecting) {
-                                    animateCount(entry.target);
-                                    countObserver.unobserve(entry.target);
-                                }
-                            });
-                        },
-                        { threshold: 0.4 }
-                    );
-                    countEls.forEach(function (el) {
-                        countObserver.observe(el);
-                    });
-                }
-
                 var themeToggleBtn = document.getElementById("theme-toggle");
                 var themeToggleIcon = document.getElementById("theme-toggle-icon");
                 var updateThemeIcon = function () {

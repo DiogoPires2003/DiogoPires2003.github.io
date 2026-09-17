@@ -108,13 +108,8 @@ const stats = [
             >
                 <span class="font-mono text-xs text-accent">{stat.n}</span>
                 {stat.countTo !== undefined ? (
-                    <p
-                        class="count-up text-2xl sm:text-3xl font-black uppercase mt-3"
-                        data-count-to={stat.countTo}
-                        data-count-suffix={stat.countSuffix}
-                        data-count-decimals={stat.countDecimals}
-                    >
-                        0{stat.countSuffix}
+                    <p class="text-2xl sm:text-3xl font-black uppercase mt-3 flex items-baseline">
+                        <number-flow class="stat-number" data-count-to={stat.countTo}></number-flow><span>{stat.countSuffix}</span>
                     </p>
                 ) : (
                     <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
@@ -148,6 +143,38 @@ const stats = [
                 items.forEach((item) => observer.observe(item));
             } else {
                 items.forEach(reveal);
+            }
+        });
+    </script>
+
+    <script>
+        import "number-flow";
+
+        document.addEventListener("astro:page-load", () => {
+            const stats = Array.from(
+                document.querySelectorAll("number-flow[data-count-to]")
+            );
+            if (!stats.length) return;
+
+            stats.forEach((el) => el.update(0));
+
+            const reveal = (el) => el.update(parseFloat(el.dataset.countTo));
+
+            if ("IntersectionObserver" in window) {
+                const statObserver = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                reveal(entry.target);
+                                statObserver.unobserve(entry.target);
+                            }
+                        });
+                    },
+                    { threshold: 0.4 }
+                );
+                stats.forEach((el) => statObserver.observe(el));
+            } else {
+                stats.forEach(reveal);
             }
         });
     </script>
