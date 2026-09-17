@@ -41,14 +41,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
         <ClientRouter />
         <script is:inline>
-            (function () {
+            function applyStoredTheme() {
                 var stored = localStorage.getItem("theme");
                 var prefersDark = window.matchMedia(
                     "(prefers-color-scheme: dark)"
                 ).matches;
                 var isDark = stored ? stored === "dark" : prefersDark;
                 document.documentElement.classList.toggle("dark", isDark);
-            })();
+            }
+
+            applyStoredTheme();
+
+            if (!window.__themeInitBound) {
+                window.__themeInitBound = true;
+                document.addEventListener("astro:after-swap", applyStoredTheme);
+            }
         </script>
         <script
             is:inline
