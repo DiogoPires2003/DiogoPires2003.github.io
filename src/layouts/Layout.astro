@@ -479,19 +479,19 @@ const editorialPageTransition = {
                 </a>
                 <nav class="hidden md:flex items-center h-full">
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
                         href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent mr-2">01</span>Profile</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
                         href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent mr-2">02</span>Skills</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
                         href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent mr-2">03</span>Academic</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
                         href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent mr-2">04</span>Contact</a
                     >
                 </nav>
@@ -500,14 +500,14 @@ const editorialPageTransition = {
                         id="command-trigger"
                         type="button"
                         title="Search (⌘K)"
-                        class="tap-feedback hidden sm:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        class="tap-feedback hidden md:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                         aria-label="Open command menu"
                     >
                         <span class="material-symbols-outlined text-lg">search</span>
                     </button>
                     <a
                         href="/contact"
-                        class="tap-feedback hidden sm:inline-flex px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        class="tap-feedback hidden md:inline-flex items-center whitespace-nowrap px-3 lg:px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                     >
                         Get in touch
                     </a>
@@ -527,7 +527,7 @@ const editorialPageTransition = {
                         aria-expanded="false"
                         aria-controls="mobile-menu"
                     >
-                        <span class="material-symbols-outlined">menu</span>
+                        <span class="material-symbols-outlined text-lg">menu</span>
                     </button>
                 </div>
             </header>
