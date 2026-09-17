@@ -426,7 +426,7 @@ const editorialPageTransition = {
                 var onHome = window.location.pathname === "/";
                 var seen;
                 try {
-                    seen = localStorage.getItem("welcomed");
+                    seen = sessionStorage.getItem("welcomed");
                 } catch (e) {
                     seen = "1";
                 }
@@ -441,7 +441,7 @@ const editorialPageTransition = {
                     overlay.classList.remove("is-leaving");
                     if (onHome && !seen && reduced) {
                         try {
-                            localStorage.setItem("welcomed", "1");
+                            sessionStorage.setItem("welcomed", "1");
                         } catch (e) {}
                     }
                 } else {
@@ -703,7 +703,7 @@ const editorialPageTransition = {
                 if (!overlay) return;
 
                 try {
-                    localStorage.setItem("welcomed", "1");
+                    sessionStorage.setItem("welcomed", "1");
                 } catch (e) {}
 
                 var dotEl = document.getElementById("welcome-word-dot");

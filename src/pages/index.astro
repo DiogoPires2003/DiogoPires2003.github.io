@@ -126,6 +126,31 @@ const highlights = [
 		</div>
 	</section>
 
+	<section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-10 flex flex-col sm:flex-row items-center gap-8">
+		<div
+			class="shrink-0 border-2 border-ink dark:border-paper rounded-full overflow-hidden bg-ink"
+			style="width: 180px; height: 180px;"
+		>
+			<canvas
+				id="home-globe"
+				width="360"
+				height="360"
+				style="width: 180px; height: 180px; display: block;"
+			></canvas>
+		</div>
+		<div class="text-center sm:text-left">
+			<p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-2">
+				N&deg; 01.2 &mdash; Location
+			</p>
+			<p class="text-2xl sm:text-3xl font-black uppercase">
+				Based In Andorra<span class="text-accent">.</span>
+			</p>
+			<p class="font-mono text-xs text-neutral-500 mt-1">
+				42.5063&deg; N, 1.5218&deg; E
+			</p>
+		</div>
+	</section>
+
 	<section class="grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
 		{highlights.map((item, i) => (
 			<div
@@ -235,5 +260,64 @@ const highlights = [
 				}
 			}
 		});
+	</script>
+
+	<script>
+		import createGlobe from "cobe";
+
+		let globeInstance;
+		let globeRafId;
+
+		function destroyGlobe() {
+			if (globeRafId) {
+				cancelAnimationFrame(globeRafId);
+				globeRafId = null;
+			}
+			if (globeInstance) {
+				globeInstance.destroy();
+				globeInstance = null;
+			}
+		}
+
+		function initGlobe() {
+			const canvas = document.getElementById("home-globe");
+			if (!canvas) return;
+			destroyGlobe();
+
+			const reduced = window.matchMedia(
+				"(prefers-reduced-motion: reduce)"
+			).matches;
+			// Andorra: 42.5063N, 1.5218E — start with it roughly facing the viewer
+			let phi = -Math.PI / 2;
+
+			globeInstance = createGlobe(canvas, {
+				devicePixelRatio: 2,
+				width: 360,
+				height: 360,
+				phi,
+				theta: 0.32,
+				dark: 0,
+				diffuse: 1.2,
+				scale: 1,
+				mapSamples: 16000,
+				mapBrightness: 6,
+				baseColor: [1, 1, 1],
+				markerColor: [230 / 255, 57 / 255, 70 / 255],
+				glowColor: [1, 1, 1],
+				markers: [{ location: [42.5063, 1.5218], size: 0.1 }],
+			});
+
+			if (reduced) return;
+
+			const animate = () => {
+				phi += 0.001;
+				globeInstance.update({ phi });
+				globeRafId = requestAnimationFrame(animate);
+			};
+			globeRafId = requestAnimationFrame(animate);
+		}
+
+		document.addEventListener("astro:page-load", initGlobe);
+		document.addEventListener("astro:before-swap", destroyGlobe);
 	</script>
 </Layout>
