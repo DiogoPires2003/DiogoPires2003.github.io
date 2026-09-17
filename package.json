@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "astro": "^5.17.1",
-    "number-flow": "^0.6.2"
+    "cobe": "^2.0.1",
+    "motion": "^13.4.0",
+    "number-flow": "^0.6.2",
+    "torph": "^0.1.3"
   }
 }

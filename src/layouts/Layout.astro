@@ -197,22 +197,27 @@ const editorialPageTransition = {
             #welcome-overlay.is-leaving .welcome-half-bottom {
                 transform: translateY(100%);
             }
-            #welcome-overlay .welcome-word {
+            #welcome-overlay .welcome-word-row {
                 display: inline-flex;
                 align-items: baseline;
-                gap: 0.35em;
                 letter-spacing: -0.02em;
                 white-space: nowrap;
                 font-size: clamp(1.75rem, 7vw, 4rem);
                 line-height: 1;
                 transition: opacity 250ms ease, transform 250ms ease;
             }
-            #welcome-overlay.is-leaving .welcome-word {
+            #welcome-overlay.is-leaving .welcome-word-row {
                 opacity: 0;
                 transform: translateY(-6px) scale(0.98);
             }
-            #welcome-overlay .welcome-word.is-stamped {
-                animation: welcome-stamp 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            #welcome-overlay .welcome-word-dot {
+                display: inline-block;
+                transform: scale(0);
+                opacity: 0;
+            }
+            #welcome-overlay .welcome-word-dot.is-stamped {
+                animation: welcome-stamp 280ms cubic-bezier(0.34, 1.56, 0.64, 1)
+                    forwards;
             }
             .tap-feedback {
                 transition: transform 120ms ease-out;
@@ -385,12 +390,34 @@ const editorialPageTransition = {
                 >
             </div>
             <div class="absolute inset-0 flex items-center justify-center px-6">
-                <span
-                    id="welcome-word"
-                    class="welcome-word font-black uppercase text-ink dark:text-paper"
-                ></span>
+                <span class="welcome-word-row font-black uppercase text-ink dark:text-paper">
+                    <span id="welcome-word" class="welcome-word"></span
+                    ><span id="welcome-word-dot" class="welcome-word-dot text-accent">.</span>
+                </span>
             </div>
         </div>
+        <script>
+            import { TextMorph } from "torph";
+
+            let welcomeMorph;
+
+            function initWelcomeMorph() {
+                var el = document.getElementById("welcome-word");
+                if (!el || welcomeMorph) return;
+                welcomeMorph = new TextMorph({
+                    element: el,
+                    duration: 350,
+                    ease: "cubic-bezier(0.19, 1, 0.22, 1)",
+                });
+            }
+
+            window.__welcomeMorphUpdate = function (text) {
+                initWelcomeMorph();
+                if (welcomeMorph) welcomeMorph.update(text);
+            };
+
+            document.addEventListener("astro:page-load", initWelcomeMorph);
+        </script>
         <script is:inline>
             function evaluateWelcomeOverlay() {
                 var overlay = document.getElementById("welcome-overlay");
@@ -679,14 +706,15 @@ const editorialPageTransition = {
                     localStorage.setItem("welcomed", "1");
                 } catch (e) {}
 
-                var wordEl = document.getElementById("welcome-word");
-                var setWord = function (html, stamp) {
-                    if (!wordEl) return;
-                    wordEl.innerHTML = html;
-                    if (stamp) {
-                        wordEl.classList.remove("is-stamped");
-                        void wordEl.offsetWidth;
-                        wordEl.classList.add("is-stamped");
+                var dotEl = document.getElementById("welcome-word-dot");
+                var setWord = function (text, stamp) {
+                    if (window.__welcomeMorphUpdate) {
+                        window.__welcomeMorphUpdate(text);
+                    }
+                    if (stamp && dotEl) {
+                        dotEl.classList.remove("is-stamped");
+                        void dotEl.offsetWidth;
+                        dotEl.classList.add("is-stamped");
                     }
                 };
 
@@ -703,10 +731,7 @@ const editorialPageTransition = {
                 }, t);
                 t += 700;
                 setTimeout(function () {
-                    setWord(
-                        'DIOGO PIRES<span class="text-accent">.</span>',
-                        true
-                    );
+                    setWord("DIOGO PIRES", true);
                 }, t);
                 t += 950;
                 setTimeout(function () {
