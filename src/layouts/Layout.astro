@@ -14,10 +14,29 @@ const {
 const ogImage = new URL("/og-image.jpg", Astro.site);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname;
+
+const editorialAnim = {
+    old: {
+        name: "editorial-page-out",
+        duration: "160ms",
+        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        fillMode: "both",
+    },
+    new: {
+        name: "editorial-page-in",
+        duration: "220ms",
+        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        fillMode: "both",
+    },
+};
+const editorialPageTransition = {
+    forwards: editorialAnim,
+    backwards: editorialAnim,
+};
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" transition:animate={editorialPageTransition}>
     <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -267,6 +286,28 @@ const currentPath = Astro.url.pathname;
                     animation: none;
                 }
             }
+            @keyframes editorial-page-out {
+                from {
+                    opacity: 1;
+                    mix-blend-mode: plus-lighter;
+                }
+                to {
+                    opacity: 0;
+                    mix-blend-mode: plus-lighter;
+                }
+            }
+            @keyframes editorial-page-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                    mix-blend-mode: plus-lighter;
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                    mix-blend-mode: plus-lighter;
+                }
+            }
         </style>
     </head>
     <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased transition-colors">
@@ -431,11 +472,11 @@ const currentPath = Astro.url.pathname;
                     <button
                         id="command-trigger"
                         type="button"
-                        class="tap-feedback hidden sm:inline-flex items-center gap-2 px-3.5 py-2.5 border-2 border-ink dark:border-paper text-xs text-neutral-500 hover:text-accent hover:border-accent transition-colors"
+                        title="Search (⌘K)"
+                        class="tap-feedback hidden sm:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                         aria-label="Open command menu"
                     >
-                        <span class="material-symbols-outlined text-base">search</span>
-                        <kbd class="font-mono text-[10px]">&#8984;K</kbd>
+                        <span class="material-symbols-outlined text-lg">search</span>
                     </button>
                     <a
                         href="/contact"
