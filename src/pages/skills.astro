@@ -171,7 +171,7 @@ const stats = [
             N&deg; 02 &mdash; Technical Stack
         </p>
         <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight mb-6 max-w-3xl">
-            Skills &amp; Tools
+            Skills &amp; Tools<span class="text-accent">.</span>
         </h1>
         <p class="max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
             Languages, frameworks and tools I use regularly. Proficiency
@@ -184,7 +184,7 @@ const stats = [
             <button
                 data-filter={filter}
                 class:list={[
-                    "filter-btn px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper transition-colors",
+                    "filter-btn tap-feedback px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper transition-colors",
                     i > 0 && "border-l-0",
                     filter === "All"
                         ? "bg-ink text-paper dark:bg-paper dark:text-ink"
@@ -219,7 +219,7 @@ const stats = [
         </div>
         {nodeCards.map((card, i) => (
             <div
-                class="skill-row grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 transition-colors"
+                class="skill-row grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 transition-[background-color,color,opacity] duration-200 ease-out motion-reduce:transition-none"
                 data-category={card.category}
                 data-name={card.name}
                 data-proficiency={card.proficiency}
@@ -240,8 +240,9 @@ const stats = [
                 <span class="col-span-5 sm:col-span-2">
                     <div class="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800">
                         <div
-                            class="h-full bg-ink dark:bg-paper"
-                            style={`width: ${card.proficiency}%;`}
+                            class="skill-bar-fill h-full bg-ink dark:bg-paper transition-[width] duration-[600ms] ease-out motion-reduce:transition-none motion-reduce:duration-0"
+                            data-target-width={card.proficiency}
+                            style={`width: 0%; transition-delay: ${(i % 10) * 30}ms;`}
                         >
                         </div>
                     </div>
@@ -315,16 +316,35 @@ const stats = [
 
                     const cat = btn.dataset.filter;
                     rows.forEach((row) => {
-                        row.style.display =
-                            cat === "All" || row.dataset.category === cat
-                                ? "grid"
-                                : "none";
+                        const shouldShow =
+                            cat === "All" || row.dataset.category === cat;
+                        if (shouldShow) {
+                            if (row.style.display === "none") {
+                                row.style.display = "grid";
+                                row.style.opacity = "0";
+                                requestAnimationFrame(() => {
+                                    row.style.opacity = "1";
+                                });
+                            } else {
+                                row.style.opacity = "1";
+                            }
+                        } else {
+                            row.style.opacity = "0";
+                            window.setTimeout(() => {
+                                if (row.style.opacity === "0") {
+                                    row.style.display = "none";
+                                }
+                            }, 200);
+                        }
                     });
                 });
             });
 
             const skillGrid = document.getElementById("skill-grid");
             const sortButtons = document.querySelectorAll(".sort-btn");
+            const reduceMotion = window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
             let sortState = { field: null, dir: 1 };
 
             const updateSortArrows = () => {
@@ -360,8 +380,43 @@ const stats = [
                     return (av - bv) * sortState.dir;
                 });
 
+                const visibleRows = sorted.filter(
+                    (row) => row.style.display !== "none"
+                );
+                const firstRects = reduceMotion
+                    ? null
+                    : new Map(
+                          visibleRows.map((row) => [row, row.getBoundingClientRect()])
+                      );
+
                 sorted.forEach((row) => skillGrid.appendChild(row));
                 updateSortArrows();
+
+                if (reduceMotion) return;
+
+                requestAnimationFrame(() => {
+                    visibleRows.forEach((row) => {
+                        const first = firstRects.get(row);
+                        const last = row.getBoundingClientRect();
+                        const deltaY = first.top - last.top;
+                        if (!deltaY) return;
+                        row.style.transition = "none";
+                        row.style.transform = `translateY(${deltaY}px)`;
+                        requestAnimationFrame(() => {
+                            row.style.transition =
+                                "transform 250ms cubic-bezier(0.22, 1, 0.36, 1)";
+                            row.style.transform = "";
+                            row.addEventListener(
+                                "transitionend",
+                                function handler(event) {
+                                    if (event.propertyName !== "transform") return;
+                                    row.style.transition = "";
+                                    row.removeEventListener("transitionend", handler);
+                                }
+                            );
+                        });
+                    });
+                });
             };
 
             sortButtons.forEach((btn) => {
@@ -369,6 +424,29 @@ const stats = [
                     sortRows(btn.id === "sort-name" ? "name" : "proficiency");
                 });
             });
+
+            const bars = document.querySelectorAll(".skill-bar-fill");
+            if (bars.length) {
+                const revealBar = (el) => {
+                    el.style.width = `${el.dataset.targetWidth}%`;
+                };
+                if ("IntersectionObserver" in window) {
+                    const barObserver = new IntersectionObserver(
+                        (entries) => {
+                            entries.forEach((entry) => {
+                                if (entry.isIntersecting) {
+                                    revealBar(entry.target);
+                                    barObserver.unobserve(entry.target);
+                                }
+                            });
+                        },
+                        { threshold: 0.4 }
+                    );
+                    bars.forEach((bar) => barObserver.observe(bar));
+                } else {
+                    bars.forEach(revealBar);
+                }
+            }
         });
     </script>
 </Layout>

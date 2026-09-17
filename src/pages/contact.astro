@@ -28,7 +28,7 @@ import Layout from "../layouts/Layout.astro";
                 type="button"
                 id="copy-email-btn"
                 data-email="dfalvesp@gmail.com"
-                class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity shrink-0"
+                class="tap-feedback flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity shrink-0"
                 aria-label="Copy email address"
             >
                 <span id="copy-email-label">Copy</span>
@@ -96,6 +96,11 @@ import Layout from "../layouts/Layout.astro";
                     if (copyIcon) copyIcon.textContent = "check";
                 } catch (err) {
                     if (copyLabel) copyLabel.textContent = "Failed";
+                }
+                if (copyIcon) {
+                    copyIcon.classList.remove("icon-pop");
+                    void copyIcon.offsetWidth;
+                    copyIcon.classList.add("icon-pop");
                 }
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => {

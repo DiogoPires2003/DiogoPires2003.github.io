@@ -61,14 +61,14 @@ const highlights = [
 				<div class="flex flex-wrap">
 					<a
 						href="/skills"
-						class="px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-paper hover:text-ink dark:hover:bg-ink dark:hover:text-paper transition-colors flex items-center gap-2"
+						class="tap-feedback px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-paper hover:text-ink dark:hover:bg-ink dark:hover:text-paper transition-colors flex items-center gap-2"
 					>
 						View Stack
 						<span class="material-symbols-outlined text-lg">arrow_forward</span>
 					</a>
 					<a
 						href="/contact"
-						class="px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-l-0 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors flex items-center"
+						class="tap-feedback px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-l-0 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors flex items-center"
 					>
 						Contact
 					</a>
@@ -98,7 +98,7 @@ const highlights = [
 							<dd
 								id={fact.id}
 								class:list={[
-									"font-bold uppercase truncate max-w-full sm:text-right sm:max-w-[65%]",
+									"font-bold uppercase truncate max-w-full sm:text-right sm:max-w-[65%] transition-opacity duration-200 ease-out motion-reduce:transition-none",
 									fact.label === "Status" && "text-accent",
 								]}
 							>{fact.value}</dd>
@@ -186,6 +186,15 @@ const highlights = [
 				return "just now";
 			};
 
+			const setValue = (text, title) => {
+				el.style.opacity = "0";
+				window.setTimeout(() => {
+					el.textContent = text;
+					if (title) el.title = title;
+					el.style.opacity = "1";
+				}, 150);
+			};
+
 			fetch(
 				"https://api.github.com/users/DiogoPires2003/repos?sort=pushed&direction=desc&per_page=1"
 			)
@@ -193,14 +202,16 @@ const highlights = [
 				.then((repos) => {
 					const repo = repos[0];
 					if (!repo) {
-						el.textContent = "No activity";
+						setValue("No activity");
 						return;
 					}
-					el.textContent = `${repo.name} · ${timeAgo(new Date(repo.pushed_at))}`;
-					el.title = `Last push to ${repo.full_name}`;
+					setValue(
+						`${repo.name} · ${timeAgo(new Date(repo.pushed_at))}`,
+						`Last push to ${repo.full_name}`
+					);
 				})
 				.catch(() => {
-					el.textContent = "Unavailable";
+					setValue("Unavailable");
 				});
 		});
 	</script>
