@@ -355,7 +355,12 @@ const stats = [
                     const arrow = document.querySelector(
                         `.sort-arrow[data-for="${sortState.field}"]`
                     );
-                    if (arrow) arrow.textContent = sortState.dir === 1 ? "▲" : "▼";
+                    if (arrow) {
+                        arrow.textContent = sortState.dir === 1 ? "▲" : "▼";
+                        arrow.classList.remove("icon-pop");
+                        void arrow.offsetWidth;
+                        arrow.classList.add("icon-pop");
+                    }
                 }
             };
 

@@ -13,6 +13,7 @@ const {
 
 const ogImage = new URL("/og-image.jpg", Astro.site);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const currentPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
@@ -24,6 +25,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalURL} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalURL} />
@@ -41,6 +44,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
         <ClientRouter />
         <script is:inline>
+            function syncThemeColorMeta(isDark) {
+                var meta = document.querySelector('meta[name="theme-color"]:not([media])');
+                if (!meta) {
+                    meta = document.createElement("meta");
+                    meta.setAttribute("name", "theme-color");
+                    document.head.appendChild(meta);
+                }
+                meta.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+            }
+
             function applyStoredTheme() {
                 var stored = localStorage.getItem("theme");
                 var prefersDark = window.matchMedia(
@@ -48,6 +61,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 ).matches;
                 var isDark = stored ? stored === "dark" : prefersDark;
                 document.documentElement.classList.toggle("dark", isDark);
+                if (stored) syncThemeColorMeta(isDark);
             }
 
             applyStoredTheme();
@@ -107,6 +121,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <style is:inline>
             html {
                 scrollbar-gutter: stable;
+                -webkit-tap-highlight-color: transparent;
             }
             ::selection {
                 background-color: #e63946;
@@ -244,9 +259,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     opacity: 1;
                 }
             }
+            .notfound-stamp {
+                animation: welcome-stamp 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .notfound-stamp {
+                    animation: none;
+                }
+            }
         </style>
     </head>
-    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased">
+    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased transition-colors">
         <div
             id="welcome-overlay"
             class="fixed inset-0 z-[200] overflow-hidden"
@@ -388,20 +411,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                 </a>
                 <nav class="hidden md:flex items-center h-full">
                     <a
-                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
-                        href="/"><span class="text-accent mr-2">01</span>Profile</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
+                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent mr-2">01</span>Profile</a
                     >
                     <a
-                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
-                        href="/skills"><span class="text-accent mr-2">02</span>Skills</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
+                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent mr-2">02</span>Skills</a
                     >
                     <a
-                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
-                        href="/academic"><span class="text-accent mr-2">03</span>Academic</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
+                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent mr-2">03</span>Academic</a
                     >
                     <a
-                        class="font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors"
-                        href="/contact"><span class="text-accent mr-2">04</span>Contact</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
+                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent mr-2">04</span>Contact</a
                     >
                 </nav>
                 <div class="flex items-center gap-2 sm:gap-3">
@@ -447,20 +470,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             >
                 <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
                     <a
-                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
-                        href="/"><span class="text-accent mr-3">01</span>Profile</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
+                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent mr-3">01</span>Profile</a
                     >
                     <a
-                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
-                        href="/skills"><span class="text-accent mr-3">02</span>Skills</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
+                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent mr-3">02</span>Skills</a
                     >
                     <a
-                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
-                        href="/academic"><span class="text-accent mr-3">03</span>Academic</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
+                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent mr-3">03</span>Academic</a
                     >
                     <a
-                        class="flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
-                        href="/contact"><span class="text-accent mr-3">04</span>Contact</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
+                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent mr-3">04</span>Contact</a
                     >
                     <button
                         id="command-trigger-mobile"
@@ -707,6 +730,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
                     var isDark = document.documentElement.classList.toggle("dark");
                     localStorage.setItem("theme", isDark ? "dark" : "light");
                     updateThemeIcon();
+                    if (window.syncThemeColorMeta) window.syncThemeColorMeta(isDark);
                     if (themeToggleIcon) {
                         themeToggleIcon.classList.remove("is-swapping");
                         void themeToggleIcon.offsetWidth;

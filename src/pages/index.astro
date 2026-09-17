@@ -130,7 +130,7 @@ const highlights = [
 		{highlights.map((item, i) => (
 			<div
 				class:list={[
-					"p-8 sm:p-10",
+					"highlight-item p-8 sm:p-10 opacity-0 translate-y-2 transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none motion-reduce:duration-0",
 					i !== highlights.length - 1 && "border-b-2 md:border-b-0 md:border-r-2 border-ink dark:border-paper",
 				]}
 			>
@@ -213,6 +213,27 @@ const highlights = [
 				.catch(() => {
 					setValue("Unavailable");
 				});
+
+			const highlightItems = document.querySelectorAll(".highlight-item");
+			if (highlightItems.length) {
+				const reveal = (el) => el.classList.remove("opacity-0", "translate-y-2");
+				if ("IntersectionObserver" in window) {
+					const highlightObserver = new IntersectionObserver(
+						(entries) => {
+							entries.forEach((entry) => {
+								if (entry.isIntersecting) {
+									reveal(entry.target);
+									highlightObserver.unobserve(entry.target);
+								}
+							});
+						},
+						{ threshold: 0.15 }
+					);
+					highlightItems.forEach((item) => highlightObserver.observe(item));
+				} else {
+					highlightItems.forEach(reveal);
+				}
+			}
 		});
 	</script>
 </Layout>

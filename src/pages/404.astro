@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Diogo Pires | Page Not Found">
+	<section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-16 sm:py-24">
+		<p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+			N&deg; 05 &mdash; Not Found
+		</p>
+		<p
+			class="notfound-stamp font-black text-[clamp(4rem,18vw,10rem)] leading-none tracking-tight mb-6"
+		>
+			404<span class="text-accent">.</span>
+		</p>
+		<h1 class="text-3xl sm:text-5xl font-black uppercase leading-tight tracking-tight mb-6 max-w-2xl">
+			Page Not Found<span class="text-accent">.</span>
+		</h1>
+		<p class="max-w-xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed mb-10">
+			The page you're looking for doesn't exist, moved, or the link is
+			broken. Let's get you back on track.
+		</p>
+		<a
+			href="/"
+			class="tap-feedback inline-flex items-center gap-2 px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-paper hover:text-ink dark:hover:bg-ink dark:hover:text-paper transition-colors"
+		>
+			<span class="material-symbols-outlined text-lg">arrow_back</span>
+			Back to Home
+		</a>
+	</section>
+</Layout>
