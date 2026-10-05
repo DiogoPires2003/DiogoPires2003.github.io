@@ -112,6 +112,7 @@ const editorialPageTransition = {
                             paper: "#ffffff",
                             accent: "#e63946",
                             "accent-dark": "#c1121f",
+                            "accent-text": "var(--accent-text)",
                         },
                         fontFamily: {
                             sans: ["Archivo", "sans-serif"],
@@ -126,6 +127,7 @@ const editorialPageTransition = {
                         },
                         animation: {
                             marquee: "marquee 32s linear infinite",
+                            "marquee-reverse": "marquee 26s linear infinite reverse",
                         },
                         keyframes: {
                             marquee: {
@@ -138,6 +140,410 @@ const editorialPageTransition = {
             };
         </script>
         <style is:inline>
+            :root {
+                --accent: #e63946;
+                --accent-text: #c1121f;
+                --ease-editorial: cubic-bezier(0.76, 0, 0.24, 1);
+                --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+                --ease-stamp: cubic-bezier(0.34, 1.56, 0.64, 1);
+                --duration-fast: 220ms;
+                --duration-base: 450ms;
+                --duration-reveal: 900ms;
+                --stagger-step: 70ms;
+                --inv-bg: #0a0a0a;
+                --inv-fg: #ffffff;
+                --hover-tint: #fafafa;
+            }
+            .dark {
+                --accent-text: #e63946;
+                --inv-bg: #ffffff;
+                --inv-fg: #0a0a0a;
+                --hover-tint: rgba(23, 23, 23, 0.6);
+            }
+
+            /* Reveal: headline lines rise out of a mask */
+            .reveal-line {
+                display: block;
+                overflow: hidden;
+                padding-bottom: 0.04em;
+            }
+            .reveal-line > span {
+                display: inline-block;
+                transform: translateY(105%);
+            }
+            .is-in .reveal-line > span {
+                animation: dp-rise var(--duration-reveal) var(--ease-out-expo) both;
+                animation-delay: calc(var(--i, 0) * 110ms);
+            }
+            .reveal-up {
+                opacity: 0;
+            }
+            .is-in.reveal-up,
+            .is-in .reveal-up {
+                animation: dp-fade-up var(--duration-reveal) var(--ease-out-expo) both;
+                animation-delay: calc(var(--i, 0) * var(--stagger-step) + 300ms);
+            }
+            @keyframes dp-rise {
+                from { transform: translateY(105%); }
+                to { transform: translateY(0); }
+            }
+            @keyframes dp-fade-up {
+                from { opacity: 0; transform: translateY(12px); }
+                to { opacity: 1; transform: none; }
+            }
+
+            /* Stamp: the accent full stop lands last */
+            .stamp-dot {
+                display: inline-block;
+            }
+            [data-reveal] .stamp-dot {
+                opacity: 0;
+            }
+            .is-in .stamp-dot {
+                animation: dp-stamp var(--duration-base) var(--ease-stamp) both;
+                animation-delay: 750ms;
+            }
+            @keyframes dp-stamp {
+                0% { transform: scale(1.8) rotate(-8deg); opacity: 0; }
+                55% { transform: scale(0.9); opacity: 1; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+
+            /* Eyebrow: red rule grows in front of the section index */
+            .eyebrow {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .eyebrow::before {
+                content: "";
+                flex: none;
+                width: 32px;
+                height: 2px;
+                background: var(--accent);
+                transform-origin: left;
+            }
+            .is-in .eyebrow::before,
+            .eyebrow.is-in::before {
+                animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
+            }
+            @keyframes dp-grow-x {
+                from { transform: scaleX(0); }
+                to { transform: scaleX(1); }
+            }
+
+            /* Sweep: a block fills buttons from the left, leaves to the right */
+            .btn-sweep {
+                position: relative;
+                isolation: isolate;
+                overflow: hidden;
+                transition: color var(--duration-base) var(--ease-editorial),
+                    transform var(--duration-fast) var(--ease-out-expo);
+            }
+            .btn-sweep::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                background: var(--inv-bg);
+                transform: scaleX(0);
+                transform-origin: right;
+                transition: transform var(--duration-base) var(--ease-editorial);
+            }
+            .btn-sweep:hover {
+                color: var(--inv-fg);
+            }
+            .btn-sweep:hover::before {
+                transform: scaleX(1);
+                transform-origin: left;
+            }
+            .btn-sweep.btn-primary {
+                background: var(--inv-bg);
+                color: var(--inv-fg);
+            }
+            .btn-sweep.btn-primary::before {
+                background: var(--accent);
+            }
+            .btn-sweep.btn-primary:hover {
+                color: #ffffff;
+            }
+            .btn-sweep .material-symbols-outlined {
+                transition: transform var(--duration-base) var(--ease-editorial);
+            }
+            .btn-sweep:hover .material-symbols-outlined {
+                transform: translateX(6px);
+            }
+            .btn-sweep.btn-back:hover .material-symbols-outlined {
+                transform: translateX(-6px);
+            }
+
+            /* Icon buttons: fill rises from the bottom */
+            .icon-rise {
+                position: relative;
+                isolation: isolate;
+                overflow: hidden;
+                transition: color var(--duration-fast) var(--ease-editorial);
+            }
+            .icon-rise::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                background: var(--inv-bg);
+                transform: translateY(101%);
+                transition: transform var(--duration-fast) var(--ease-editorial);
+            }
+            .icon-rise:hover {
+                color: var(--inv-fg);
+            }
+            .icon-rise:hover::before {
+                transform: none;
+            }
+
+            /* Logo box: inverse square and the monogram's red dot stamp in */
+            .logo-box {
+                position: relative;
+                isolation: isolate;
+                overflow: hidden;
+                transition: color var(--duration-fast) var(--ease-editorial);
+            }
+            .logo-box::before,
+            .logo-box::after {
+                content: "";
+                position: absolute;
+                transform: scale(0);
+                transition: transform var(--duration-fast) var(--ease-stamp);
+            }
+            .logo-box::before {
+                inset: 0;
+                z-index: -1;
+                background: var(--inv-bg);
+            }
+            .logo-box::after {
+                right: 3px;
+                bottom: 3px;
+                width: 5px;
+                height: 5px;
+                background: var(--accent);
+                transition-delay: 80ms;
+            }
+            .group:hover .logo-box {
+                color: var(--inv-fg);
+            }
+            .group:hover .logo-box::before,
+            .group:hover .logo-box::after {
+                transform: scale(1);
+            }
+
+            /* Slide: one indicator moves between options */
+            .slide-ink {
+                position: absolute;
+                left: var(--x, 0);
+                width: var(--w, 0);
+                opacity: var(--o, 0);
+                transition: left var(--duration-base) var(--ease-editorial),
+                    width var(--duration-base) var(--ease-editorial),
+                    opacity var(--duration-fast);
+                pointer-events: none;
+            }
+            #nav-ink {
+                bottom: -2px;
+                height: 3px;
+                background: var(--accent);
+            }
+            #filter-ink,
+            #highlight-ink {
+                top: 0;
+                bottom: 0;
+                z-index: -1;
+                background: var(--inv-bg);
+            }
+            #highlight-ink::after {
+                content: "";
+                position: absolute;
+                right: 16px;
+                bottom: 16px;
+                width: 12px;
+                height: 12px;
+                background: var(--accent);
+            }
+            .highlight-item {
+                transition: color var(--duration-base) var(--ease-editorial),
+                    opacity 500ms ease-out, transform 500ms ease-out;
+            }
+            .highlight-item.is-hot {
+                color: var(--inv-fg);
+            }
+            .highlight-item.is-hot p {
+                color: var(--inv-fg);
+                opacity: 0.8;
+            }
+            .highlight-item.is-hot .text-accent-text {
+                color: var(--accent);
+            }
+            .filter-btn {
+                transition: color var(--duration-fast) var(--ease-editorial);
+            }
+            .filter-btn.is-active {
+                color: var(--inv-fg);
+            }
+            .filter-btn:not(.is-active):hover {
+                color: var(--accent-text);
+            }
+
+            /* Wipe: rows tint (table) or invert (contact) from the left */
+            .row-wipe,
+            .row-invert {
+                position: relative;
+                isolation: isolate;
+            }
+            .row-wipe::before,
+            .row-invert::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                clip-path: inset(0 100% 0 0);
+                transition: clip-path var(--duration-base) var(--ease-editorial);
+            }
+            .row-wipe::before {
+                background: var(--hover-tint);
+            }
+            .row-invert::before {
+                background: var(--inv-bg);
+            }
+            .row-wipe:hover::before,
+            .row-invert:hover::before {
+                clip-path: inset(0 0 0 0);
+            }
+            .row-invert {
+                transition: color var(--duration-base) var(--ease-editorial);
+            }
+            .row-invert:hover {
+                color: var(--inv-fg);
+            }
+            .row-invert:hover .text-accent-text {
+                color: var(--accent);
+            }
+            .row-slide {
+                display: inline-block;
+                transition: transform var(--duration-base) var(--ease-editorial);
+            }
+            .group:hover .row-slide {
+                transform: translateX(8px);
+            }
+            .row-arrow {
+                transition: transform var(--duration-base) var(--ease-editorial);
+            }
+            .group:hover .row-arrow {
+                transform: translateX(4px) rotate(-45deg);
+            }
+
+            /* Stats: accent line draws under each cell */
+            .stat-line {
+                position: relative;
+                overflow: hidden;
+            }
+            .stat-line::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 3px;
+                background: var(--accent);
+                transform: scaleX(0);
+                transform-origin: left;
+            }
+            .stat-line.is-in::after {
+                animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
+                animation-delay: calc(var(--i, 0) * 120ms);
+            }
+
+            /* Live square */
+            .live-dot {
+                position: relative;
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                margin-right: 8px;
+                background: var(--accent);
+            }
+            .live-dot::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: var(--accent);
+                animation: dp-ping 1.6s var(--ease-out-expo) infinite;
+            }
+            @keyframes dp-ping {
+                0% { transform: scale(1); opacity: 0.75; }
+                80%, 100% { transform: scale(2.4); opacity: 0; }
+            }
+
+            /* Glitch: short red slices, for the intro name and the 404 */
+            .glitch {
+                display: inline-block;
+                animation: dp-glitch 3.2s steps(1) infinite;
+            }
+            @keyframes dp-glitch {
+                0%, 86%, 100% { text-shadow: none; transform: none; clip-path: none; }
+                88% { text-shadow: -4px 0 rgba(230, 57, 70, 0.85); transform: translateX(2px); clip-path: inset(10% 0 55% 0); }
+                90% { text-shadow: 4px 0 rgba(230, 57, 70, 0.85); transform: translateX(-3px); clip-path: inset(60% 0 8% 0); }
+                92% { text-shadow: -2px 0 rgba(230, 57, 70, 0.85); transform: translateX(1px); clip-path: none; }
+                94% { text-shadow: none; transform: none; }
+            }
+
+            /* Command palette opens with a drop */
+            .palette-in {
+                animation: dp-palette-in var(--duration-base) var(--ease-out-expo) both;
+            }
+            @keyframes dp-palette-in {
+                from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+                to { opacity: 1; transform: none; }
+            }
+            .command-item.is-active .text-accent-text {
+                color: var(--accent);
+            }
+
+            .marquee-band:hover .animate-marquee,
+            .marquee-band:hover .animate-marquee-reverse {
+                animation-play-state: paused;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .reveal-line > span,
+                .reveal-up,
+                [data-reveal] .stamp-dot {
+                    transform: none !important;
+                    opacity: 1 !important;
+                    animation: none !important;
+                }
+                .eyebrow::before,
+                .stat-line::after {
+                    animation: none !important;
+                    transform: none;
+                }
+                .glitch,
+                .live-dot::before,
+                .animate-marquee,
+                .animate-marquee-reverse {
+                    animation: none !important;
+                }
+                .btn-sweep,
+                .btn-sweep::before,
+                .icon-rise::before,
+                .logo-box::before,
+                .logo-box::after,
+                .slide-ink,
+                .row-wipe::before,
+                .row-invert::before,
+                .row-slide,
+                .row-arrow {
+                    transition: none !important;
+                }
+            }
+
             html {
                 scrollbar-gutter: stable;
                 -webkit-tap-highlight-color: transparent;
@@ -330,7 +736,7 @@ const editorialPageTransition = {
                     >Python</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
                     style="left:78%;top:14%;--tech-op:0.45;--tech-duration:4000ms;--tech-delay:260ms;"
                     >React</span
                 >
@@ -345,7 +751,7 @@ const editorialPageTransition = {
                     >TypeScript</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
                     style="left:42%;top:8%;--tech-op:0.4;--tech-duration:4600ms;--tech-delay:340ms;"
                     >Astro</span
                 >
@@ -364,7 +770,7 @@ const editorialPageTransition = {
                     >Three.js</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
                     style="left:76%;top:20%;--tech-op:0.4;--tech-duration:4200ms;--tech-delay:300ms;"
                     >Django</span
                 >
@@ -379,7 +785,7 @@ const editorialPageTransition = {
                     >Bash</span
                 >
                 <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent"
+                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
                     style="left:8%;top:84%;--tech-op:0.36;--tech-duration:4000ms;--tech-delay:380ms;"
                     >JavaScript</span
                 >
@@ -392,7 +798,7 @@ const editorialPageTransition = {
             <div class="absolute inset-0 flex items-center justify-center px-6">
                 <span class="welcome-word-row font-black uppercase text-ink dark:text-paper">
                     <span id="welcome-word" class="welcome-word"></span
-                    ><span id="welcome-word-dot" class="welcome-word-dot text-accent">.</span>
+                    ><span id="welcome-word-dot" class="welcome-word-dot text-accent stamp-dot">.</span>
                 </span>
             </div>
         </div>
@@ -470,51 +876,52 @@ const editorialPageTransition = {
             >
                 <a href="/" class="flex items-center gap-3 group">
                     <span
-                        class="flex items-center justify-center w-8 h-8 border-2 border-ink dark:border-paper font-black text-xs group-hover:bg-ink group-hover:text-paper dark:group-hover:bg-paper dark:group-hover:text-ink transition-colors"
+                        class="logo-box flex items-center justify-center w-8 h-8 border-2 border-ink dark:border-paper font-black text-xs"
                         >DP</span
                     >
                     <span class="font-black uppercase tracking-tight text-base sm:text-lg">
                         Diogo Pires
                     </span>
                 </a>
-                <nav class="hidden md:flex items-center h-full">
+                <nav id="desktop-nav" class="relative hidden md:flex items-stretch self-stretch -my-4">
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
-                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent mr-2">01</span>Profile</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/" ? "text-accent-text" : undefined]}
+                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-2">01</span>Profile</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
-                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent mr-2">02</span>Skills</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/skills" ? "text-accent-text" : undefined]}
+                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-2">02</span>Skills</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
-                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent mr-2">03</span>Academic</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/academic" ? "text-accent-text" : undefined]}
+                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-2">03</span>Academic</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
-                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent mr-2">04</span>Contact</a
+                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/contact" ? "text-accent-text" : undefined]}
+                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-2">04</span>Contact</a
                     >
+                    <span id="nav-ink" class="slide-ink" aria-hidden="true"></span>
                 </nav>
                 <div class="flex items-center gap-2 sm:gap-3">
                     <button
                         id="command-trigger"
                         type="button"
                         title="Search (⌘K)"
-                        class="tap-feedback hidden md:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        class="tap-feedback hidden md:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper icon-rise"
                         aria-label="Open command menu"
                     >
                         <span class="material-symbols-outlined text-lg">search</span>
                     </button>
                     <a
                         href="/contact"
-                        class="tap-feedback hidden md:inline-flex items-center whitespace-nowrap px-3 lg:px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        class="tap-feedback btn-sweep magnetic hidden md:inline-flex items-center whitespace-nowrap px-3 lg:px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide"
                     >
                         Get in touch
                     </a>
                     <button
                         id="theme-toggle"
                         type="button"
-                        class="tap-feedback inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
+                        class="tap-feedback icon-rise inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper"
                         aria-label="Toggle color theme"
                     >
                         <span class="material-symbols-outlined text-lg" id="theme-toggle-icon">dark_mode</span>
@@ -538,25 +945,25 @@ const editorialPageTransition = {
             >
                 <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/" ? "text-accent" : undefined]}
-                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent mr-3">01</span>Profile</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/" ? "text-accent-text" : undefined]}
+                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-3">01</span>Profile</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/skills" ? "text-accent" : undefined]}
-                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent mr-3">02</span>Skills</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/skills" ? "text-accent-text" : undefined]}
+                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-3">02</span>Skills</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/academic" ? "text-accent" : undefined]}
-                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent mr-3">03</span>Academic</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/academic" ? "text-accent-text" : undefined]}
+                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-3">03</span>Academic</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors", currentPath === "/contact" ? "text-accent" : undefined]}
-                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent mr-3">04</span>Contact</a
+                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/contact" ? "text-accent-text" : undefined]}
+                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-3">04</span>Contact</a
                     >
                     <button
                         id="command-trigger-mobile"
                         type="button"
-                        class="w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors"
+                        class="w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors"
                     >
                         <span class="material-symbols-outlined text-base">search</span>Search
                     </button>
@@ -567,12 +974,12 @@ const editorialPageTransition = {
 
             <footer class="border-t-2 border-ink dark:border-paper mt-auto">
                 <div class="grid grid-cols-1 sm:grid-cols-3">
-                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500">
+                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                         © 2026 Diogo Pires
                     </div>
                     <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 flex items-center gap-6">
                         <a
-                            class="hover:text-accent transition-colors"
+                            class="hover:text-accent-text transition-colors"
                             href="https://github.com/DiogoPires2003"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -581,7 +988,7 @@ const editorialPageTransition = {
                             <span class="material-symbols-outlined text-lg">code</span>
                         </a>
                         <a
-                            class="hover:text-accent transition-colors"
+                            class="hover:text-accent-text transition-colors"
                             href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -590,14 +997,14 @@ const editorialPageTransition = {
                             <span class="material-symbols-outlined text-lg">work</span>
                         </a>
                         <a
-                            class="hover:text-accent transition-colors"
+                            class="hover:text-accent-text transition-colors"
                             href="/contact"
                             aria-label="Contact page"
                         >
                             <span class="material-symbols-outlined text-lg">alternate_email</span>
                         </a>
                     </div>
-                    <div class="px-4 sm:px-6 lg:px-12 py-6 border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500">
+                    <div class="px-4 sm:px-6 lg:px-12 py-6 border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                         Based in Andorra
                     </div>
                 </div>
@@ -608,9 +1015,9 @@ const editorialPageTransition = {
             id="command-palette"
             class="hidden fixed inset-0 z-[100] bg-ink/60 dark:bg-black/70 backdrop-blur-sm items-start justify-center pt-24 sm:pt-32 px-4"
         >
-            <div class="w-full max-w-xl border-2 border-ink dark:border-paper bg-paper dark:bg-ink shadow-2xl">
+            <div id="command-panel" class="w-full max-w-xl border-2 border-ink dark:border-paper bg-paper dark:bg-ink shadow-2xl">
                 <div class="flex items-center gap-3 px-4 py-3 border-b-2 border-ink dark:border-paper">
-                    <span class="material-symbols-outlined text-lg text-neutral-500">search</span>
+                    <span class="material-symbols-outlined text-lg text-neutral-500 dark:text-neutral-400">search</span>
                     <input
                         id="command-input"
                         type="text"
@@ -618,7 +1025,7 @@ const editorialPageTransition = {
                         class="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-neutral-400"
                         autocomplete="off"
                     />
-                    <kbd class="font-mono text-[10px] uppercase text-neutral-500 border border-neutral-300 dark:border-neutral-700 px-1.5 py-0.5">Esc</kbd>
+                    <kbd class="font-mono text-[10px] uppercase text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700 px-1.5 py-0.5">Esc</kbd>
                 </div>
                 <div id="command-list" class="max-h-80 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-800">
                     <a
@@ -626,7 +1033,7 @@ const editorialPageTransition = {
                         data-command-label="go to profile about home"
                         class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
                     >
-                        <span><span class="text-accent mr-2">01</span>Go to Profile</span>
+                        <span><span class="text-accent-text mr-2">01</span>Go to Profile</span>
                         <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
                     </a>
                     <a
@@ -634,7 +1041,7 @@ const editorialPageTransition = {
                         data-command-label="go to skills technical stack"
                         class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
                     >
-                        <span><span class="text-accent mr-2">02</span>Go to Skills</span>
+                        <span><span class="text-accent-text mr-2">02</span>Go to Skills</span>
                         <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
                     </a>
                     <a
@@ -642,7 +1049,7 @@ const editorialPageTransition = {
                         data-command-label="go to academic education certifications"
                         class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
                     >
-                        <span><span class="text-accent mr-2">03</span>Go to Academic</span>
+                        <span><span class="text-accent-text mr-2">03</span>Go to Academic</span>
                         <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
                     </a>
                     <a
@@ -650,7 +1057,7 @@ const editorialPageTransition = {
                         data-command-label="go to contact email"
                         class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
                     >
-                        <span><span class="text-accent mr-2">04</span>Go to Contact</span>
+                        <span><span class="text-accent-text mr-2">04</span>Go to Contact</span>
                         <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
                     </a>
                     <button
@@ -732,6 +1139,8 @@ const editorialPageTransition = {
                 t += 700;
                 setTimeout(function () {
                     setWord("DIOGO PIRES", true);
+                    var word = document.getElementById("welcome-word");
+                    if (word) word.classList.add("glitch");
                 }, t);
                 t += 950;
                 setTimeout(function () {
@@ -743,8 +1152,152 @@ const editorialPageTransition = {
                 }, t);
             }
 
+            function initMotion() {
+                var reduced = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches;
+                var glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#_";
+
+                var scramble = function (el) {
+                    var finalText = (el.dataset.text || el.textContent).trim();
+                    el.dataset.text = finalText;
+                    if (reduced) return;
+                    var frame = 0;
+                    clearInterval(el._scrambleTimer);
+                    el._scrambleTimer = setInterval(function () {
+                        frame += 1.2;
+                        el.textContent = finalText
+                            .split("")
+                            .map(function (c, i) {
+                                return c === " " || i < frame
+                                    ? c
+                                    : glyphs[(Math.random() * glyphs.length) | 0];
+                            })
+                            .join("");
+                        if (frame >= finalText.length) {
+                            clearInterval(el._scrambleTimer);
+                            el.textContent = finalText;
+                        }
+                    }, 28);
+                };
+
+                var countUp = function (el) {
+                    var to = parseFloat(el.dataset.countText);
+                    var suffix = el.dataset.suffix || "";
+                    if (reduced) {
+                        el.textContent = to + suffix;
+                        return;
+                    }
+                    var start = performance.now() + 200;
+                    var tick = function (t) {
+                        var p = Math.max(0, Math.min(1, (t - start) / 900));
+                        p = 1 - Math.pow(1 - p, 4);
+                        el.textContent = Math.round(to * p) + suffix;
+                        if (p < 1) requestAnimationFrame(tick);
+                    };
+                    requestAnimationFrame(tick);
+                };
+
+                var onEnter = function (el) {
+                    el.classList.add("is-in");
+                    if (el.hasAttribute("data-scramble")) scramble(el);
+                    el.querySelectorAll("[data-scramble]").forEach(scramble);
+                    if (el.hasAttribute("data-count-text")) countUp(el);
+                };
+
+                var targets = document.querySelectorAll(
+                    "[data-reveal], [data-scramble], [data-count-text]"
+                );
+                if ("IntersectionObserver" in window && !reduced) {
+                    var io = new IntersectionObserver(
+                        function (entries) {
+                            entries.forEach(function (entry) {
+                                if (entry.isIntersecting) {
+                                    onEnter(entry.target);
+                                    io.unobserve(entry.target);
+                                }
+                            });
+                        },
+                        { threshold: 0.2 }
+                    );
+                    targets.forEach(function (el) {
+                        io.observe(el);
+                    });
+                } else {
+                    targets.forEach(onEnter);
+                }
+
+                var place = function (ink, el, axis) {
+                    if (!ink) return;
+                    if (!el) {
+                        ink.style.setProperty("--o", 0);
+                        return;
+                    }
+                    ink.style.setProperty("--x", el.offsetLeft + "px");
+                    ink.style.setProperty("--w", el.offsetWidth + "px");
+                    ink.style.setProperty("--o", 1);
+                };
+
+                var nav = document.getElementById("desktop-nav");
+                var navInk = document.getElementById("nav-ink");
+                if (nav && navInk) {
+                    var links = nav.querySelectorAll("a");
+                    var current = nav.querySelector("[aria-current]");
+                    place(navInk, current);
+                    links.forEach(function (link) {
+                        link.addEventListener("mouseenter", function () {
+                            place(navInk, link);
+                        });
+                    });
+                    nav.addEventListener("mouseleave", function () {
+                        place(navInk, current);
+                    });
+                    window.addEventListener("resize", function () {
+                        place(navInk, current);
+                    });
+                }
+
+                var grid = document.getElementById("highlight-grid");
+                var gridInk = document.getElementById("highlight-ink");
+                if (grid && gridInk) {
+                    var items = grid.querySelectorAll(".highlight-item");
+                    items.forEach(function (item) {
+                        item.addEventListener("mouseenter", function () {
+                            if (window.innerWidth < 768) return;
+                            items.forEach(function (x) {
+                                x.classList.toggle("is-hot", x === item);
+                            });
+                            place(gridInk, item);
+                            var title = item.querySelector("h3");
+                            if (title) scramble(title);
+                        });
+                    });
+                    grid.addEventListener("mouseleave", function () {
+                        items.forEach(function (x) {
+                            x.classList.remove("is-hot");
+                        });
+                        place(gridInk, null);
+                    });
+                }
+
+                if (!reduced && window.matchMedia("(pointer: fine)").matches) {
+                    document.querySelectorAll(".magnetic").forEach(function (btn) {
+                        btn.addEventListener("mousemove", function (e) {
+                            var r = btn.getBoundingClientRect();
+                            var x = (e.clientX - r.left - r.width / 2) * 0.18;
+                            var y = (e.clientY - r.top - r.height / 2) * 0.3;
+                            btn.style.transform = "translate(" + x + "px," + y + "px)";
+                        });
+                        btn.addEventListener("mouseleave", function () {
+                            btn.style.transform = "";
+                        });
+                    });
+                }
+            }
+
             function bindPerPageInteractions() {
                 playWelcomeAnimation();
+                initMotion();
 
                 var themeToggleBtn = document.getElementById("theme-toggle");
                 var themeToggleIcon = document.getElementById("theme-toggle-icon");
@@ -845,6 +1398,12 @@ const editorialPageTransition = {
                     if (!palette) return;
                     palette.classList.remove("hidden");
                     palette.classList.add("flex");
+                    var panel = document.getElementById("command-panel");
+                    if (panel) {
+                        panel.classList.remove("palette-in");
+                        void panel.offsetWidth;
+                        panel.classList.add("palette-in");
+                    }
                     document.body.style.overflow = "hidden";
                     if (paletteInput) {
                         paletteInput.value = "";

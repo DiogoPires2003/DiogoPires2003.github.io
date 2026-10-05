@@ -166,43 +166,44 @@ const stats = [
 ---
 
 <Layout title="Diogo Pires | Skills">
-    <section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
-        <p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+    <section data-reveal class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
+        <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-6" data-scramble>
             N&deg; 02 &mdash; Technical Stack
         </p>
-        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight mb-6 max-w-3xl">
-            Skills &amp; Tools<span class="text-accent">.</span>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-[-0.035em] mb-6 max-w-3xl">
+            <span class="reveal-line" style="--i:0"><span>Skills &amp; Tools<span class="text-accent stamp-dot">.</span></span></span>
         </h1>
-        <p class="max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+        <p class="reveal-up max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
             Languages, frameworks and tools I use regularly. Proficiency
             reflects hands-on academic and internship experience.
         </p>
     </section>
 
-    <section class="px-4 sm:px-6 lg:px-12 py-6 border-b-2 border-ink dark:border-paper flex flex-wrap gap-0" id="filter-container">
+    <section class="px-4 sm:px-6 lg:px-12 py-6 border-b-2 border-ink dark:border-paper" id="filter-container">
+        <div id="filter-group" class="relative isolate inline-flex flex-wrap">
+        <span id="filter-ink" class="slide-ink" aria-hidden="true"></span>
         {filters.map((filter, i) => (
             <button
                 data-filter={filter}
                 class:list={[
-                    "filter-btn tap-feedback px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper transition-colors",
+                    "filter-btn tap-feedback px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper",
                     i > 0 && "border-l-0",
-                    filter === "All"
-                        ? "bg-ink text-paper dark:bg-paper dark:text-ink"
-                        : "hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink",
+                    filter === "All" && "is-active",
                 ]}
             >
-                {filter}
+                {filter}<span class="ml-2 opacity-50">{filter === "All" ? nodeCards.length : nodeCards.filter((c) => c.category === filter).length}</span>
             </button>
         ))}
+        </div>
     </section>
 
     <section class="border-b-2 border-ink dark:border-paper" id="skill-grid">
-        <div class="hidden lg:grid grid-cols-12 px-4 sm:px-6 lg:px-12 py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-500 border-b border-neutral-300 dark:border-neutral-700">
+        <div class="hidden lg:grid grid-cols-12 px-4 sm:px-6 lg:px-12 py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 border-b border-neutral-300 dark:border-neutral-700">
             <span class="col-span-1">No.</span>
             <button
                 type="button"
                 id="sort-name"
-                class="sort-btn col-span-3 text-left flex items-center gap-1.5 hover:text-accent transition-colors"
+                class="sort-btn col-span-3 text-left flex items-center gap-1.5 hover:text-accent-text transition-colors"
             >
                 Name <span class="sort-arrow" data-for="name"></span>
             </button>
@@ -211,7 +212,7 @@ const stats = [
             <button
                 type="button"
                 id="sort-proficiency"
-                class="sort-btn col-span-2 text-left flex items-center gap-1.5 hover:text-accent transition-colors"
+                class="sort-btn col-span-2 text-left flex items-center gap-1.5 hover:text-accent-text transition-colors"
             >
                 Proficiency <span class="sort-arrow" data-for="proficiency"></span>
             </button>
@@ -219,7 +220,7 @@ const stats = [
         </div>
         {nodeCards.map((card, i) => (
             <div
-                class="skill-row grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 transition-[background-color,color,opacity] duration-200 ease-out motion-reduce:transition-none"
+                class="skill-row row-wipe group grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 transition-[color,opacity] duration-200 ease-out motion-reduce:transition-none"
                 data-category={card.category}
                 data-name={card.name}
                 data-proficiency={card.proficiency}
@@ -228,28 +229,26 @@ const stats = [
                     {String(i + 1).padStart(2, "0")}
                 </span>
                 <span class="col-span-6 sm:col-span-3">
-                    <span class="font-bold uppercase text-sm sm:text-base block">{card.name}</span>
-                    <span class="sm:hidden text-xs text-neutral-500">{card.detail}</span>
+                    <span class="row-slide font-bold uppercase text-sm sm:text-base">{card.name}</span>
+                    <span class="block sm:hidden text-xs text-neutral-500 dark:text-neutral-400">{card.detail}</span>
                 </span>
-                <span class="hidden sm:block col-span-3 text-sm text-neutral-500">
+                <span class="hidden sm:block col-span-3 text-sm text-neutral-500 dark:text-neutral-400">
                     {card.detail}
                 </span>
-                <span class="hidden sm:block col-span-2 font-mono text-[11px] uppercase text-accent">
+                <span class="hidden sm:block col-span-2 font-mono text-[11px] uppercase text-accent-text">
                     [{card.category}]
                 </span>
                 <span class="col-span-5 sm:col-span-2">
                     <div class="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800">
                         <div
-                            class="skill-bar-fill h-full bg-ink dark:bg-paper transition-[width] duration-[600ms] ease-out motion-reduce:transition-none motion-reduce:duration-0"
+                            class="skill-bar-fill h-full bg-ink dark:bg-paper group-hover:bg-accent transition-[width] duration-[600ms] ease-out motion-reduce:transition-none motion-reduce:duration-0"
                             data-target-width={card.proficiency}
                             style={`width: 0%; transition-delay: ${(i % 10) * 30}ms;`}
                         >
                         </div>
                     </div>
                 </span>
-                <span class="col-span-1 text-right font-mono text-xs font-bold">
-                    {card.proficiency}%
-                </span>
+                <span class="col-span-1 text-right font-mono text-xs font-bold tabular-nums" data-count-text={card.proficiency} data-suffix="%">{card.proficiency}%</span>
             </div>
         ))}
     </section>
@@ -257,12 +256,14 @@ const stats = [
     <section class="grid grid-cols-1 sm:grid-cols-3">
         {stats.map((stat, i) => (
             <div
+                data-reveal
+                style={`--i:${i}`}
                 class:list={[
-                    "px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
+                    "stat-line px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
                     i !== stats.length - 1 && "sm:border-r border-neutral-300 dark:border-neutral-700",
                 ]}
             >
-                <span class="font-mono text-xs text-accent">{stat.n}</span>
+                <span class="font-mono text-xs text-accent-text">{stat.n}</span>
                 {stat.countTo !== undefined ? (
                     <p class="text-2xl sm:text-3xl font-black uppercase mt-3 flex items-baseline">
                         <number-flow class="stat-number" data-count-to={stat.countTo}></number-flow><span>{stat.countSuffix}</span>
@@ -270,7 +271,7 @@ const stats = [
                 ) : (
                     <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
                 )}
-                <p class="text-xs uppercase tracking-widest text-neutral-500 mt-1">{stat.label}</p>
+                <p class="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-1">{stat.label}</p>
             </div>
         ))}
     </section>
@@ -280,34 +281,25 @@ const stats = [
             const filterBtns = document.querySelectorAll(".filter-btn");
             const rows = Array.from(document.querySelectorAll(".skill-row"));
 
+            const filterInk = document.getElementById("filter-ink");
+            const moveFilterInk = (btn) => {
+                if (!filterInk || !btn) return;
+                filterInk.style.setProperty("--x", `${btn.offsetLeft}px`);
+                filterInk.style.setProperty("--w", `${btn.offsetWidth}px`);
+                filterInk.style.setProperty("--o", 1);
+                filterInk.style.top = `${btn.offsetTop}px`;
+                filterInk.style.height = `${btn.offsetHeight}px`;
+            };
+            moveFilterInk(document.querySelector(".filter-btn.is-active"));
+            window.addEventListener("resize", () =>
+                moveFilterInk(document.querySelector(".filter-btn.is-active"))
+            );
+
             filterBtns.forEach((btn) => {
                 btn.addEventListener("click", () => {
-                    filterBtns.forEach((b) => {
-                        b.classList.remove(
-                            "bg-ink",
-                            "text-paper",
-                            "dark:bg-paper",
-                            "dark:text-ink"
-                        );
-                        b.classList.add(
-                            "hover:bg-ink",
-                            "hover:text-paper",
-                            "dark:hover:bg-paper",
-                            "dark:hover:text-ink"
-                        );
-                    });
-                    btn.classList.add(
-                        "bg-ink",
-                        "text-paper",
-                        "dark:bg-paper",
-                        "dark:text-ink"
-                    );
-                    btn.classList.remove(
-                        "hover:bg-ink",
-                        "hover:text-paper",
-                        "dark:hover:bg-paper",
-                        "dark:hover:text-ink"
-                    );
+                    filterBtns.forEach((b) => b.classList.remove("is-active"));
+                    btn.classList.add("is-active");
+                    moveFilterInk(btn);
 
                     const cat = btn.dataset.filter;
                     rows.forEach((row) => {
