@@ -9,6 +9,8 @@ const stack = [
 	"PostgreSQL", "MySQL", "Docker", "Bash", "Three.js",
 ];
 
+const words = ["Driven", "Curious", "Relentless", "Full Stack", "Based in Andorra", "Driven", "Curious", "Relentless", "Full Stack", "Based in Andorra"];
+
 const facts = [
 	{ label: "Status", value: "Available" },
 	{ label: "Focus", value: "Full-Stack" },
@@ -39,36 +41,37 @@ const highlights = [
 	<section class="border-b-2 border-ink dark:border-paper">
 		<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12">
 			<div
+				data-reveal
 				class="lg:col-span-8 px-4 sm:px-6 lg:px-12 py-16 sm:py-20 lg:py-28 border-b-2 lg:border-b-0 lg:border-r-2 border-ink dark:border-paper"
 			>
-				<p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+				<p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-6" data-scramble>
 					N&deg; 01 &mdash; Introduction
 				</p>
 				<h1
-					class="text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.92] tracking-tight mb-8"
+					class="text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.92] tracking-[-0.035em] mb-8"
 				>
-					Software<br />
-					Engineer<span class="text-accent">.</span>
+					<span class="reveal-line" style="--i:0"><span>Software</span></span>
+					<span class="reveal-line" style="--i:1"><span>Engineer<span class="text-accent stamp-dot">.</span></span></span>
 				</h1>
 				<p
-					class="max-w-xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-10 leading-relaxed"
+					class="reveal-up max-w-xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-10 leading-relaxed"
 				>
 					Computer Science student and full-stack developer
 					engineering efficient, scalable systems. Combining academic
 					knowledge with hands-on internship experience to build
 					high-performance data pipelines and modern web platforms.
 				</p>
-				<div class="flex flex-wrap">
+				<div class="reveal-up flex flex-wrap" style="--i:2">
 					<a
 						href="/skills"
-						class="tap-feedback group px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-paper hover:text-ink dark:hover:bg-ink dark:hover:text-paper transition-colors flex items-center gap-2"
+						class="tap-feedback btn-sweep btn-primary magnetic group px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper flex items-center gap-2"
 					>
 						View Stack
-						<span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+						<span class="material-symbols-outlined text-lg">arrow_forward</span>
 					</a>
 					<a
 						href="/contact"
-						class="tap-feedback px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-l-0 border-ink dark:border-paper hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors flex items-center"
+						class="tap-feedback btn-sweep magnetic px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-l-0 border-ink dark:border-paper flex items-center"
 					>
 						Contact
 					</a>
@@ -94,14 +97,14 @@ const highlights = [
 								i !== facts.length - 1 && "border-b border-neutral-300 dark:border-neutral-700",
 							]}
 						>
-							<dt class="uppercase text-neutral-500 tracking-widest shrink-0">{fact.label}</dt>
+							<dt class="uppercase text-neutral-500 dark:text-neutral-400 tracking-widest shrink-0">{fact.label}</dt>
 							<dd
 								id={fact.id}
 								class:list={[
 									"font-bold uppercase truncate max-w-full sm:text-right sm:max-w-[65%] transition-opacity duration-200 ease-out motion-reduce:transition-none",
-									fact.label === "Status" && "text-accent",
+									fact.label === "Status" && "text-accent-text",
 								]}
-							>{fact.value}</dd>
+							>{fact.label === "Status" && <span class="live-dot" aria-hidden="true"></span>}{fact.value}</dd>
 						</div>
 					))}
 				</dl>
@@ -111,7 +114,7 @@ const highlights = [
 
 	<section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-16">
 		<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 max-w-5xl">
-			<p class="lg:col-span-3 font-mono text-xs text-accent uppercase tracking-[0.25em]">
+			<p class="lg:col-span-3 eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em]" data-scramble>
 				N&deg; 01.1 &mdash; Profile
 			</p>
 			<p class="lg:col-span-9 text-lg sm:text-xl leading-relaxed text-neutral-700 dark:text-neutral-300">
@@ -138,27 +141,28 @@ const highlights = [
 			></canvas>
 		</div>
 		<div class="text-center sm:text-left">
-			<p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-2">
+			<p class="eyebrow justify-center sm:justify-start font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-2" data-scramble>
 				N&deg; 01.2 &mdash; Location
 			</p>
-			<p class="text-2xl sm:text-3xl font-black uppercase">
-				Based In Andorra<span class="text-accent">.</span>
+			<p data-reveal class="text-2xl sm:text-3xl font-black uppercase">
+				Based In Andorra<span class="text-accent stamp-dot">.</span>
 			</p>
-			<p class="font-mono text-xs text-neutral-500 mt-1">
+			<p class="font-mono text-xs text-neutral-500 dark:text-neutral-400 mt-1">
 				42.5063&deg; N, 1.5218&deg; E
 			</p>
 		</div>
 	</section>
 
-	<section class="grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
+	<section id="highlight-grid" class="relative isolate grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
+		<span id="highlight-ink" class="slide-ink hidden md:block" aria-hidden="true"></span>
 		{highlights.map((item, i) => (
 			<div
 				class:list={[
-					"highlight-item p-8 sm:p-10 opacity-0 translate-y-2 transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none motion-reduce:duration-0",
+					"highlight-item p-8 sm:p-10 opacity-0 translate-y-2 transition-[opacity,transform,color] duration-500 ease-out motion-reduce:transition-none motion-reduce:duration-0",
 					i !== highlights.length - 1 && "border-b-2 md:border-b-0 md:border-r-2 border-ink dark:border-paper",
 				]}
 			>
-				<span class="font-mono text-xs text-accent">{item.n}</span>
+				<span class="font-mono text-xs text-accent-text">{item.n}</span>
 				<h3 class="text-2xl font-black uppercase mt-3 mb-3">{item.title}</h3>
 				<p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
 					{item.text}
@@ -167,8 +171,8 @@ const highlights = [
 		))}
 	</section>
 
-	<section class="bg-ink text-paper dark:bg-paper dark:text-ink py-4 overflow-hidden whitespace-nowrap">
-		<div class="flex w-max animate-marquee font-mono text-sm uppercase tracking-widest">
+	<section class="marquee-band bg-ink text-paper dark:bg-paper dark:text-ink overflow-hidden whitespace-nowrap">
+		<div class="flex w-max animate-marquee font-mono text-sm uppercase tracking-widest py-4">
 			<div class="flex items-center pr-6">
 				{stack.map((tech) => (
 					<>
@@ -181,6 +185,24 @@ const highlights = [
 				{stack.map((tech) => (
 					<>
 						{tech}
+						<span class="text-accent mx-6">/</span>
+					</>
+				))}
+			</div>
+		</div>
+		<div class="flex w-max animate-marquee-reverse text-2xl sm:text-3xl font-black uppercase tracking-tight py-3 border-t border-neutral-700 dark:border-neutral-300" aria-hidden="true">
+			<div class="flex items-center pr-6">
+				{words.map((word) => (
+					<>
+						{word}
+						<span class="text-accent mx-6">/</span>
+					</>
+				))}
+			</div>
+			<div class="flex items-center pr-6" aria-hidden="true">
+				{words.map((word) => (
+					<>
+						{word}
 						<span class="text-accent mx-6">/</span>
 					</>
 				))}

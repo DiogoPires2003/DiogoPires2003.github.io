@@ -51,14 +51,14 @@ const stats = [
 ---
 
 <Layout title="Diogo Pires | Academic">
-    <section class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
-        <p class="font-mono text-xs text-accent uppercase tracking-[0.25em] mb-6">
+    <section data-reveal class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
+        <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-6" data-scramble>
             N&deg; 03 &mdash; Journey
         </p>
-        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight mb-6 max-w-3xl">
-            Education &amp;<br />Certifications<span class="text-accent">.</span>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-[-0.035em] mb-6 max-w-3xl">
+            <span class="reveal-line" style="--i:0"><span>Education &amp;</span></span><span class="reveal-line" style="--i:1"><span>Certifications<span class="text-accent stamp-dot">.</span></span></span>
         </h1>
-        <p class="max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+        <p class="reveal-up max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
             A record of my progress in software engineering, from core
             learning to applied technical experience.
         </p>
@@ -73,8 +73,8 @@ const stats = [
                 ]}
             >
                 <div class="sm:col-span-3 lg:col-span-2 px-4 sm:px-6 lg:px-12 py-6 sm:py-8 flex sm:flex-col justify-between sm:justify-start gap-2 border-b sm:border-b-0 sm:border-r border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/40">
-                    <span class="font-mono text-xs text-accent">{String(i + 1).padStart(2, "0")}</span>
-                    <span class="font-mono text-xs uppercase tracking-widest text-neutral-500">
+                    <span class="font-mono text-xs text-accent-text">{String(i + 1).padStart(2, "0")}</span>
+                    <span class="font-mono text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                         {item.date}
                     </span>
                 </div>
@@ -85,10 +85,10 @@ const stats = [
                     <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 max-w-2xl">
                         {item.description}
                     </p>
-                    <div class="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+                    <div class="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                         {item.tags.map((tag) => (
                             <span class="flex items-center gap-2">
-                                <span class="text-accent">/</span>
+                                <span class="text-accent-text">/</span>
                                 {tag}
                             </span>
                         ))}
@@ -101,12 +101,14 @@ const stats = [
     <section class="grid grid-cols-1 sm:grid-cols-3">
         {stats.map((stat, i) => (
             <div
+                data-reveal
+                style={`--i:${i}`}
                 class:list={[
-                    "px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
+                    "stat-line px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
                     i !== stats.length - 1 && "sm:border-r border-neutral-300 dark:border-neutral-700",
                 ]}
             >
-                <span class="font-mono text-xs text-accent">{stat.n}</span>
+                <span class="font-mono text-xs text-accent-text">{stat.n}</span>
                 {stat.countTo !== undefined ? (
                     <p class="text-2xl sm:text-3xl font-black uppercase mt-3 flex items-baseline">
                         <number-flow class="stat-number" data-count-to={stat.countTo}></number-flow><span>{stat.countSuffix}</span>
@@ -114,7 +116,7 @@ const stats = [
                 ) : (
                     <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
                 )}
-                <p class="text-xs uppercase tracking-widest text-neutral-500 mt-1">{stat.label}</p>
+                <p class="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-1">{stat.label}</p>
             </div>
         ))}
     </section>
