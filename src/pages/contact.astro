@@ -20,7 +20,7 @@ import Layout from "../layouts/Layout.astro";
         <div
             data-reveal class="reveal-up group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 lg:px-12 py-8 border-b border-neutral-300 dark:border-neutral-700 row-invert"
         >
-            <a href="mailto:dfalvesp@gmail.com" class="flex items-baseline gap-4">
+            <a href="mailto:dfalvesp@gmail.com" class="row-stretch-link flex items-baseline gap-4 min-w-0">
                 <span class="font-mono text-xs text-accent-text">/ Email</span>
                 <span class="row-slide text-xl sm:text-2xl font-bold break-all">dfalvesp@gmail.com</span>
             </a>
@@ -28,10 +28,10 @@ import Layout from "../layouts/Layout.astro";
                 type="button"
                 id="copy-email-btn"
                 data-email="dfalvesp@gmail.com"
-                class="tap-feedback flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity shrink-0"
+                class="row-stretch-over tap-feedback flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest opacity-70 hover:opacity-100 shrink-0"
                 aria-label="Copy email address"
             >
-                <span id="copy-email-label">Copy</span>
+                <span id="copy-email-label" class="value-swap">Copy</span>
                 <span class="material-symbols-outlined text-xl" id="copy-email-icon">content_copy</span>
             </button>
         </div>
@@ -66,10 +66,7 @@ import Layout from "../layouts/Layout.astro";
     </section>
 
     <section class="px-4 sm:px-6 lg:px-12 py-6 flex items-center gap-3">
-        <span class="relative flex h-2.5 w-2.5">
-            <span class="animate-ping absolute inline-flex h-full w-full bg-accent opacity-75"></span>
-            <span class="relative inline-flex h-2.5 w-2.5 bg-accent"></span>
-        </span>
+        <span class="live-dot" aria-hidden="true"></span>
         <span class="font-mono text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
             Available for internship opportunities
         </span>
@@ -85,12 +82,21 @@ import Layout from "../layouts/Layout.astro";
             copyBtn?.addEventListener("click", async (event) => {
                 event.preventDefault();
                 const email = copyBtn.dataset.email || "";
+
+                const swap = (text) => {
+                    if (!copyLabel) return;
+                    copyLabel.classList.add("is-swapping");
+                    window.setTimeout(() => {
+                        copyLabel.textContent = text;
+                        copyLabel.classList.remove("is-swapping");
+                    }, 160);
+                };
                 try {
                     await navigator.clipboard.writeText(email);
-                    if (copyLabel) copyLabel.textContent = "Copied";
+                    swap("Copied");
                     if (copyIcon) copyIcon.textContent = "check";
                 } catch (err) {
-                    if (copyLabel) copyLabel.textContent = "Failed";
+                    swap("Failed");
                 }
                 if (copyIcon) {
                     copyIcon.classList.remove("icon-pop");
@@ -99,7 +105,7 @@ import Layout from "../layouts/Layout.astro";
                 }
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => {
-                    if (copyLabel) copyLabel.textContent = "Copy";
+                    swap("Copy");
                     if (copyIcon) copyIcon.textContent = "content_copy";
                 }, 1500);
             });

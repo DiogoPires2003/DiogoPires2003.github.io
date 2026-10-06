@@ -64,11 +64,11 @@ const stats = [
         </p>
     </section>
 
-    <section class="border-b-2 border-ink dark:border-paper">
+    <section data-stagger="70" class="border-b-2 border-ink dark:border-paper">
         {milestones.map((item, i) => (
             <div
                 class:list={[
-                    "milestone-item grid grid-cols-1 sm:grid-cols-12 opacity-0 translate-y-2 transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none motion-reduce:duration-0",
+                    "milestone-item stagger-item grid grid-cols-1 sm:grid-cols-12",
                     i !== milestones.length - 1 && "border-b border-neutral-300 dark:border-neutral-700",
                 ]}
             >
@@ -120,34 +120,6 @@ const stats = [
             </div>
         ))}
     </section>
-
-    <script is:inline>
-        document.addEventListener("astro:page-load", () => {
-            const items = document.querySelectorAll(".milestone-item");
-            if (!items.length) return;
-
-            const reveal = (el) => {
-                el.classList.remove("opacity-0", "translate-y-2");
-            };
-
-            if ("IntersectionObserver" in window) {
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        entries.forEach((entry) => {
-                            if (entry.isIntersecting) {
-                                reveal(entry.target);
-                                observer.unobserve(entry.target);
-                            }
-                        });
-                    },
-                    { threshold: 0.15 }
-                );
-                items.forEach((item) => observer.observe(item));
-            } else {
-                items.forEach(reveal);
-            }
-        });
-    </script>
 
     <script>
         import "number-flow";

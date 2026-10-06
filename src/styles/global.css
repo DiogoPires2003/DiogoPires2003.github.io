@@ -1,0 +1,1006 @@
+@import "tailwindcss";
+
+/* Tailwind v4 uses media-query dark mode by default; this site drives it from a class. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --color-ink: #0a0a0a;
+    --color-paper: #ffffff;
+    --color-accent: #e63946;
+    --color-accent-dark: #c1121f;
+    /* Resolved lazily at the use site so .dark can retarget it. */
+    --color-accent-text: var(--accent-text);
+
+    --font-sans: Archivo, sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+
+    --animate-marquee: marquee 32s linear infinite;
+    --animate-marquee-reverse: marquee 26s linear infinite reverse;
+
+    @keyframes marquee {
+        from {
+            transform: translateX(0%);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+}
+
+/* ===========================================================================
+   Motion system
+   Easing: enters use ease-out, on-screen movement uses ease-in-out, the accent
+   full stop uses an overshoot. Nothing uses ease-in.
+   =========================================================================== */
+:root {
+    --accent: #e63946;
+    --accent-text: #c1121f;
+
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-stamp: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --duration-press: 150ms;
+    --duration-fast: 160ms;
+    --duration-hover: 240ms;
+    --duration-leave: 180ms;
+    --duration-move: 280ms;
+    --duration-reveal: 700ms;
+    --duration-reveal-soft: 560ms;
+    --stagger-step: 55ms;
+
+    --inv-bg: #0a0a0a;
+    --inv-fg: #ffffff;
+    --hover-tint: #fafafa;
+}
+.dark {
+    --accent-text: #e63946;
+    --inv-bg: #ffffff;
+    --inv-fg: #0a0a0a;
+    --hover-tint: rgba(23, 23, 23, 0.6);
+}
+
+/* Tailwind v4 preflight sets buttons to cursor:default. */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+    cursor: pointer;
+}
+
+/* Interface chrome should not be selectable by a long press. */
+button,
+[role="button"],
+nav a,
+.logo-box,
+.marquee-band,
+.filter-btn,
+.sort-btn {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html {
+    scrollbar-gutter: stable;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+}
+::selection {
+    background-color: #e63946;
+    color: #ffffff;
+}
+:focus-visible {
+    outline: 2px solid #e63946;
+    outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Press feedback. Composed through variables so the magnetic pointer offset
+   and the :active scale can coexist on the same element.
+   --------------------------------------------------------------------------- */
+.tap-feedback,
+.magnetic {
+    --mx: 0px;
+    --my: 0px;
+    --press: 1;
+    transform: translate(var(--mx), var(--my)) scale(var(--press));
+    transition: transform var(--duration-press) var(--ease-out);
+}
+.tap-feedback:active {
+    --press: 0.97;
+}
+
+.nav-link,
+.link-ghost {
+    --press: 1;
+    transform: scale(var(--press));
+    transition:
+        color var(--duration-fast) var(--ease-out),
+        transform var(--duration-press) var(--ease-out);
+}
+.nav-link:active,
+.link-ghost:active {
+    --press: 0.96;
+}
+@media (hover: hover) and (pointer: fine) {
+    .nav-link:hover,
+    .link-ghost:hover {
+        color: var(--accent-text);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal: headline lines rise out of a mask
+   --------------------------------------------------------------------------- */
+.reveal-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.04em;
+}
+.reveal-line > span {
+    display: inline-block;
+    transform: translateY(105%);
+}
+.is-in .reveal-line > span {
+    animation: dp-rise var(--duration-reveal) var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+}
+.reveal-up {
+    opacity: 0;
+}
+.is-in.reveal-up,
+.is-in .reveal-up {
+    animation: dp-fade-up var(--duration-reveal-soft) var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * var(--stagger-step) + 180ms);
+}
+@keyframes dp-rise {
+    from {
+        transform: translateY(105%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+@keyframes dp-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Stagger for revealed collections (highlights, milestones, filtered rows) */
+.stagger-item {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+        opacity var(--duration-leave) var(--ease-out),
+        transform var(--duration-leave) var(--ease-out);
+}
+.stagger-item.is-shown {
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--duration-reveal-soft);
+    transition-timing-function: var(--ease-out-expo);
+    transition-delay: calc(var(--stagger, 0) * 1ms);
+}
+
+/* ---------------------------------------------------------------------------
+   Stamp: the accent full stop lands last. It arrives oversized and settles,
+   so it never grows out of literal nothing.
+   --------------------------------------------------------------------------- */
+.stamp-dot {
+    display: inline-block;
+}
+[data-reveal] .stamp-dot {
+    opacity: 0;
+}
+.is-in .stamp-dot {
+    animation: dp-stamp 420ms var(--ease-stamp) both;
+    animation-delay: 420ms;
+}
+@keyframes dp-stamp {
+    0% {
+        transform: scale(1.8) rotate(-8deg);
+        opacity: 0;
+    }
+    55% {
+        transform: scale(0.9);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Eyebrow: red rule grows in front of the section index
+   --------------------------------------------------------------------------- */
+.eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.eyebrow::before {
+    content: "";
+    flex: none;
+    width: 32px;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left;
+}
+.is-in .eyebrow::before,
+.eyebrow.is-in::before {
+    animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
+}
+@keyframes dp-grow-x {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Sweep: a block fills buttons from the left, leaves to the right
+   --------------------------------------------------------------------------- */
+.btn-sweep {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+        color var(--duration-leave) var(--ease-out),
+        transform var(--duration-press) var(--ease-out);
+}
+.btn-sweep::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--inv-bg);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--duration-leave) var(--ease-out);
+}
+.btn-sweep.btn-primary {
+    background: var(--inv-bg);
+    color: var(--inv-fg);
+}
+.btn-sweep.btn-primary::before {
+    background: var(--accent);
+}
+.btn-sweep .material-symbols-outlined {
+    transition: transform var(--duration-leave) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-sweep:hover {
+        color: var(--inv-fg);
+        transition-duration: var(--duration-hover), var(--duration-press);
+    }
+    .btn-sweep:hover::before {
+        transform: scaleX(1);
+        transform-origin: left;
+        transition-duration: var(--duration-hover);
+    }
+    .btn-sweep.btn-primary:hover {
+        color: #ffffff;
+    }
+    .btn-sweep:hover .material-symbols-outlined {
+        transform: translateX(6px);
+        transition-duration: var(--duration-hover);
+    }
+    .btn-sweep.btn-back:hover .material-symbols-outlined {
+        transform: translateX(-6px);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Icon buttons: fill rises from the bottom
+   --------------------------------------------------------------------------- */
+.icon-rise {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+        color var(--duration-leave) var(--ease-out),
+        transform var(--duration-press) var(--ease-out);
+}
+.icon-rise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--inv-bg);
+    transform: translateY(101%);
+    transition: transform var(--duration-leave) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+    .icon-rise:hover {
+        color: var(--inv-fg);
+    }
+    .icon-rise:hover::before {
+        transform: none;
+        transition-duration: var(--duration-hover);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Logo box: inverse square and the monogram's red dot stamp in.
+   Both start from a visible scale rather than from zero.
+   --------------------------------------------------------------------------- */
+.logo-box {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition: color var(--duration-leave) var(--ease-out);
+}
+.logo-box::before,
+.logo-box::after {
+    content: "";
+    position: absolute;
+    opacity: 0;
+    transition:
+        transform var(--duration-leave) var(--ease-out),
+        opacity var(--duration-leave) var(--ease-out);
+}
+.logo-box::before {
+    inset: 0;
+    z-index: -1;
+    background: var(--inv-bg);
+    transform: scale(0.9);
+}
+.logo-box::after {
+    right: 3px;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    background: var(--accent);
+    transform: scale(0.4);
+}
+@media (hover: hover) and (pointer: fine) {
+    .group:hover .logo-box {
+        color: var(--inv-fg);
+    }
+    .group:hover .logo-box::before,
+    .group:hover .logo-box::after {
+        transform: scale(1);
+        opacity: 1;
+        transition-duration: var(--duration-hover);
+    }
+    .group:hover .logo-box::after {
+        transition:
+            transform var(--duration-hover) var(--ease-stamp) 70ms,
+            opacity var(--duration-fast) var(--ease-out) 70ms;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Slide: one indicator moves between options. Movement on screen, so
+   ease-in-out is correct here.
+   --------------------------------------------------------------------------- */
+.slide-ink {
+    position: absolute;
+    left: var(--x, 0);
+    width: var(--w, 0);
+    opacity: var(--o, 0);
+    transition:
+        left var(--duration-move) var(--ease-in-out),
+        width var(--duration-move) var(--ease-in-out),
+        opacity var(--duration-fast) var(--ease-out);
+    pointer-events: none;
+}
+#nav-ink {
+    bottom: -2px;
+    height: 3px;
+    background: var(--accent);
+}
+#filter-ink,
+#highlight-ink {
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+    background: var(--inv-bg);
+}
+#highlight-ink::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    width: 12px;
+    height: 12px;
+    background: var(--accent);
+}
+.highlight-item {
+    transition: color var(--duration-hover) var(--ease-out);
+}
+.highlight-item.is-hot {
+    color: var(--inv-fg);
+}
+.highlight-item.is-hot p {
+    color: var(--inv-fg);
+    opacity: 0.8;
+}
+.highlight-item.is-hot .text-accent-text {
+    color: var(--accent);
+}
+.filter-btn {
+    transition:
+        color var(--duration-fast) var(--ease-out),
+        transform var(--duration-press) var(--ease-out);
+}
+.filter-btn.is-active {
+    color: var(--inv-fg);
+}
+@media (hover: hover) and (pointer: fine) {
+    .filter-btn:not(.is-active):hover {
+        color: var(--accent-text);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Wipe: rows tint (table) or invert (contact) from the left.
+   Leaving is quicker than arriving.
+   --------------------------------------------------------------------------- */
+.row-wipe,
+.row-invert {
+    position: relative;
+    isolation: isolate;
+}
+.row-wipe::before,
+.row-invert::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path var(--duration-leave) var(--ease-out);
+}
+.row-wipe::before {
+    background: var(--hover-tint);
+}
+.row-invert::before {
+    background: var(--inv-bg);
+}
+.row-invert {
+    transition: color var(--duration-leave) var(--ease-out);
+}
+/* The email row inverts across its full width, so its full width should be
+   clickable. The copy button sits above the stretched hit area. */
+.row-stretch-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.row-stretch-over {
+    position: relative;
+    z-index: 1;
+    /* Declares both so the press scale from .tap-feedback survives. */
+    transition:
+        opacity var(--duration-fast) var(--ease-out),
+        transform var(--duration-press) var(--ease-out);
+}
+
+.row-slide {
+    display: inline-block;
+    transition: transform var(--duration-leave) var(--ease-out);
+}
+.row-arrow {
+    transition: transform var(--duration-leave) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .row-wipe:hover::before,
+    .row-invert:hover::before {
+        clip-path: inset(0 0 0 0);
+        transition-duration: var(--duration-hover);
+    }
+    .row-invert:hover {
+        color: var(--inv-fg);
+        transition-duration: var(--duration-hover);
+    }
+    .row-invert:hover .text-accent-text {
+        color: var(--accent);
+    }
+    .group:hover .row-slide {
+        transform: translateX(8px);
+        transition-duration: var(--duration-hover);
+    }
+    .group:hover .row-arrow {
+        transform: translateX(4px) rotate(-45deg);
+        transition-duration: var(--duration-hover);
+    }
+}
+
+/* Skill proficiency bars animate transform, never width. */
+.skill-bar-track {
+    position: relative;
+    height: 6px;
+    width: 100%;
+    overflow: hidden;
+    background: #e5e5e5;
+}
+.dark .skill-bar-track {
+    background: #262626;
+}
+.skill-bar-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--inv-bg);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition:
+        transform 560ms var(--ease-out-expo),
+        background-color var(--duration-fast) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+    .group:hover .skill-bar-fill {
+        background: var(--accent);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Stats: accent line draws under each cell
+   --------------------------------------------------------------------------- */
+.stat-line {
+    position: relative;
+    overflow: hidden;
+}
+.stat-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+}
+.stat-line.is-in::after {
+    animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 100ms);
+}
+
+/* ---------------------------------------------------------------------------
+   Live square
+   --------------------------------------------------------------------------- */
+.live-dot {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+}
+.live-dot-inline {
+    margin-right: 8px;
+}
+.live-dot::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    animation: dp-ping 1.6s var(--ease-out) infinite;
+}
+@keyframes dp-ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.75;
+    }
+    80%,
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+/* A value swapping in place is bridged with a short blur so the eye reads one
+   object changing rather than two objects trading. */
+.value-swap {
+    transition:
+        opacity var(--duration-fast) var(--ease-out),
+        filter var(--duration-fast) var(--ease-out);
+}
+.value-swap.is-swapping {
+    opacity: 0;
+    filter: blur(4px);
+}
+
+/* ---------------------------------------------------------------------------
+   Glitch: short red slices, for the intro name and the 404
+   --------------------------------------------------------------------------- */
+.glitch {
+    display: inline-block;
+    animation: dp-glitch 3.2s steps(1) infinite;
+}
+@keyframes dp-glitch {
+    0%,
+    86%,
+    100% {
+        text-shadow: none;
+        transform: none;
+        clip-path: none;
+    }
+    88% {
+        text-shadow: -4px 0 rgba(230, 57, 70, 0.85);
+        transform: translateX(2px);
+        clip-path: inset(10% 0 55% 0);
+    }
+    90% {
+        text-shadow: 4px 0 rgba(230, 57, 70, 0.85);
+        transform: translateX(-3px);
+        clip-path: inset(60% 0 8% 0);
+    }
+    92% {
+        text-shadow: -2px 0 rgba(230, 57, 70, 0.85);
+        transform: translateX(1px);
+        clip-path: none;
+    }
+    94% {
+        text-shadow: none;
+        transform: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Command palette. Opened with a keyboard shortcut many times a session, so
+   it has no entrance animation and no transition on the active row.
+   --------------------------------------------------------------------------- */
+#command-list {
+    overscroll-behavior: contain;
+}
+#command-input {
+    /* 16px keeps iOS Safari from zooming the page on focus. */
+    font-size: 16px;
+}
+.command-item {
+    transition: none;
+}
+.command-item.is-active {
+    background-color: #0a0a0a;
+    color: #ffffff;
+}
+:is(.dark) .command-item.is-active {
+    background-color: #ffffff;
+    color: #0a0a0a;
+}
+.command-item.is-active .text-accent-text {
+    color: var(--accent);
+}
+.command-item:active {
+    opacity: 0.7;
+}
+
+#mobile-menu {
+    overscroll-behavior: contain;
+}
+
+/* The bands run edge to edge, so the words are softened as they leave rather
+   than guillotined by the viewport. */
+.marquee-band {
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 6%,
+        #000 94%,
+        transparent
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 6%,
+        #000 94%,
+        transparent
+    );
+}
+
+/* Appears once there is somewhere to go back to. */
+#to-top {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 60;
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+    pointer-events: none;
+    transition:
+        opacity var(--duration-leave) var(--ease-out),
+        transform var(--duration-leave) var(--ease-out);
+}
+#to-top.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition-duration: var(--duration-hover);
+}
+#to-top:active {
+    transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .marquee-band:hover .animate-marquee,
+    .marquee-band:hover .animate-marquee-reverse {
+        animation-play-state: paused;
+    }
+    .profile-shot {
+        transition:
+            filter 420ms var(--ease-out),
+            transform 420ms var(--ease-out);
+    }
+    .profile-shot:hover {
+        filter: grayscale(0);
+        transform: scale(1.04);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Welcome intro
+   --------------------------------------------------------------------------- */
+#welcome-overlay .welcome-half {
+    transition: transform 750ms cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+    overflow: hidden;
+}
+#welcome-overlay .welcome-tech {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    animation: welcome-tech-float var(--tech-duration, 4400ms) ease-in-out
+        infinite;
+    animation-delay: var(--tech-delay, 0ms);
+}
+@keyframes welcome-tech-float {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    12% {
+        opacity: var(--tech-op, 0.35);
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    88% {
+        opacity: var(--tech-op, 0.35);
+    }
+    100% {
+        opacity: var(--tech-op, 0.35);
+        transform: translateY(0);
+    }
+}
+#welcome-overlay.is-leaving .welcome-half-top {
+    transform: translateY(-100%);
+}
+#welcome-overlay.is-leaving .welcome-half-bottom {
+    transform: translateY(100%);
+}
+#welcome-overlay .welcome-word-row {
+    display: inline-flex;
+    align-items: baseline;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    font-size: clamp(1.75rem, 7vw, 4rem);
+    line-height: 1;
+    transition:
+        opacity 250ms var(--ease-out),
+        transform 250ms var(--ease-out);
+}
+#welcome-overlay.is-leaving .welcome-word-row {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+}
+#welcome-overlay .welcome-word-dot {
+    display: inline-block;
+    transform: scale(1.4);
+    opacity: 0;
+}
+#welcome-overlay .welcome-word-dot.is-stamped {
+    animation: welcome-stamp 280ms var(--ease-stamp) forwards;
+}
+@keyframes welcome-stamp {
+    0% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+    55% {
+        transform: scale(0.94);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+/* Runs for exactly as long as the intro does, so the skip hint is backed by
+   something the eye can measure. */
+#welcome-progress {
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+}
+#welcome-progress.is-running {
+    opacity: 1;
+    animation: dp-progress 2950ms linear forwards;
+}
+@keyframes dp-progress {
+    from {
+        transform: translateX(-50%) scaleX(0);
+    }
+    to {
+        transform: translateX(-50%) scaleX(1);
+    }
+}
+#welcome-overlay.is-leaving #welcome-progress {
+    opacity: 0;
+    transition: opacity var(--duration-leave) var(--ease-out);
+}
+
+#welcome-skip {
+    opacity: 0;
+    transition: opacity var(--duration-hover) var(--ease-out);
+}
+#welcome-overlay.is-leaving #welcome-skip {
+    opacity: 0 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Small state changes
+   --------------------------------------------------------------------------- */
+/* Theme change used to be a hard flip of every surface at once. A circle wiped
+   out from the toggle reads as one deliberate change instead of a flash.
+   The overlay is a frozen picture of the old theme that the new one is
+   revealed from underneath. */
+#theme-wipe {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    pointer-events: none;
+    background: var(--wipe-bg, #ffffff);
+    clip-path: circle(140% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+}
+#theme-wipe.is-wiping {
+    animation: dp-theme-wipe 520ms var(--ease-out-expo) forwards;
+}
+@keyframes dp-theme-wipe {
+    to {
+        clip-path: circle(0% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+    }
+}
+
+#theme-toggle-icon.is-swapping {
+    animation: theme-icon-swap 180ms var(--ease-out);
+}
+@keyframes theme-icon-swap {
+    0% {
+        transform: rotate(-30deg) scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: rotate(0deg) scale(1);
+        opacity: 1;
+    }
+}
+.icon-pop {
+    animation: icon-pop 200ms var(--ease-stamp);
+}
+@keyframes icon-pop {
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+.notfound-stamp {
+    animation: welcome-stamp 400ms var(--ease-stamp);
+}
+
+/* Scroll progress is driven 1:1 by scroll position, so it never transitions. */
+#scroll-progress {
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    will-change: transform;
+}
+
+/* ---------------------------------------------------------------------------
+   Page transitions
+   --------------------------------------------------------------------------- */
+@keyframes editorial-page-out {
+    from {
+        opacity: 1;
+        mix-blend-mode: plus-lighter;
+    }
+    to {
+        opacity: 0;
+        mix-blend-mode: plus-lighter;
+    }
+}
+@keyframes editorial-page-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+        mix-blend-mode: plus-lighter;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        mix-blend-mode: plus-lighter;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion: keep opacity and colour changes that aid comprehension,
+   drop everything that moves.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .reveal-line > span,
+    .reveal-up,
+    [data-reveal] .stamp-dot,
+    .stagger-item {
+        transform: none !important;
+        opacity: 1 !important;
+        animation: none !important;
+        transition: none !important;
+    }
+    .eyebrow::before,
+    .stat-line::after {
+        animation: none !important;
+        transform: none;
+    }
+    #theme-wipe.is-wiping,
+    #welcome-progress.is-running,
+    .glitch,
+    .live-dot::before,
+    .animate-marquee,
+    .animate-marquee-reverse,
+    .icon-pop,
+    .notfound-stamp,
+    #theme-toggle-icon.is-swapping,
+    #welcome-overlay .welcome-tech {
+        animation: none !important;
+    }
+    .tap-feedback,
+    .magnetic,
+    .nav-link,
+    .link-ghost,
+    .btn-sweep,
+    .btn-sweep::before,
+    .btn-sweep .material-symbols-outlined,
+    .icon-rise::before,
+    .logo-box::before,
+    .logo-box::after,
+    .slide-ink,
+    .row-wipe::before,
+    .row-invert::before,
+    .row-slide,
+    .row-arrow,
+    .skill-bar-fill,
+    .row-stretch-over,
+    #to-top,
+    .profile-shot {
+        transition: none !important;
+    }
+    .tap-feedback:active,
+    .nav-link,
+    .link-ghost,
+    .magnetic {
+        transform: none !important;
+    }
+    .skill-bar-fill {
+        transform: scaleX(var(--p, 0)) !important;
+    }
+    .value-swap {
+        transition: opacity var(--duration-fast) linear !important;
+    }
+    .value-swap.is-swapping {
+        filter: none;
+    }
+}

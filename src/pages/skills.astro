@@ -220,12 +220,12 @@ const stats = [
         </div>
         {nodeCards.map((card, i) => (
             <div
-                class="skill-row row-wipe group grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0 transition-[color,opacity] duration-200 ease-out motion-reduce:transition-none"
+                class="skill-row stagger-item is-shown row-wipe group grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0"
                 data-category={card.category}
                 data-name={card.name}
                 data-proficiency={card.proficiency}
             >
-                <span class="hidden sm:block col-span-1 font-mono text-xs text-neutral-400">
+                <span class="skill-index hidden sm:block col-span-1 font-mono text-xs text-neutral-400">
                     {String(i + 1).padStart(2, "0")}
                 </span>
                 <span class="col-span-6 sm:col-span-3">
@@ -239,11 +239,11 @@ const stats = [
                     [{card.category}]
                 </span>
                 <span class="col-span-5 sm:col-span-2">
-                    <div class="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800">
+                    <div class="skill-bar-track">
                         <div
-                            class="skill-bar-fill h-full bg-ink dark:bg-paper group-hover:bg-accent transition-[width] duration-[600ms] ease-out motion-reduce:transition-none motion-reduce:duration-0"
-                            data-target-width={card.proficiency}
-                            style={`width: 0%; transition-delay: ${(i % 10) * 30}ms;`}
+                            class="skill-bar-fill"
+                            data-proficiency={card.proficiency}
+                            style={`--p: 0; transition-delay: ${(i % 10) * 30}ms;`}
                         >
                         </div>
                     </div>
@@ -302,30 +302,67 @@ const stats = [
                     moveFilterInk(btn);
 
                     const cat = btn.dataset.filter;
+                    const shown = [];
+
                     rows.forEach((row) => {
                         const shouldShow =
                             cat === "All" || row.dataset.category === cat;
                         if (shouldShow) {
-                            if (row.style.display === "none") {
-                                row.style.display = "grid";
-                                row.style.opacity = "0";
-                                requestAnimationFrame(() => {
-                                    row.style.opacity = "1";
-                                });
-                            } else {
-                                row.style.opacity = "1";
+                            const wasHidden = row.dataset.hidden === "true";
+                            row.dataset.hidden = "false";
+                            row.style.display = "grid";
+                            if (wasHidden) {
+                                row.classList.remove("is-shown");
                             }
+                            shown.push(row);
                         } else {
-                            row.style.opacity = "0";
+                            row.dataset.hidden = "true";
+                            row.classList.remove("is-shown");
                             window.setTimeout(() => {
-                                if (row.style.opacity === "0") {
+                                if (row.dataset.hidden === "true") {
                                     row.style.display = "none";
                                 }
-                            }, 200);
+                            }, 180);
                         }
                     });
+
+                    // Visibility is already decided, so numbering must not
+                    // wait on a frame callback.
+                    renumber();
+
+                    // Rows that are already on screen must not re-animate, so
+                    // only the newcomers get a stagger delay. This waits a
+                    // frame so the browser registers their hidden start state.
+                    const entering = shown.filter(
+                        (row) => !row.classList.contains("is-shown")
+                    );
+                    if (entering.length) {
+                        requestAnimationFrame(() => {
+                            if (window.__showStagger) {
+                                window.__showStagger(entering, 24);
+                            } else {
+                                entering.forEach((row) =>
+                                    row.classList.add("is-shown")
+                                );
+                            }
+                        });
+                    }
                 });
             });
+
+            // The leading number is a position in the current view, so it has
+            // to be rewritten whenever the view changes.
+            const renumber = () => {
+                let n = 0;
+                // Read from the DOM, not the captured array: sorting reorders
+                // the rows and the number is a position in the current view.
+                document.querySelectorAll(".skill-row").forEach((row) => {
+                    if (row.dataset.hidden === "true") return;
+                    n += 1;
+                    const cell = row.querySelector(".skill-index");
+                    if (cell) cell.textContent = String(n).padStart(2, "0");
+                });
+            };
 
             const skillGrid = document.getElementById("skill-grid");
             const sortButtons = document.querySelectorAll(".sort-btn");
@@ -373,7 +410,7 @@ const stats = [
                 });
 
                 const visibleRows = sorted.filter(
-                    (row) => row.style.display !== "none"
+                    (row) => row.dataset.hidden !== "true"
                 );
                 const firstRects = reduceMotion
                     ? null
@@ -383,6 +420,7 @@ const stats = [
 
                 sorted.forEach((row) => skillGrid.appendChild(row));
                 updateSortArrows();
+                renumber();
 
                 if (reduceMotion) return;
 
@@ -405,10 +443,14 @@ const stats = [
                 });
             });
 
-            const bars = document.querySelectorAll(".skill-bar-fill");
-            if (bars.length) {
-                const revealBar = (el) => {
-                    el.style.width = `${el.dataset.targetWidth}%`;
+            const tracks = document.querySelectorAll(".skill-bar-track");
+            if (tracks.length) {
+                const revealBar = (track) => {
+                    const el = track.querySelector(".skill-bar-fill");
+                    if (!el) return;
+                    const p = parseFloat(el.dataset.proficiency) / 100;
+                    el.style.setProperty("--p", String(p));
+                    el.style.transform = `scaleX(${p})`;
                 };
                 if ("IntersectionObserver" in window) {
                     const barObserver = new IntersectionObserver(
@@ -422,9 +464,9 @@ const stats = [
                         },
                         { threshold: 0.4 }
                     );
-                    bars.forEach((bar) => barObserver.observe(bar));
+                    tracks.forEach((track) => barObserver.observe(track));
                 } else {
-                    bars.forEach(revealBar);
+                    tracks.forEach(revealBar);
                 }
             }
         });
@@ -465,11 +507,19 @@ const stats = [
     <script>
         import { animate } from "motion";
 
+        // Motion's `x`/`y`/`translateY` shorthands run on the main thread.
+        // The full transform string is hardware accelerated, which matters
+        // while the rest of the table is reflowing.
         window.__flipSpring = function (row, deltaY) {
             const controls = animate(
                 row,
-                { translateY: [deltaY, 0] },
-                { type: "spring", stiffness: 500, damping: 38 }
+                {
+                    transform: [
+                        `translateY(${deltaY}px)`,
+                        "translateY(0px)",
+                    ],
+                },
+                { type: "spring", duration: 0.45, bounce: 0.1 }
             );
             controls.finished
                 .then(() => {

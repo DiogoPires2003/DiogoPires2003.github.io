@@ -9,10 +9,12 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "astro": "^5.17.1",
     "cobe": "^2.0.1",
     "motion": "^13.4.0",
     "number-flow": "^0.6.2",
+    "tailwindcss": "^4.3.3",
     "torph": "^0.1.3"
   }
 }

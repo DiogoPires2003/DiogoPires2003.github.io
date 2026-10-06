@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
 
 interface Props {
     title: string;
@@ -15,17 +16,19 @@ const ogImage = new URL("/og-image.jpg", Astro.site);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname;
 
+// Both halves are enters/exits, so both use ease-out. Leaving is quicker than
+// arriving, which keeps navigation feeling immediate.
 const editorialAnim = {
     old: {
         name: "editorial-page-out",
-        duration: "160ms",
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        duration: "140ms",
+        easing: "cubic-bezier(0.23, 1, 0.32, 1)",
         fillMode: "both",
     },
     new: {
         name: "editorial-page-in",
         duration: "220ms",
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        easing: "cubic-bezier(0.23, 1, 0.32, 1)",
         fillMode: "both",
     },
 };
@@ -61,6 +64,20 @@ const editorialPageTransition = {
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
 
+        <noscript
+            ><style>
+                /* Revealed collections are shown by script; without it they
+                   must not stay invisible. */
+                .stagger-item {
+                    opacity: 1 !important;
+                    transform: none !important;
+                }
+            </style></noscript
+        >
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
         <ClientRouter />
         <script is:inline>
             function syncThemeColorMeta(isDark) {
@@ -90,10 +107,6 @@ const editorialPageTransition = {
                 document.addEventListener("astro:after-swap", applyStoredTheme);
             }
         </script>
-        <script
-            is:inline
-            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
-        ></script>
         <link
             href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
@@ -102,626 +115,8 @@ const editorialPageTransition = {
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
             rel="stylesheet"
         />
-        <script is:inline id="tailwind-config">
-            tailwind.config = {
-                darkMode: "class",
-                theme: {
-                    extend: {
-                        colors: {
-                            ink: "#0a0a0a",
-                            paper: "#ffffff",
-                            accent: "#e63946",
-                            "accent-dark": "#c1121f",
-                            "accent-text": "var(--accent-text)",
-                        },
-                        fontFamily: {
-                            sans: ["Archivo", "sans-serif"],
-                            mono: ["JetBrains Mono", "monospace"],
-                        },
-                        borderRadius: {
-                            none: "0px",
-                            DEFAULT: "0px",
-                            lg: "0px",
-                            xl: "0px",
-                            full: "9999px",
-                        },
-                        animation: {
-                            marquee: "marquee 32s linear infinite",
-                            "marquee-reverse": "marquee 26s linear infinite reverse",
-                        },
-                        keyframes: {
-                            marquee: {
-                                "0%": { transform: "translateX(0%)" },
-                                "100%": { transform: "translateX(-50%)" },
-                            },
-                        },
-                    },
-                },
-            };
-        </script>
-        <style is:inline>
-            :root {
-                --accent: #e63946;
-                --accent-text: #c1121f;
-                --ease-editorial: cubic-bezier(0.76, 0, 0.24, 1);
-                --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-                --ease-stamp: cubic-bezier(0.34, 1.56, 0.64, 1);
-                --duration-fast: 220ms;
-                --duration-base: 450ms;
-                --duration-reveal: 900ms;
-                --stagger-step: 70ms;
-                --inv-bg: #0a0a0a;
-                --inv-fg: #ffffff;
-                --hover-tint: #fafafa;
-            }
-            .dark {
-                --accent-text: #e63946;
-                --inv-bg: #ffffff;
-                --inv-fg: #0a0a0a;
-                --hover-tint: rgba(23, 23, 23, 0.6);
-            }
-
-            /* Reveal: headline lines rise out of a mask */
-            .reveal-line {
-                display: block;
-                overflow: hidden;
-                padding-bottom: 0.04em;
-            }
-            .reveal-line > span {
-                display: inline-block;
-                transform: translateY(105%);
-            }
-            .is-in .reveal-line > span {
-                animation: dp-rise var(--duration-reveal) var(--ease-out-expo) both;
-                animation-delay: calc(var(--i, 0) * 110ms);
-            }
-            .reveal-up {
-                opacity: 0;
-            }
-            .is-in.reveal-up,
-            .is-in .reveal-up {
-                animation: dp-fade-up var(--duration-reveal) var(--ease-out-expo) both;
-                animation-delay: calc(var(--i, 0) * var(--stagger-step) + 300ms);
-            }
-            @keyframes dp-rise {
-                from { transform: translateY(105%); }
-                to { transform: translateY(0); }
-            }
-            @keyframes dp-fade-up {
-                from { opacity: 0; transform: translateY(12px); }
-                to { opacity: 1; transform: none; }
-            }
-
-            /* Stamp: the accent full stop lands last */
-            .stamp-dot {
-                display: inline-block;
-            }
-            [data-reveal] .stamp-dot {
-                opacity: 0;
-            }
-            .is-in .stamp-dot {
-                animation: dp-stamp var(--duration-base) var(--ease-stamp) both;
-                animation-delay: 750ms;
-            }
-            @keyframes dp-stamp {
-                0% { transform: scale(1.8) rotate(-8deg); opacity: 0; }
-                55% { transform: scale(0.9); opacity: 1; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-
-            /* Eyebrow: red rule grows in front of the section index */
-            .eyebrow {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-            .eyebrow::before {
-                content: "";
-                flex: none;
-                width: 32px;
-                height: 2px;
-                background: var(--accent);
-                transform-origin: left;
-            }
-            .is-in .eyebrow::before,
-            .eyebrow.is-in::before {
-                animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
-            }
-            @keyframes dp-grow-x {
-                from { transform: scaleX(0); }
-                to { transform: scaleX(1); }
-            }
-
-            /* Sweep: a block fills buttons from the left, leaves to the right */
-            .btn-sweep {
-                position: relative;
-                isolation: isolate;
-                overflow: hidden;
-                transition: color var(--duration-base) var(--ease-editorial),
-                    transform var(--duration-fast) var(--ease-out-expo);
-            }
-            .btn-sweep::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                z-index: -1;
-                background: var(--inv-bg);
-                transform: scaleX(0);
-                transform-origin: right;
-                transition: transform var(--duration-base) var(--ease-editorial);
-            }
-            .btn-sweep:hover {
-                color: var(--inv-fg);
-            }
-            .btn-sweep:hover::before {
-                transform: scaleX(1);
-                transform-origin: left;
-            }
-            .btn-sweep.btn-primary {
-                background: var(--inv-bg);
-                color: var(--inv-fg);
-            }
-            .btn-sweep.btn-primary::before {
-                background: var(--accent);
-            }
-            .btn-sweep.btn-primary:hover {
-                color: #ffffff;
-            }
-            .btn-sweep .material-symbols-outlined {
-                transition: transform var(--duration-base) var(--ease-editorial);
-            }
-            .btn-sweep:hover .material-symbols-outlined {
-                transform: translateX(6px);
-            }
-            .btn-sweep.btn-back:hover .material-symbols-outlined {
-                transform: translateX(-6px);
-            }
-
-            /* Icon buttons: fill rises from the bottom */
-            .icon-rise {
-                position: relative;
-                isolation: isolate;
-                overflow: hidden;
-                transition: color var(--duration-fast) var(--ease-editorial);
-            }
-            .icon-rise::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                z-index: -1;
-                background: var(--inv-bg);
-                transform: translateY(101%);
-                transition: transform var(--duration-fast) var(--ease-editorial);
-            }
-            .icon-rise:hover {
-                color: var(--inv-fg);
-            }
-            .icon-rise:hover::before {
-                transform: none;
-            }
-
-            /* Logo box: inverse square and the monogram's red dot stamp in */
-            .logo-box {
-                position: relative;
-                isolation: isolate;
-                overflow: hidden;
-                transition: color var(--duration-fast) var(--ease-editorial);
-            }
-            .logo-box::before,
-            .logo-box::after {
-                content: "";
-                position: absolute;
-                transform: scale(0);
-                transition: transform var(--duration-fast) var(--ease-stamp);
-            }
-            .logo-box::before {
-                inset: 0;
-                z-index: -1;
-                background: var(--inv-bg);
-            }
-            .logo-box::after {
-                right: 3px;
-                bottom: 3px;
-                width: 5px;
-                height: 5px;
-                background: var(--accent);
-                transition-delay: 80ms;
-            }
-            .group:hover .logo-box {
-                color: var(--inv-fg);
-            }
-            .group:hover .logo-box::before,
-            .group:hover .logo-box::after {
-                transform: scale(1);
-            }
-
-            /* Slide: one indicator moves between options */
-            .slide-ink {
-                position: absolute;
-                left: var(--x, 0);
-                width: var(--w, 0);
-                opacity: var(--o, 0);
-                transition: left var(--duration-base) var(--ease-editorial),
-                    width var(--duration-base) var(--ease-editorial),
-                    opacity var(--duration-fast);
-                pointer-events: none;
-            }
-            #nav-ink {
-                bottom: -2px;
-                height: 3px;
-                background: var(--accent);
-            }
-            #filter-ink,
-            #highlight-ink {
-                top: 0;
-                bottom: 0;
-                z-index: -1;
-                background: var(--inv-bg);
-            }
-            #highlight-ink::after {
-                content: "";
-                position: absolute;
-                right: 16px;
-                bottom: 16px;
-                width: 12px;
-                height: 12px;
-                background: var(--accent);
-            }
-            .highlight-item {
-                transition: color var(--duration-base) var(--ease-editorial),
-                    opacity 500ms ease-out, transform 500ms ease-out;
-            }
-            .highlight-item.is-hot {
-                color: var(--inv-fg);
-            }
-            .highlight-item.is-hot p {
-                color: var(--inv-fg);
-                opacity: 0.8;
-            }
-            .highlight-item.is-hot .text-accent-text {
-                color: var(--accent);
-            }
-            .filter-btn {
-                transition: color var(--duration-fast) var(--ease-editorial);
-            }
-            .filter-btn.is-active {
-                color: var(--inv-fg);
-            }
-            .filter-btn:not(.is-active):hover {
-                color: var(--accent-text);
-            }
-
-            /* Wipe: rows tint (table) or invert (contact) from the left */
-            .row-wipe,
-            .row-invert {
-                position: relative;
-                isolation: isolate;
-            }
-            .row-wipe::before,
-            .row-invert::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                z-index: -1;
-                clip-path: inset(0 100% 0 0);
-                transition: clip-path var(--duration-base) var(--ease-editorial);
-            }
-            .row-wipe::before {
-                background: var(--hover-tint);
-            }
-            .row-invert::before {
-                background: var(--inv-bg);
-            }
-            .row-wipe:hover::before,
-            .row-invert:hover::before {
-                clip-path: inset(0 0 0 0);
-            }
-            .row-invert {
-                transition: color var(--duration-base) var(--ease-editorial);
-            }
-            .row-invert:hover {
-                color: var(--inv-fg);
-            }
-            .row-invert:hover .text-accent-text {
-                color: var(--accent);
-            }
-            .row-slide {
-                display: inline-block;
-                transition: transform var(--duration-base) var(--ease-editorial);
-            }
-            .group:hover .row-slide {
-                transform: translateX(8px);
-            }
-            .row-arrow {
-                transition: transform var(--duration-base) var(--ease-editorial);
-            }
-            .group:hover .row-arrow {
-                transform: translateX(4px) rotate(-45deg);
-            }
-
-            /* Stats: accent line draws under each cell */
-            .stat-line {
-                position: relative;
-                overflow: hidden;
-            }
-            .stat-line::after {
-                content: "";
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                width: 100%;
-                height: 3px;
-                background: var(--accent);
-                transform: scaleX(0);
-                transform-origin: left;
-            }
-            .stat-line.is-in::after {
-                animation: dp-grow-x var(--duration-reveal) var(--ease-out-expo) both;
-                animation-delay: calc(var(--i, 0) * 120ms);
-            }
-
-            /* Live square */
-            .live-dot {
-                position: relative;
-                display: inline-block;
-                width: 8px;
-                height: 8px;
-                margin-right: 8px;
-                background: var(--accent);
-            }
-            .live-dot::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                background: var(--accent);
-                animation: dp-ping 1.6s var(--ease-out-expo) infinite;
-            }
-            @keyframes dp-ping {
-                0% { transform: scale(1); opacity: 0.75; }
-                80%, 100% { transform: scale(2.4); opacity: 0; }
-            }
-
-            /* Glitch: short red slices, for the intro name and the 404 */
-            .glitch {
-                display: inline-block;
-                animation: dp-glitch 3.2s steps(1) infinite;
-            }
-            @keyframes dp-glitch {
-                0%, 86%, 100% { text-shadow: none; transform: none; clip-path: none; }
-                88% { text-shadow: -4px 0 rgba(230, 57, 70, 0.85); transform: translateX(2px); clip-path: inset(10% 0 55% 0); }
-                90% { text-shadow: 4px 0 rgba(230, 57, 70, 0.85); transform: translateX(-3px); clip-path: inset(60% 0 8% 0); }
-                92% { text-shadow: -2px 0 rgba(230, 57, 70, 0.85); transform: translateX(1px); clip-path: none; }
-                94% { text-shadow: none; transform: none; }
-            }
-
-            /* Command palette opens with a drop */
-            .palette-in {
-                animation: dp-palette-in var(--duration-base) var(--ease-out-expo) both;
-            }
-            @keyframes dp-palette-in {
-                from { opacity: 0; transform: translateY(-12px) scale(0.97); }
-                to { opacity: 1; transform: none; }
-            }
-            .command-item.is-active .text-accent-text {
-                color: var(--accent);
-            }
-
-            .marquee-band:hover .animate-marquee,
-            .marquee-band:hover .animate-marquee-reverse {
-                animation-play-state: paused;
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                .reveal-line > span,
-                .reveal-up,
-                [data-reveal] .stamp-dot {
-                    transform: none !important;
-                    opacity: 1 !important;
-                    animation: none !important;
-                }
-                .eyebrow::before,
-                .stat-line::after {
-                    animation: none !important;
-                    transform: none;
-                }
-                .glitch,
-                .live-dot::before,
-                .animate-marquee,
-                .animate-marquee-reverse {
-                    animation: none !important;
-                }
-                .btn-sweep,
-                .btn-sweep::before,
-                .icon-rise::before,
-                .logo-box::before,
-                .logo-box::after,
-                .slide-ink,
-                .row-wipe::before,
-                .row-invert::before,
-                .row-slide,
-                .row-arrow {
-                    transition: none !important;
-                }
-            }
-
-            html {
-                scrollbar-gutter: stable;
-                -webkit-tap-highlight-color: transparent;
-            }
-            ::selection {
-                background-color: #e63946;
-                color: #ffffff;
-            }
-            :focus-visible {
-                outline: 2px solid #e63946;
-                outline-offset: 2px;
-            }
-            .command-item.is-active {
-                background-color: #0a0a0a;
-                color: #ffffff;
-            }
-            :is(.dark) .command-item.is-active {
-                background-color: #ffffff;
-                color: #0a0a0a;
-            }
-            #welcome-overlay .welcome-half {
-                transition: transform 750ms cubic-bezier(0.65, 0, 0.35, 1);
-                position: relative;
-                overflow: hidden;
-            }
-            #welcome-overlay .welcome-tech {
-                position: absolute;
-                pointer-events: none;
-                opacity: 0;
-                animation: welcome-tech-float var(--tech-duration, 4400ms) ease-in-out
-                    infinite;
-                animation-delay: var(--tech-delay, 0ms);
-            }
-            @keyframes welcome-tech-float {
-                0% {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                12% {
-                    opacity: var(--tech-op, 0.35);
-                    transform: translateY(0);
-                }
-                50% {
-                    transform: translateY(-10px);
-                }
-                88% {
-                    opacity: var(--tech-op, 0.35);
-                }
-                100% {
-                    opacity: var(--tech-op, 0.35);
-                    transform: translateY(0);
-                }
-            }
-            #welcome-overlay.is-leaving .welcome-half-top {
-                transform: translateY(-100%);
-            }
-            #welcome-overlay.is-leaving .welcome-half-bottom {
-                transform: translateY(100%);
-            }
-            #welcome-overlay .welcome-word-row {
-                display: inline-flex;
-                align-items: baseline;
-                letter-spacing: -0.02em;
-                white-space: nowrap;
-                font-size: clamp(1.75rem, 7vw, 4rem);
-                line-height: 1;
-                transition: opacity 250ms ease, transform 250ms ease;
-            }
-            #welcome-overlay.is-leaving .welcome-word-row {
-                opacity: 0;
-                transform: translateY(-6px) scale(0.98);
-            }
-            #welcome-overlay .welcome-word-dot {
-                display: inline-block;
-                transform: scale(0);
-                opacity: 0;
-            }
-            #welcome-overlay .welcome-word-dot.is-stamped {
-                animation: welcome-stamp 280ms cubic-bezier(0.34, 1.56, 0.64, 1)
-                    forwards;
-            }
-            .tap-feedback {
-                transition: transform 120ms ease-out;
-            }
-            .tap-feedback:active {
-                transform: scale(0.97);
-            }
-            @media (prefers-reduced-motion: reduce) {
-                .tap-feedback {
-                    transition: none;
-                }
-                .tap-feedback:active {
-                    transform: none;
-                }
-            }
-            #theme-toggle-icon.is-swapping {
-                animation: theme-icon-swap 300ms ease-out;
-            }
-            @keyframes theme-icon-swap {
-                0% {
-                    transform: rotate(-45deg) scale(0.6);
-                    opacity: 0;
-                }
-                100% {
-                    transform: rotate(0deg) scale(1);
-                    opacity: 1;
-                }
-            }
-            @media (prefers-reduced-motion: reduce) {
-                #theme-toggle-icon.is-swapping {
-                    animation: none;
-                }
-            }
-            .icon-pop {
-                animation: icon-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-            @keyframes icon-pop {
-                0% {
-                    transform: scale(0.5);
-                    opacity: 0;
-                }
-                100% {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-            @media (prefers-reduced-motion: reduce) {
-                .icon-pop {
-                    animation: none;
-                }
-            }
-            @keyframes welcome-stamp {
-                0% {
-                    transform: scale(1.4);
-                    opacity: 0;
-                }
-                55% {
-                    transform: scale(0.94);
-                    opacity: 1;
-                }
-                100% {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-            .notfound-stamp {
-                animation: welcome-stamp 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-            @media (prefers-reduced-motion: reduce) {
-                .notfound-stamp {
-                    animation: none;
-                }
-            }
-            @keyframes editorial-page-out {
-                from {
-                    opacity: 1;
-                    mix-blend-mode: plus-lighter;
-                }
-                to {
-                    opacity: 0;
-                    mix-blend-mode: plus-lighter;
-                }
-            }
-            @keyframes editorial-page-in {
-                from {
-                    opacity: 0;
-                    transform: translateY(8px);
-                    mix-blend-mode: plus-lighter;
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                    mix-blend-mode: plus-lighter;
-                }
-            }
-        </style>
     </head>
-    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased transition-colors">
+    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased">
         <div
             id="welcome-overlay"
             class="fixed inset-0 z-[200] overflow-hidden"
@@ -800,6 +195,17 @@ const editorialPageTransition = {
                     <span id="welcome-word" class="welcome-word"></span
                     ><span id="welcome-word-dot" class="welcome-word-dot text-accent stamp-dot">.</span>
                 </span>
+<p
+                    id="welcome-skip"
+                    class="absolute inset-x-0 bottom-10 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400"
+                >
+                    Click or press any key to skip
+                </p>
+                <span
+                    id="welcome-progress"
+                    class="absolute bottom-6 left-1/2 h-[2px] w-24 bg-accent"
+                    aria-hidden="true"
+                ></span>
             </div>
         </div>
         <script>
@@ -867,14 +273,14 @@ const editorialPageTransition = {
         <div
             id="scroll-progress"
             class="fixed top-0 left-0 h-[3px] bg-accent z-[70]"
-            style="width: 0%"
+            aria-hidden="true"
         >
         </div>
-        <div class="relative flex min-h-screen flex-col">
+        <div class="relative flex min-h-[100svh] flex-col">
             <header
                 class="flex items-center justify-between border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-4 sticky top-0 z-50 bg-paper/95 dark:bg-ink/95 backdrop-blur-sm"
             >
-                <a href="/" class="flex items-center gap-3 group">
+                <a href="/" class="tap-feedback flex items-center gap-3 group">
                     <span
                         class="logo-box flex items-center justify-center w-8 h-8 border-2 border-ink dark:border-paper font-black text-xs"
                         >DP</span
@@ -885,19 +291,19 @@ const editorialPageTransition = {
                 </a>
                 <nav id="desktop-nav" class="relative hidden md:flex items-stretch self-stretch -my-4">
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/" ? "text-accent-text" : undefined]}
                         href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-2">01</span>Profile</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/skills" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/skills" ? "text-accent-text" : undefined]}
                         href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-2">02</span>Skills</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/academic" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/academic" ? "text-accent-text" : undefined]}
                         href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-2">03</span>Academic</a
                     >
                     <a
-                        class:list={["font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700 hover:text-accent-text transition-colors", currentPath === "/contact" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700", currentPath === "/contact" ? "text-accent-text" : undefined]}
                         href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-2">04</span>Contact</a
                     >
                     <span id="nav-ink" class="slide-ink" aria-hidden="true"></span>
@@ -940,30 +346,33 @@ const editorialPageTransition = {
             </header>
             <nav
                 id="mobile-menu"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Site navigation"
                 class="md:hidden hidden fixed inset-0 z-[60] bg-paper dark:bg-ink px-4 pt-20 pb-6 overflow-y-auto opacity-0 -translate-y-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:duration-0"
                 aria-hidden="true"
             >
                 <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/" ? "text-accent-text" : undefined]}
                         href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-3">01</span>Profile</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/skills" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/skills" ? "text-accent-text" : undefined]}
                         href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-3">02</span>Skills</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/academic" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/academic" ? "text-accent-text" : undefined]}
                         href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-3">03</span>Academic</a
                     >
                     <a
-                        class:list={["flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors", currentPath === "/contact" ? "text-accent-text" : undefined]}
+                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/contact" ? "text-accent-text" : undefined]}
                         href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-3">04</span>Contact</a
                     >
                     <button
                         id="command-trigger-mobile"
                         type="button"
-                        class="w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest hover:text-accent-text transition-colors"
+                        class="nav-link w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest"
                     >
                         <span class="material-symbols-outlined text-base">search</span>Search
                     </button>
@@ -979,7 +388,7 @@ const editorialPageTransition = {
                     </div>
                     <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 flex items-center gap-6">
                         <a
-                            class="hover:text-accent-text transition-colors"
+                            class="link-ghost"
                             href="https://github.com/DiogoPires2003"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -988,7 +397,7 @@ const editorialPageTransition = {
                             <span class="material-symbols-outlined text-lg">code</span>
                         </a>
                         <a
-                            class="hover:text-accent-text transition-colors"
+                            class="link-ghost"
                             href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -997,7 +406,7 @@ const editorialPageTransition = {
                             <span class="material-symbols-outlined text-lg">work</span>
                         </a>
                         <a
-                            class="hover:text-accent-text transition-colors"
+                            class="link-ghost"
                             href="/contact"
                             aria-label="Contact page"
                         >
@@ -1011,9 +420,21 @@ const editorialPageTransition = {
             </footer>
         </div>
 
+        <button
+            id="to-top"
+            type="button"
+            class="icon-rise inline-flex items-center justify-center w-11 h-11 border-2 border-ink dark:border-paper bg-paper dark:bg-ink"
+            aria-label="Back to top"
+        >
+            <span class="material-symbols-outlined text-lg">arrow_upward</span>
+        </button>
+
         <div
             id="command-palette"
             class="hidden fixed inset-0 z-[100] bg-ink/60 dark:bg-black/70 backdrop-blur-sm items-start justify-center pt-24 sm:pt-32 px-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Command menu"
         >
             <div id="command-panel" class="w-full max-w-xl border-2 border-ink dark:border-paper bg-paper dark:bg-ink shadow-2xl">
                 <div class="flex items-center gap-3 px-4 py-3 border-b-2 border-ink dark:border-paper">
@@ -1114,6 +535,16 @@ const editorialPageTransition = {
                 } catch (e) {}
 
                 var dotEl = document.getElementById("welcome-word-dot");
+                var skipEl = document.getElementById("welcome-skip");
+                var progressEl = document.getElementById("welcome-progress");
+                if (progressEl) progressEl.classList.add("is-running");
+                var timers = [];
+                var done = false;
+
+                var at = function (ms, fn) {
+                    timers.push(setTimeout(fn, ms));
+                };
+
                 var setWord = function (text, stamp) {
                     if (window.__welcomeMorphUpdate) {
                         window.__welcomeMorphUpdate(text);
@@ -1125,31 +556,66 @@ const editorialPageTransition = {
                     }
                 };
 
-                setWord("DRIVEN.");
+                // Deliberate input leaves immediately, but only once the
+                // intro has had a moment to speak: a leftover click from the
+                // previous page or a stray trackpad nudge must not kill it.
+                var armed = false;
 
-                var t = 0;
-                t += 650;
-                setTimeout(function () {
-                    setWord("CURIOUS.");
-                }, t);
-                t += 650;
-                setTimeout(function () {
-                    setWord("RELENTLESS.");
-                }, t);
-                t += 700;
-                setTimeout(function () {
-                    setWord("DIOGO PIRES", true);
-                    var word = document.getElementById("welcome-word");
-                    if (word) word.classList.add("glitch");
-                }, t);
-                t += 950;
-                setTimeout(function () {
+                var onSkipPointer = function () {
+                    if (armed) leave();
+                };
+                var onSkipKey = function (event) {
+                    if (!armed || event.key === "Tab") return;
+                    leave();
+                };
+                var onSkipWheel = function (event) {
+                    if (armed && Math.abs(event.deltaY) > 8) leave();
+                };
+                var onSkipTouch = function () {
+                    if (armed) leave();
+                };
+                var detach = function () {
+                    window.removeEventListener("pointerdown", onSkipPointer);
+                    window.removeEventListener("keydown", onSkipKey);
+                    window.removeEventListener("wheel", onSkipWheel);
+                    window.removeEventListener("touchmove", onSkipTouch);
+                };
+
+                function leave() {
+                    if (done) return;
+                    done = true;
+                    timers.forEach(clearTimeout);
+                    timers.length = 0;
+                    detach();
                     overlay.classList.add("is-leaving");
                     document.body.style.overflow = "";
                     setTimeout(function () {
                         overlay.remove();
                     }, 800);
-                }, t);
+                }
+
+                window.addEventListener("pointerdown", onSkipPointer);
+                window.addEventListener("keydown", onSkipKey);
+                window.addEventListener("wheel", onSkipWheel, { passive: true });
+                window.addEventListener("touchmove", onSkipTouch, { passive: true });
+
+                setWord("DRIVEN.");
+                at(650, function () {
+                    setWord("CURIOUS.");
+                });
+                at(620, function () {
+                    armed = true;
+                    if (skipEl) skipEl.style.opacity = "1";
+                });
+                at(1300, function () {
+                    setWord("RELENTLESS.");
+                });
+                at(2000, function () {
+                    setWord("DIOGO PIRES", true);
+                    var word = document.getElementById("welcome-word");
+                    if (word) word.classList.add("glitch");
+                });
+                at(2950, leave);
             }
 
             function initMotion() {
@@ -1184,12 +650,19 @@ const editorialPageTransition = {
                 var countUp = function (el) {
                     var to = parseFloat(el.dataset.countText);
                     var suffix = el.dataset.suffix || "";
-                    if (reduced) {
+                    // A backgrounded tab freezes rAF, which would leave the
+                    // figure stranded at 0. The real value is never worth
+                    // trading for an animation nobody is watching.
+                    if (reduced || document.hidden) {
                         el.textContent = to + suffix;
                         return;
                     }
                     var start = performance.now() + 200;
                     var tick = function (t) {
+                        if (document.hidden) {
+                            el.textContent = to + suffix;
+                            return;
+                        }
                         var p = Math.max(0, Math.min(1, (t - start) / 900));
                         p = 1 - Math.pow(1 - p, 4);
                         el.textContent = Math.round(to * p) + suffix;
@@ -1227,6 +700,43 @@ const editorialPageTransition = {
                     targets.forEach(onEnter);
                 }
 
+                // Collections cascade in rather than appearing all at once.
+                // Shared by the highlight grid, the milestone list and the
+                // skills table so each page doesn't need its own observer.
+                window.__showStagger = function (items, step) {
+                    items.forEach(function (item, i) {
+                        item.style.setProperty("--stagger", i * (step || 55));
+                        item.classList.add("is-shown");
+                    });
+                };
+
+                document.querySelectorAll("[data-stagger]").forEach(function (group) {
+                    var items = Array.prototype.slice.call(
+                        group.querySelectorAll(".stagger-item")
+                    );
+                    if (!items.length) return;
+                    var step = parseInt(group.dataset.stagger, 10) || 55;
+                    var show = function () {
+                        window.__showStagger(items, step);
+                    };
+                    if ("IntersectionObserver" in window && !reduced) {
+                        var gio = new IntersectionObserver(
+                            function (entries) {
+                                entries.forEach(function (entry) {
+                                    if (entry.isIntersecting) {
+                                        show();
+                                        gio.disconnect();
+                                    }
+                                });
+                            },
+                            { threshold: 0.15 }
+                        );
+                        gio.observe(group);
+                    } else {
+                        show();
+                    }
+                });
+
                 var place = function (ink, el, axis) {
                     if (!ink) return;
                     if (!el) {
@@ -1255,6 +765,13 @@ const editorialPageTransition = {
                     window.addEventListener("resize", function () {
                         place(navInk, current);
                     });
+                    // Archivo swaps in after first paint and changes the link
+                    // widths, so the indicator has to be measured again.
+                    if (document.fonts && document.fonts.ready) {
+                        document.fonts.ready.then(function () {
+                            place(navInk, current);
+                        });
+                    }
                 }
 
                 var grid = document.getElementById("highlight-grid");
@@ -1282,14 +799,40 @@ const editorialPageTransition = {
 
                 if (!reduced && window.matchMedia("(pointer: fine)").matches) {
                     document.querySelectorAll(".magnetic").forEach(function (btn) {
-                        btn.addEventListener("mousemove", function (e) {
-                            var r = btn.getBoundingClientRect();
-                            var x = (e.clientX - r.left - r.width / 2) * 0.18;
-                            var y = (e.clientY - r.top - r.height / 2) * 0.3;
-                            btn.style.transform = "translate(" + x + "px," + y + "px)";
+                        // The offset goes into custom properties rather than
+                        // onto `transform`, so the :active press scale still
+                        // applies to the same element.
+                        var dx = 0;
+                        var dy = 0;
+                        var frame = null;
+
+                        btn.addEventListener("pointermove", function (e) {
+                            var cx = e.clientX;
+                            var cy = e.clientY;
+                            if (frame) return;
+                            frame = requestAnimationFrame(function () {
+                                frame = null;
+                                var r = btn.getBoundingClientRect();
+                                // Subtract the offset already applied so the
+                                // element can't chase its own transform.
+                                var midX = r.left + r.width / 2 - dx;
+                                var midY = r.top + r.height / 2 - dy;
+                                dx = (cx - midX) * 0.18;
+                                dy = (cy - midY) * 0.3;
+                                btn.style.setProperty("--mx", dx.toFixed(2) + "px");
+                                btn.style.setProperty("--my", dy.toFixed(2) + "px");
+                            });
                         });
-                        btn.addEventListener("mouseleave", function () {
-                            btn.style.transform = "";
+
+                        btn.addEventListener("pointerleave", function () {
+                            if (frame) {
+                                cancelAnimationFrame(frame);
+                                frame = null;
+                            }
+                            dx = 0;
+                            dy = 0;
+                            btn.style.setProperty("--mx", "0px");
+                            btn.style.setProperty("--my", "0px");
                         });
                     });
                 }
@@ -1309,7 +852,7 @@ const editorialPageTransition = {
                         ? "light_mode"
                         : "dark_mode";
                 };
-                var toggleTheme = function () {
+                var applyTheme = function () {
                     var isDark = document.documentElement.classList.toggle("dark");
                     localStorage.setItem("theme", isDark ? "dark" : "light");
                     updateThemeIcon();
@@ -1320,8 +863,60 @@ const editorialPageTransition = {
                         themeToggleIcon.classList.add("is-swapping");
                     }
                 };
+
+                // The new theme is revealed from under a still of the old one,
+                // centred on whatever triggered the change.
+                var toggleTheme = function (origin) {
+                    var reduced = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                    ).matches;
+                    var wasDark = document.documentElement.classList.contains("dark");
+
+                    if (reduced || typeof document.body.animate !== "function") {
+                        applyTheme();
+                        return;
+                    }
+
+                    var old = document.getElementById("theme-wipe");
+                    if (old) old.remove();
+
+                    var x = window.innerWidth / 2;
+                    var y = window.innerHeight / 2;
+                    var source = origin || themeToggleBtn;
+                    if (source && source.getBoundingClientRect) {
+                        var r = source.getBoundingClientRect();
+                        if (r.width) {
+                            x = r.left + r.width / 2;
+                            y = r.top + r.height / 2;
+                        }
+                    }
+
+                    var wipe = document.createElement("div");
+                    wipe.id = "theme-wipe";
+                    wipe.setAttribute("aria-hidden", "true");
+                    wipe.style.setProperty("--wipe-x", x + "px");
+                    wipe.style.setProperty("--wipe-y", y + "px");
+                    wipe.style.setProperty("--wipe-bg", wasDark ? "#0a0a0a" : "#ffffff");
+                    document.body.appendChild(wipe);
+
+                    // Flip the theme underneath before the circle starts closing.
+                    applyTheme();
+                    void wipe.offsetWidth;
+                    wipe.classList.add("is-wiping");
+
+                    var done = false;
+                    var cleanup = function () {
+                        if (done) return;
+                        done = true;
+                        wipe.remove();
+                    };
+                    wipe.addEventListener("animationend", cleanup);
+                    setTimeout(cleanup, 900);
+                };
                 updateThemeIcon();
-                themeToggleBtn?.addEventListener("click", toggleTheme);
+                themeToggleBtn?.addEventListener("click", function () {
+                    toggleTheme(themeToggleBtn);
+                });
 
                 var mobileToggle = document.getElementById("mobile-menu-toggle");
                 var mobileMenu = document.getElementById("mobile-menu");
@@ -1371,6 +966,15 @@ const editorialPageTransition = {
                             document.body.style.overflow = "";
                         }
                     });
+
+                    window.__closeMobileMenu = function () {
+                        if (mobileToggle.getAttribute("aria-expanded") !== "true") {
+                            return false;
+                        }
+                        closeMenu();
+                        mobileToggle.focus();
+                        return true;
+                    };
                 }
 
                 var palette = document.getElementById("command-palette");
@@ -1394,16 +998,13 @@ const editorialPageTransition = {
                     visible[activeIndex].scrollIntoView({ block: "nearest" });
                 };
 
+                var paletteReturnFocus = null;
+
                 var openPalette = function () {
                     if (!palette) return;
+                    paletteReturnFocus = document.activeElement;
                     palette.classList.remove("hidden");
                     palette.classList.add("flex");
-                    var panel = document.getElementById("command-panel");
-                    if (panel) {
-                        panel.classList.remove("palette-in");
-                        void panel.offsetWidth;
-                        panel.classList.add("palette-in");
-                    }
                     document.body.style.overflow = "hidden";
                     if (paletteInput) {
                         paletteInput.value = "";
@@ -1415,9 +1016,14 @@ const editorialPageTransition = {
 
                 var closePalette = function () {
                     if (!palette) return;
+                    if (palette.classList.contains("hidden")) return;
                     palette.classList.add("hidden");
                     palette.classList.remove("flex");
                     document.body.style.overflow = "";
+                    if (paletteReturnFocus && paletteReturnFocus.focus) {
+                        paletteReturnFocus.focus();
+                    }
+                    paletteReturnFocus = null;
                 };
 
                 document
@@ -1428,8 +1034,8 @@ const editorialPageTransition = {
                     ?.addEventListener("click", openPalette);
                 document
                     .getElementById("command-theme-toggle")
-                    ?.addEventListener("click", function () {
-                        toggleTheme();
+                    ?.addEventListener("click", function (event) {
+                        toggleTheme(event.currentTarget);
                         closePalette();
                     });
 
@@ -1465,10 +1071,26 @@ const editorialPageTransition = {
                         if (activeIndex >= 0 && visible[activeIndex]) {
                             visible[activeIndex].click();
                         }
+                    } else if (event.key === "Tab") {
+                        // Arrow keys move through the list, so Tab has nowhere
+                        // to go and must not escape behind the overlay.
+                        event.preventDefault();
                     } else if (event.key === "Escape") {
                         closePalette();
                     }
                 });
+
+                document
+                    .getElementById("to-top")
+                    ?.addEventListener("click", function () {
+                        var reducedMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)"
+                        ).matches;
+                        window.scrollTo({
+                            top: 0,
+                            behavior: reducedMotion ? "auto" : "smooth",
+                        });
+                    });
 
                 window.__closeCommandPalette = closePalette;
                 window.__openCommandPalette = openPalette;
@@ -1479,13 +1101,29 @@ const editorialPageTransition = {
             if (!window.__portfolioGlobalInit) {
                 window.__portfolioGlobalInit = true;
 
+                // scaleX stays on the compositor; animating width would force
+                // layout and paint on every scroll event.
+                var progressFrame = null;
                 var updateScrollProgress = function () {
-                    var bar = document.getElementById("scroll-progress");
-                    if (!bar) return;
-                    var docHeight =
-                        document.documentElement.scrollHeight - window.innerHeight;
-                    var pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
-                    bar.style.width = pct + "%";
+                    if (progressFrame) return;
+                    progressFrame = requestAnimationFrame(function () {
+                        progressFrame = null;
+                        var bar = document.getElementById("scroll-progress");
+                        if (!bar) return;
+                        var docHeight =
+                            document.documentElement.scrollHeight - window.innerHeight;
+                        var p = docHeight > 0 ? window.scrollY / docHeight : 0;
+                        bar.style.transform =
+                            "scaleX(" + Math.min(1, Math.max(0, p)) + ")";
+
+                        var toTop = document.getElementById("to-top");
+                        if (toTop) {
+                            toTop.classList.toggle(
+                                "is-visible",
+                                window.scrollY > window.innerHeight * 0.9
+                            );
+                        }
+                    });
                 };
                 updateScrollProgress();
                 window.addEventListener("scroll", updateScrollProgress, {
@@ -1519,6 +1157,7 @@ const editorialPageTransition = {
                             window.__closeCommandPalette?.();
                         }
                     } else if (event.key === "Escape") {
+                        if (window.__closeMobileMenu?.()) return;
                         window.__closeCommandPalette?.();
                     }
                 });
