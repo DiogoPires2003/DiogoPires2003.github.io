@@ -86,7 +86,7 @@ const highlights = [
 						sizes="(min-width: 1024px) 28rem, 100vw"
 						loading="eager"
 						decoding="async"
-						class="w-full h-full object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-500 bg-neutral-200 dark:bg-neutral-900"
+						class="profile-shot w-full h-full object-cover grayscale bg-neutral-200 dark:bg-neutral-900"
 					/>
 				</div>
 				<dl class="font-mono text-xs flex-1">
@@ -101,10 +101,10 @@ const highlights = [
 							<dd
 								id={fact.id}
 								class:list={[
-									"font-bold uppercase truncate max-w-full sm:text-right sm:max-w-[65%] transition-opacity duration-200 ease-out motion-reduce:transition-none",
+									"value-swap font-bold uppercase truncate max-w-full sm:text-right sm:max-w-[65%]",
 									fact.label === "Status" && "text-accent-text",
 								]}
-							>{fact.label === "Status" && <span class="live-dot" aria-hidden="true"></span>}{fact.value}</dd>
+							>{fact.label === "Status" && <span class="live-dot live-dot-inline" aria-hidden="true"></span>}{fact.value}</dd>
 						</div>
 					))}
 				</dl>
@@ -137,7 +137,7 @@ const highlights = [
 				id="home-globe"
 				width="360"
 				height="360"
-				style="width: 180px; height: 180px; display: block;"
+				style="width: 180px; height: 180px; display: block; touch-action: none; -webkit-user-select: none; user-select: none;"
 			></canvas>
 		</div>
 		<div class="text-center sm:text-left">
@@ -153,12 +153,12 @@ const highlights = [
 		</div>
 	</section>
 
-	<section id="highlight-grid" class="relative isolate grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
+	<section id="highlight-grid" data-stagger="70" class="relative isolate grid grid-cols-1 md:grid-cols-3 border-b-2 border-ink dark:border-paper">
 		<span id="highlight-ink" class="slide-ink hidden md:block" aria-hidden="true"></span>
 		{highlights.map((item, i) => (
 			<div
 				class:list={[
-					"highlight-item p-8 sm:p-10 opacity-0 translate-y-2 transition-[opacity,transform,color] duration-500 ease-out motion-reduce:transition-none motion-reduce:duration-0",
+					"highlight-item stagger-item p-8 sm:p-10",
 					i !== highlights.length - 1 && "border-b-2 md:border-b-0 md:border-r-2 border-ink dark:border-paper",
 				]}
 			>
@@ -233,12 +233,12 @@ const highlights = [
 			};
 
 			const setValue = (text, title) => {
-				el.style.opacity = "0";
+				el.classList.add("is-swapping");
 				window.setTimeout(() => {
 					el.textContent = text;
 					if (title) el.title = title;
-					el.style.opacity = "1";
-				}, 150);
+					el.classList.remove("is-swapping");
+				}, 160);
 			};
 
 			fetch(
@@ -260,26 +260,6 @@ const highlights = [
 					setValue("Unavailable");
 				});
 
-			const highlightItems = document.querySelectorAll(".highlight-item");
-			if (highlightItems.length) {
-				const reveal = (el) => el.classList.remove("opacity-0", "translate-y-2");
-				if ("IntersectionObserver" in window) {
-					const highlightObserver = new IntersectionObserver(
-						(entries) => {
-							entries.forEach((entry) => {
-								if (entry.isIntersecting) {
-									reveal(entry.target);
-									highlightObserver.unobserve(entry.target);
-								}
-							});
-						},
-						{ threshold: 0.15 }
-					);
-					highlightItems.forEach((item) => highlightObserver.observe(item));
-				} else {
-					highlightItems.forEach(reveal);
-				}
-			}
 		});
 	</script>
 
@@ -330,8 +310,49 @@ const highlights = [
 
 			if (reduced) return;
 
+			// Drag to spin. The pointer offset feeds a velocity that keeps
+			// running after release and eases back into the idle drift, so the
+			// globe never stops dead against the finger.
+			let pointerDown = false;
+			let lastX = 0;
+			let velocity = 0;
+			const IDLE = 0.001;
+
+			canvas.style.cursor = "grab";
+
+			const onDown = (event) => {
+				pointerDown = true;
+				lastX = event.clientX;
+				canvas.style.cursor = "grabbing";
+				canvas.setPointerCapture(event.pointerId);
+			};
+			const onMove = (event) => {
+				if (!pointerDown) return;
+				const delta = event.clientX - lastX;
+				lastX = event.clientX;
+				velocity = delta * 0.005;
+				phi -= velocity;
+			};
+			const onUp = (event) => {
+				if (!pointerDown) return;
+				pointerDown = false;
+				canvas.style.cursor = "grab";
+				if (canvas.hasPointerCapture?.(event.pointerId)) {
+					canvas.releasePointerCapture(event.pointerId);
+				}
+			};
+
+			canvas.addEventListener("pointerdown", onDown);
+			canvas.addEventListener("pointermove", onMove);
+			canvas.addEventListener("pointerup", onUp);
+			canvas.addEventListener("pointercancel", onUp);
+
 			const animate = () => {
-				phi += 0.001;
+				if (!pointerDown) {
+					// Bleed the throw off, then settle back to the idle drift.
+					velocity *= 0.95;
+					phi += IDLE - velocity;
+				}
 				globeInstance.update({ phi });
 				globeRafId = requestAnimationFrame(animate);
 			};
