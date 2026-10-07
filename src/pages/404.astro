@@ -3,9 +3,9 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Diogo Pires | Page Not Found">
-	<section data-reveal class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-16 sm:py-24">
+	<section data-reveal class="screen-page flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-16 sm:py-24 lg:py-8">
 		<p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-6" data-scramble>
-			N&deg; 05 &mdash; Not Found
+			[404] Not Found
 		</p>
 		<p
 			class="notfound-stamp font-black text-[clamp(4rem,18vw,10rem)] leading-none tracking-tight mb-6"
@@ -21,11 +21,12 @@ import Layout from "../layouts/Layout.astro";
 		</p>
 		<a
 			href="/"
-			class="tap-feedback btn-sweep btn-primary btn-back magnetic reveal-up inline-flex items-center gap-2 px-7 sm:px-9 py-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-2 border-ink dark:border-paper"
+			data-cmd="cd profile"
+			class="tap-feedback btn-sweep btn-primary btn-back magnetic reveal-up self-start inline-flex items-center gap-2 px-7 sm:px-9 py-4 font-mono text-xs sm:text-sm font-semibold tracking-wide border-2 border-ink dark:border-paper"
 			style="--i:2"
 		>
 			<span class="material-symbols-outlined text-lg">arrow_back</span>
-			Back to Home
+			<span class="opacity-60">$</span> cd profile
 		</a>
 	</section>
 </Layout>

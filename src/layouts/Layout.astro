@@ -14,32 +14,58 @@ const {
 
 const ogImage = new URL("/og-image.jpg", Astro.site);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const currentPath = Astro.url.pathname;
+// Trailing slashes come and go between dev and the static build.
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
-// Both halves are enters/exits, so both use ease-out. Leaving is quicker than
-// arriving, which keeps navigation feeling immediate.
-const editorialAnim = {
+const sections = [
+    { n: "1", label: "Profile", href: "/profile", cmd: "cd profile" },
+    { n: "2", label: "Skills", href: "/skills", cmd: "cd skills" },
+    { n: "3", label: "Projects", href: "/projects", cmd: "cd projects" },
+    { n: "4", label: "Academic", href: "/academic", cmd: "cd academic" },
+    { n: "5", label: "Contact", href: "/contact", cmd: "cd contact" },
+];
+const currentSection = sections.find((s) => s.href === currentPath);
+const pathLabel =
+    "C:\\DIOGO" +
+    (currentPath === "/"
+        ? ""
+        : "\\" + (currentSection ? currentSection.label : "404").toUpperCase());
+
+// Leaving is a channel switch: the old picture collapses to a line, the new
+// one opens from it. The exit is quicker than the entrance, and the two
+// together stay around 300ms because this plays on every navigation.
+const channelSwitch = {
     old: {
-        name: "editorial-page-out",
-        duration: "140ms",
+        name: "crt-out",
+        duration: "120ms",
         easing: "cubic-bezier(0.23, 1, 0.32, 1)",
         fillMode: "both",
     },
     new: {
-        name: "editorial-page-in",
-        duration: "220ms",
+        name: "crt-in",
+        duration: "200ms",
+        delay: "100ms",
         easing: "cubic-bezier(0.23, 1, 0.32, 1)",
         fillMode: "both",
     },
 };
-const editorialPageTransition = {
-    forwards: editorialAnim,
-    backwards: editorialAnim,
+const crtSwitch = {
+    forwards: channelSwitch,
+    backwards: channelSwitch,
 };
+
+const keyRows = [
+    [..."QWERTYUIOP"].map((k) => ({ label: k, code: k.toLowerCase() }))
+        .concat([{ label: "⌫", code: "backspace", wide: true }]),
+    [..."ASDFGHJKL"].map((k) => ({ label: k, code: k.toLowerCase() }))
+        .concat([{ label: "Enter", code: "enter", wide: true }]),
+    [..."ZXCVBNM"].map((k) => ({ label: k, code: k.toLowerCase() }))
+        .concat([{ label: "", code: "space", space: true }]),
+] as { label: string; code: string; wide?: boolean; space?: boolean }[][];
 ---
 
 <!DOCTYPE html>
-<html lang="en" transition:animate={editorialPageTransition}>
+<html lang="en" transition:animate="none">
     <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -47,8 +73,8 @@ const editorialPageTransition = {
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalURL} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#d9d4c8" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#060606" media="(prefers-color-scheme: dark)" />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalURL} />
@@ -87,7 +113,7 @@ const editorialPageTransition = {
                     meta.setAttribute("name", "theme-color");
                     document.head.appendChild(meta);
                 }
-                meta.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+                meta.setAttribute("content", isDark ? "#060606" : "#d9d4c8");
             }
 
             function applyStoredTheme() {
@@ -101,6 +127,17 @@ const editorialPageTransition = {
             }
 
             applyStoredTheme();
+
+            // The first visit of a session boots the computer. Decided before
+            // first paint so the content never flashes ahead of the boot.
+            try {
+                if (
+                    !sessionStorage.getItem("welcomed") &&
+                    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                ) {
+                    document.documentElement.dataset.boot = "1";
+                }
+            } catch (e) {}
 
             if (!window.__themeInitBound) {
                 window.__themeInitBound = true;
@@ -116,509 +153,166 @@ const editorialPageTransition = {
             rel="stylesheet"
         />
     </head>
-    <body class="bg-paper dark:bg-ink font-sans text-ink dark:text-paper antialiased">
-        <div
-            id="welcome-overlay"
-            class="fixed inset-0 z-[200] overflow-hidden"
-            aria-hidden="true"
-        >
-            <div
-                class="welcome-half welcome-half-top absolute inset-x-0 top-0 h-1/2 bg-paper dark:bg-ink border-b-2 border-accent"
-            >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:8%;top:18%;--tech-op:0.35;--tech-duration:4400ms;--tech-delay:80ms;"
-                    >Python</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
-                    style="left:78%;top:14%;--tech-op:0.45;--tech-duration:4000ms;--tech-delay:260ms;"
-                    >React</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:16%;top:60%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:420ms;"
-                    >Docker</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:66%;top:64%;--tech-op:0.32;--tech-duration:4200ms;--tech-delay:180ms;"
-                    >TypeScript</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
-                    style="left:42%;top:8%;--tech-op:0.4;--tech-duration:4600ms;--tech-delay:340ms;"
-                    >Astro</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:4%;top:80%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:500ms;"
-                    >PostgreSQL</span
-                >
+    <body class="desk font-sans text-ink dark:text-paper antialiased">
+        <div class="rig">
+            <div class="crt" id="crt">
+                <div class="crt-screen" id="crt-screen">
+                    <div class="crt-shell" role="search">
+                        <span class="flex items-center gap-2.5 shrink-0">
+                            <span class="live-dot" aria-hidden="true"></span>
+                            <span class="hidden lg:inline">DP-OS 2.026</span>
+                        </span>
+                        <label class="shell-prompt">
+                            <span class="shell-path" aria-hidden="true"><span class="hidden sm:inline">{pathLabel}</span><span class="sm:hidden">C:\</span>&gt;</span>
+                            <span class="shell-field">
+                                <input
+                                    id="shell-input"
+                                    type="text"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                    enterkeyhint="go"
+                                    placeholder=" "
+                                    aria-label="Command line. Type help for commands."
+                                />
+                                <span id="shell-ghost" aria-hidden="true"><span class="ghost-typed"></span><span class="ghost-rest"></span></span>
+                            </span>
+                        </label>
+                        <span class="flex items-center gap-3 shrink-0">
+                            <span id="crt-clock" class="hidden md:inline tabular-nums" aria-hidden="true"></span>
+                            <button
+                                type="button"
+                                class="crt-menu-btn"
+                                data-cmd="menu"
+                            >
+                                <kbd>Esc</kbd>menu
+                            </button>
+                        </span>
+                        <span id="scroll-progress" aria-hidden="true"></span>
+                    </div>
+
+                    <div
+                        id="crt-viewport"
+                        tabindex="-1"
+                        transition:name="crt-viewport"
+                        transition:animate={crtSwitch}
+                    >
+                        <main id="crt-content">
+                            <slot />
+                        </main>
+                    </div>
+
+                    <button
+                        id="to-top"
+                        type="button"
+                        data-cmd="top"
+                        class="icon-rise inline-flex items-center justify-center w-11 h-11 border-2 border-ink dark:border-paper bg-paper dark:bg-ink"
+                        aria-label="Back to top"
+                    >
+                        <span class="material-symbols-outlined text-lg">arrow_upward</span>
+                    </button>
+
+                    <div id="crt-boot" aria-hidden="true">
+                        <div class="crt-raster">
+                            <pre id="crt-post"></pre>
+                            <p id="crt-boot-name">Diogo Pires<span class="text-accent">.</span></p>
+                            <p id="crt-boot-skip">Click or press any key to skip</p>
+                        </div>
+                        <div class="crt-beam"></div>
+                        <p class="crt-off-hint">Press ⏻ to power on</p>
+                    </div>
+
+                    <div class="crt-fx" aria-hidden="true">
+                        <span class="crt-glare" id="crt-glare"></span>
+                    </div>
+                </div>
+
+                <div class="crt-chin">
+                    <span class="crt-badge" aria-hidden="true">DP<span class="text-accent">·</span>2026 <span class="crt-badge-note">© Diogo Pires</span></span>
+                    <nav class="chin-nav" aria-label="Site">
+                        {sections.map((section) => (
+                            <a
+                                href={section.href}
+                                class="chin-btn"
+                                data-cmd={section.cmd}
+                                aria-label={section.label}
+                                aria-current={currentPath === section.href ? "page" : undefined}
+                            >
+                                {section.n}
+                            </a>
+                        ))}
+                        <button type="button" class="chin-btn" data-cmd="menu" aria-label="Open system menu">
+                            menu
+                        </button>
+                    </nav>
+                    <div class="chin-controls">
+                        <button
+                            id="theme-toggle"
+                            type="button"
+                            class="chin-btn"
+                            data-cmd="theme"
+                            aria-label="Toggle color theme"
+                        >
+                            <span class="material-symbols-outlined" aria-hidden="true">contrast</span>
+                        </button>
+                        <button
+                            id="crt-power"
+                            type="button"
+                            class="chin-btn"
+                            data-cmd="power"
+                            aria-label="Turn the screen off"
+                            aria-pressed="false"
+                        >
+                            <span class="material-symbols-outlined" aria-hidden="true">power_settings_new</span>
+                        </button>
+                        <span id="crt-led" class="crt-led" aria-hidden="true"></span>
+                    </div>
+                </div>
             </div>
-            <div
-                class="welcome-half welcome-half-bottom absolute inset-x-0 bottom-0 h-1/2 bg-paper dark:bg-ink"
-            >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:12%;top:26%;--tech-op:0.3;--tech-duration:4400ms;--tech-delay:140ms;"
-                    >Three.js</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
-                    style="left:76%;top:20%;--tech-op:0.4;--tech-duration:4200ms;--tech-delay:300ms;"
-                    >Django</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:34%;top:66%;--tech-op:0.3;--tech-duration:4800ms;--tech-delay:460ms;"
-                    >Scala</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:82%;top:72%;--tech-op:0.28;--tech-duration:5000ms;--tech-delay:200ms;"
-                    >Bash</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-accent-text"
-                    style="left:8%;top:84%;--tech-op:0.36;--tech-duration:4000ms;--tech-delay:380ms;"
-                    >JavaScript</span
-                >
-                <span
-                    class="welcome-tech font-mono text-[10px] sm:text-xs uppercase tracking-widest text-ink dark:text-paper"
-                    style="left:55%;top:40%;--tech-op:0.3;--tech-duration:4600ms;--tech-delay:520ms;"
-                    >C</span
-                >
-            </div>
-            <div class="absolute inset-0 flex items-center justify-center px-6">
-                <span class="welcome-word-row font-black uppercase text-ink dark:text-paper">
-                    <span id="welcome-word" class="welcome-word"></span
-                    ><span id="welcome-word-dot" class="welcome-word-dot text-accent stamp-dot">.</span>
-                </span>
-<p
-                    id="welcome-skip"
-                    class="absolute inset-x-0 bottom-10 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400"
-                >
-                    Click or press any key to skip
-                </p>
-                <span
-                    id="welcome-progress"
-                    class="absolute bottom-6 left-1/2 h-[2px] w-24 bg-accent"
-                    aria-hidden="true"
-                ></span>
-            </div>
-        </div>
-        <script>
-            import { TextMorph } from "torph";
 
-            let welcomeMorph;
-
-            function initWelcomeMorph() {
-                var el = document.getElementById("welcome-word");
-                if (!el || welcomeMorph) return;
-                welcomeMorph = new TextMorph({
-                    element: el,
-                    duration: 350,
-                    ease: "cubic-bezier(0.19, 1, 0.22, 1)",
-                });
-            }
-
-            window.__welcomeMorphUpdate = function (text) {
-                initWelcomeMorph();
-                if (welcomeMorph) welcomeMorph.update(text);
-            };
-
-            document.addEventListener("astro:page-load", initWelcomeMorph);
-        </script>
-        <script is:inline>
-            function evaluateWelcomeOverlay() {
-                var overlay = document.getElementById("welcome-overlay");
-                if (!overlay) return;
-
-                var onHome = window.location.pathname === "/";
-                var seen;
-                try {
-                    seen = sessionStorage.getItem("welcomed");
-                } catch (e) {
-                    seen = "1";
-                }
-                var reduced = window.matchMedia(
-                    "(prefers-reduced-motion: reduce)"
-                ).matches;
-
-                var shouldPlay = onHome && !seen && !reduced;
-
-                if (!shouldPlay) {
-                    overlay.style.display = "none";
-                    overlay.classList.remove("is-leaving");
-                    if (onHome && !seen && reduced) {
-                        try {
-                            sessionStorage.setItem("welcomed", "1");
-                        } catch (e) {}
-                    }
-                } else {
-                    overlay.style.display = "";
-                    document.body.style.overflow = "hidden";
-                    window.__playWelcome = true;
-                }
-            }
-
-            evaluateWelcomeOverlay();
-
-            if (!window.__welcomeOverlayBound) {
-                window.__welcomeOverlayBound = true;
-                document.addEventListener("astro:page-load", evaluateWelcomeOverlay);
-            }
-        </script>
-        <div
-            id="scroll-progress"
-            class="fixed top-0 left-0 h-[3px] bg-accent z-[70]"
-            aria-hidden="true"
-        >
-        </div>
-        <div class="relative flex min-h-[100svh] flex-col">
-            <header
-                class="flex items-center justify-between border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-4 sticky top-0 z-50 bg-paper/95 dark:bg-ink/95 backdrop-blur-sm"
-            >
-                <a href="/" class="tap-feedback flex items-center gap-3 group">
-                    <span
-                        class="logo-box flex items-center justify-center w-8 h-8 border-2 border-ink dark:border-paper font-black text-xs"
-                        >DP</span
-                    >
-                    <span class="font-black uppercase tracking-tight text-base sm:text-lg">
-                        Diogo Pires
-                    </span>
-                </a>
-                <nav id="desktop-nav" class="relative hidden md:flex items-stretch self-stretch -my-4">
-                    <a
-                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/" ? "text-accent-text" : undefined]}
-                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-2">01</span>Profile</a
-                    >
-                    <a
-                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/skills" ? "text-accent-text" : undefined]}
-                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-2">02</span>Skills</a
-                    >
-                    <a
-                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-neutral-300 dark:border-neutral-700", currentPath === "/academic" ? "text-accent-text" : undefined]}
-                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-2">03</span>Academic</a
-                    >
-                    <a
-                        class:list={["nav-link font-mono text-xs uppercase tracking-widest px-2 lg:px-5 h-full flex items-center border-l border-r border-neutral-300 dark:border-neutral-700", currentPath === "/contact" ? "text-accent-text" : undefined]}
-                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-2">04</span>Contact</a
-                    >
-                    <span id="nav-ink" class="slide-ink" aria-hidden="true"></span>
+            <div class="keyboard">
+                <nav class="kb-row kb-fn" aria-label="Site">
+                    <button type="button" class="key key-esc" data-key="escape" data-cmd="menu" aria-label="Open system menu">
+                        <small>Esc</small>menu
+                    </button>
+                    {sections.map((section) => (
+                        <a
+                            href={section.href}
+                            class="key"
+                            data-key={`f${section.n}`}
+                            data-cmd={section.cmd}
+                            aria-current={currentPath === section.href ? "page" : undefined}
+                        >
+                            <small>F{section.n} <span class="key-cmd">{section.cmd}</span></small>{section.label}
+                        </a>
+                    ))}
+                    <button type="button" class="key" data-key="theme" data-cmd="theme" aria-label="Toggle color theme">
+                        <small>◐ <span class="key-cmd">theme</span></small>Theme
+                    </button>
                 </nav>
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <button
-                        id="command-trigger"
-                        type="button"
-                        title="Search (⌘K)"
-                        class="tap-feedback hidden md:inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper icon-rise"
-                        aria-label="Open command menu"
-                    >
-                        <span class="material-symbols-outlined text-lg">search</span>
-                    </button>
-                    <a
-                        href="/contact"
-                        class="tap-feedback btn-sweep magnetic hidden md:inline-flex items-center whitespace-nowrap px-3 lg:px-5 py-2.5 border-2 border-ink dark:border-paper text-xs font-bold uppercase tracking-wide"
-                    >
-                        Get in touch
-                    </a>
-                    <button
-                        id="theme-toggle"
-                        type="button"
-                        class="tap-feedback icon-rise inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper"
-                        aria-label="Toggle color theme"
-                    >
-                        <span class="material-symbols-outlined text-lg" id="theme-toggle-icon">dark_mode</span>
-                    </button>
-                    <button
-                        id="mobile-menu-toggle"
-                        type="button"
-                        class="tap-feedback md:hidden inline-flex items-center justify-center w-10 h-10 border-2 border-ink dark:border-paper"
-                        aria-label="Toggle navigation menu"
-                        aria-expanded="false"
-                        aria-controls="mobile-menu"
-                    >
-                        <span class="material-symbols-outlined text-lg">menu</span>
-                    </button>
-                </div>
-            </header>
-            <nav
-                id="mobile-menu"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Site navigation"
-                class="md:hidden hidden fixed inset-0 z-[60] bg-paper dark:bg-ink px-4 pt-20 pb-6 overflow-y-auto opacity-0 -translate-y-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:duration-0"
-                aria-hidden="true"
-            >
-                <div class="mx-auto w-full max-w-md border-2 border-ink dark:border-paper">
-                    <a
-                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/" ? "text-accent-text" : undefined]}
-                        href="/" aria-current={currentPath === "/" ? "page" : undefined}><span class="text-accent-text mr-3">01</span>Profile</a
-                    >
-                    <a
-                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/skills" ? "text-accent-text" : undefined]}
-                        href="/skills" aria-current={currentPath === "/skills" ? "page" : undefined}><span class="text-accent-text mr-3">02</span>Skills</a
-                    >
-                    <a
-                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/academic" ? "text-accent-text" : undefined]}
-                        href="/academic" aria-current={currentPath === "/academic" ? "page" : undefined}><span class="text-accent-text mr-3">03</span>Academic</a
-                    >
-                    <a
-                        class:list={["nav-link flex items-center px-5 py-4 border-b border-neutral-300 dark:border-neutral-700 font-mono text-sm uppercase tracking-widest", currentPath === "/contact" ? "text-accent-text" : undefined]}
-                        href="/contact" aria-current={currentPath === "/contact" ? "page" : undefined}><span class="text-accent-text mr-3">04</span>Contact</a
-                    >
-                    <button
-                        id="command-trigger-mobile"
-                        type="button"
-                        class="nav-link w-full flex items-center gap-3 px-5 py-4 font-mono text-sm uppercase tracking-widest"
-                    >
-                        <span class="material-symbols-outlined text-base">search</span>Search
-                    </button>
-                </div>
-            </nav>
-
-            <slot />
-
-            <footer class="border-t-2 border-ink dark:border-paper mt-auto">
-                <div class="grid grid-cols-1 sm:grid-cols-3">
-                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        © 2026 Diogo Pires
+                {keyRows.map((row, i) => (
+                    <div class:list={["kb-row", i > 0 && "kb-row-extra"]} aria-hidden="true">
+                        {row.map((key) => (
+                            <span
+                                class:list={["key", key.wide && "key-wide", key.space && "key-space"]}
+                                data-key={key.code}
+                            >
+                                {key.label}
+                            </span>
+                        ))}
                     </div>
-                    <div class="px-4 sm:px-6 lg:px-12 py-6 sm:border-r border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 flex items-center gap-6">
-                        <a
-                            class="link-ghost"
-                            href="https://github.com/DiogoPires2003"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="GitHub profile"
-                        >
-                            <span class="material-symbols-outlined text-lg">code</span>
-                        </a>
-                        <a
-                            class="link-ghost"
-                            href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="LinkedIn profile"
-                        >
-                            <span class="material-symbols-outlined text-lg">work</span>
-                        </a>
-                        <a
-                            class="link-ghost"
-                            href="/contact"
-                            aria-label="Contact page"
-                        >
-                            <span class="material-symbols-outlined text-lg">alternate_email</span>
-                        </a>
-                    </div>
-                    <div class="px-4 sm:px-6 lg:px-12 py-6 border-t sm:border-t-0 border-neutral-300 dark:border-neutral-700 font-mono text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        Based in Andorra
-                    </div>
-                </div>
-            </footer>
-        </div>
-
-        <button
-            id="to-top"
-            type="button"
-            class="icon-rise inline-flex items-center justify-center w-11 h-11 border-2 border-ink dark:border-paper bg-paper dark:bg-ink"
-            aria-label="Back to top"
-        >
-            <span class="material-symbols-outlined text-lg">arrow_upward</span>
-        </button>
-
-        <div
-            id="command-palette"
-            class="hidden fixed inset-0 z-[100] bg-ink/60 dark:bg-black/70 backdrop-blur-sm items-start justify-center pt-24 sm:pt-32 px-4"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Command menu"
-        >
-            <div id="command-panel" class="w-full max-w-xl border-2 border-ink dark:border-paper bg-paper dark:bg-ink shadow-2xl">
-                <div class="flex items-center gap-3 px-4 py-3 border-b-2 border-ink dark:border-paper">
-                    <span class="material-symbols-outlined text-lg text-neutral-500 dark:text-neutral-400">search</span>
-                    <input
-                        id="command-input"
-                        type="text"
-                        placeholder="Type a command or search..."
-                        class="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-neutral-400"
-                        autocomplete="off"
-                    />
-                    <kbd class="font-mono text-[10px] uppercase text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700 px-1.5 py-0.5">Esc</kbd>
-                </div>
-                <div id="command-list" class="max-h-80 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-800">
-                    <a
-                        href="/"
-                        data-command-label="go to profile about home"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span><span class="text-accent-text mr-2">01</span>Go to Profile</span>
-                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
-                    </a>
-                    <a
-                        href="/skills"
-                        data-command-label="go to skills technical stack"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span><span class="text-accent-text mr-2">02</span>Go to Skills</span>
-                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
-                    </a>
-                    <a
-                        href="/academic"
-                        data-command-label="go to academic education certifications"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span><span class="text-accent-text mr-2">03</span>Go to Academic</span>
-                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
-                    </a>
-                    <a
-                        href="/contact"
-                        data-command-label="go to contact email"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span><span class="text-accent-text mr-2">04</span>Go to Contact</span>
-                        <span class="material-symbols-outlined text-base opacity-50">arrow_forward</span>
-                    </a>
-                    <button
-                        type="button"
-                        id="command-theme-toggle"
-                        data-command-label="toggle theme dark light mode"
-                        class="command-item w-full text-left flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span>Toggle theme</span>
-                        <span class="material-symbols-outlined text-base opacity-50">contrast</span>
-                    </button>
-                    <a
-                        href="https://github.com/DiogoPires2003"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-command-label="open github"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span>Open GitHub</span>
-                        <span class="material-symbols-outlined text-base opacity-50">open_in_new</span>
-                    </a>
-                    <a
-                        href="https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-command-label="open linkedin"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span>Open LinkedIn</span>
-                        <span class="material-symbols-outlined text-base opacity-50">open_in_new</span>
-                    </a>
-                    <a
-                        href="mailto:dfalvesp@gmail.com"
-                        data-command-label="email diogo contact mail"
-                        class="command-item flex items-center justify-between px-4 py-3 font-mono text-sm transition-colors"
-                    >
-                        <span>Email Diogo</span>
-                        <span class="material-symbols-outlined text-base opacity-50">mail</span>
-                    </a>
-                </div>
+                ))}
             </div>
         </div>
 
         <script is:inline>
-            function playWelcomeAnimation() {
-                if (!window.__playWelcome) return;
-                window.__playWelcome = false;
-
-                var overlay = document.getElementById("welcome-overlay");
-                if (!overlay) return;
-
-                try {
-                    sessionStorage.setItem("welcomed", "1");
-                } catch (e) {}
-
-                var dotEl = document.getElementById("welcome-word-dot");
-                var skipEl = document.getElementById("welcome-skip");
-                var progressEl = document.getElementById("welcome-progress");
-                if (progressEl) progressEl.classList.add("is-running");
-                var timers = [];
-                var done = false;
-
-                var at = function (ms, fn) {
-                    timers.push(setTimeout(fn, ms));
-                };
-
-                var setWord = function (text, stamp) {
-                    if (window.__welcomeMorphUpdate) {
-                        window.__welcomeMorphUpdate(text);
-                    }
-                    if (stamp && dotEl) {
-                        dotEl.classList.remove("is-stamped");
-                        void dotEl.offsetWidth;
-                        dotEl.classList.add("is-stamped");
-                    }
-                };
-
-                // Deliberate input leaves immediately, but only once the
-                // intro has had a moment to speak: a leftover click from the
-                // previous page or a stray trackpad nudge must not kill it.
-                var armed = false;
-
-                var onSkipPointer = function () {
-                    if (armed) leave();
-                };
-                var onSkipKey = function (event) {
-                    if (!armed || event.key === "Tab") return;
-                    leave();
-                };
-                var onSkipWheel = function (event) {
-                    if (armed && Math.abs(event.deltaY) > 8) leave();
-                };
-                var onSkipTouch = function () {
-                    if (armed) leave();
-                };
-                var detach = function () {
-                    window.removeEventListener("pointerdown", onSkipPointer);
-                    window.removeEventListener("keydown", onSkipKey);
-                    window.removeEventListener("wheel", onSkipWheel);
-                    window.removeEventListener("touchmove", onSkipTouch);
-                };
-
-                function leave() {
-                    if (done) return;
-                    done = true;
-                    timers.forEach(clearTimeout);
-                    timers.length = 0;
-                    detach();
-                    overlay.classList.add("is-leaving");
-                    document.body.style.overflow = "";
-                    setTimeout(function () {
-                        overlay.remove();
-                    }, 800);
-                }
-
-                window.addEventListener("pointerdown", onSkipPointer);
-                window.addEventListener("keydown", onSkipKey);
-                window.addEventListener("wheel", onSkipWheel, { passive: true });
-                window.addEventListener("touchmove", onSkipTouch, { passive: true });
-
-                setWord("DRIVEN.");
-                at(650, function () {
-                    setWord("CURIOUS.");
-                });
-                at(620, function () {
-                    armed = true;
-                    if (skipEl) skipEl.style.opacity = "1";
-                });
-                at(1300, function () {
-                    setWord("RELENTLESS.");
-                });
-                at(2000, function () {
-                    setWord("DIOGO PIRES", true);
-                    var word = document.getElementById("welcome-word");
-                    if (word) word.classList.add("glitch");
-                });
-                at(2950, leave);
-            }
-
             function initMotion() {
+                // Reveals that run behind the boot screen are wasted; hold them
+                // until the picture is handed over.
+                if (document.documentElement.dataset.boot !== undefined) {
+                    document.addEventListener("crt:booted", initMotion, { once: true });
+                    return;
+                }
                 var reduced = window.matchMedia(
                     "(prefers-reduced-motion: reduce)"
                 ).matches;
@@ -748,32 +442,6 @@ const editorialPageTransition = {
                     ink.style.setProperty("--o", 1);
                 };
 
-                var nav = document.getElementById("desktop-nav");
-                var navInk = document.getElementById("nav-ink");
-                if (nav && navInk) {
-                    var links = nav.querySelectorAll("a");
-                    var current = nav.querySelector("[aria-current]");
-                    place(navInk, current);
-                    links.forEach(function (link) {
-                        link.addEventListener("mouseenter", function () {
-                            place(navInk, link);
-                        });
-                    });
-                    nav.addEventListener("mouseleave", function () {
-                        place(navInk, current);
-                    });
-                    window.addEventListener("resize", function () {
-                        place(navInk, current);
-                    });
-                    // Archivo swaps in after first paint and changes the link
-                    // widths, so the indicator has to be measured again.
-                    if (document.fonts && document.fonts.ready) {
-                        document.fonts.ready.then(function () {
-                            place(navInk, current);
-                        });
-                    }
-                }
-
                 var grid = document.getElementById("highlight-grid");
                 var gridInk = document.getElementById("highlight-ink");
                 if (grid && gridInk) {
@@ -838,330 +506,752 @@ const editorialPageTransition = {
                 }
             }
 
-            function bindPerPageInteractions() {
-                playWelcomeAnimation();
-                initMotion();
-
-                var themeToggleBtn = document.getElementById("theme-toggle");
-                var themeToggleIcon = document.getElementById("theme-toggle-icon");
-                var updateThemeIcon = function () {
-                    if (!themeToggleIcon) return;
-                    themeToggleIcon.textContent = document.documentElement.classList.contains(
-                        "dark"
-                    )
-                        ? "light_mode"
-                        : "dark_mode";
-                };
-                var applyTheme = function () {
-                    var isDark = document.documentElement.classList.toggle("dark");
-                    localStorage.setItem("theme", isDark ? "dark" : "light");
-                    updateThemeIcon();
+            // The new theme is revealed from under a still of the old screen,
+            // centred on whatever triggered the change.
+            window.__toggleTheme = function (origin) {
+                var reduced = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches;
+                var root = document.documentElement;
+                var wasDark = root.classList.contains("dark");
+                var apply = function () {
+                    var isDark = root.classList.toggle("dark");
+                    try {
+                        localStorage.setItem("theme", isDark ? "dark" : "light");
+                    } catch (e) {}
                     if (window.syncThemeColorMeta) window.syncThemeColorMeta(isDark);
-                    if (themeToggleIcon) {
-                        themeToggleIcon.classList.remove("is-swapping");
-                        void themeToggleIcon.offsetWidth;
-                        themeToggleIcon.classList.add("is-swapping");
-                    }
                 };
 
-                // The new theme is revealed from under a still of the old one,
-                // centred on whatever triggered the change.
-                var toggleTheme = function (origin) {
-                    var reduced = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                    ).matches;
-                    var wasDark = document.documentElement.classList.contains("dark");
-
-                    if (reduced || typeof document.body.animate !== "function") {
-                        applyTheme();
-                        return;
-                    }
-
-                    var old = document.getElementById("theme-wipe");
-                    if (old) old.remove();
-
-                    var x = window.innerWidth / 2;
-                    var y = window.innerHeight / 2;
-                    var source = origin || themeToggleBtn;
-                    if (source && source.getBoundingClientRect) {
-                        var r = source.getBoundingClientRect();
-                        if (r.width) {
-                            x = r.left + r.width / 2;
-                            y = r.top + r.height / 2;
-                        }
-                    }
-
-                    var wipe = document.createElement("div");
-                    wipe.id = "theme-wipe";
-                    wipe.setAttribute("aria-hidden", "true");
-                    wipe.style.setProperty("--wipe-x", x + "px");
-                    wipe.style.setProperty("--wipe-y", y + "px");
-                    wipe.style.setProperty("--wipe-bg", wasDark ? "#0a0a0a" : "#ffffff");
-                    document.body.appendChild(wipe);
-
-                    // Flip the theme underneath before the circle starts closing.
-                    applyTheme();
-                    void wipe.offsetWidth;
-                    wipe.classList.add("is-wiping");
-
-                    var done = false;
-                    var cleanup = function () {
-                        if (done) return;
-                        done = true;
-                        wipe.remove();
-                    };
-                    wipe.addEventListener("animationend", cleanup);
-                    setTimeout(cleanup, 900);
-                };
-                updateThemeIcon();
-                themeToggleBtn?.addEventListener("click", function () {
-                    toggleTheme(themeToggleBtn);
-                });
-
-                var mobileToggle = document.getElementById("mobile-menu-toggle");
-                var mobileMenu = document.getElementById("mobile-menu");
-                if (mobileToggle && mobileMenu) {
-                    var menuCloseTimer;
-
-                    var closeMenu = function () {
-                        clearTimeout(menuCloseTimer);
-                        mobileMenu.classList.remove("opacity-100", "translate-y-0");
-                        mobileMenu.classList.add("opacity-0", "-translate-y-2");
-                        mobileMenu.setAttribute("aria-hidden", "true");
-                        mobileToggle.setAttribute("aria-expanded", "false");
-                        document.body.style.overflow = "";
-                        menuCloseTimer = setTimeout(function () {
-                            mobileMenu.classList.add("hidden");
-                        }, 200);
-                    };
-
-                    var openMenu = function () {
-                        clearTimeout(menuCloseTimer);
-                        mobileMenu.classList.remove("hidden");
-                        void mobileMenu.offsetWidth;
-                        mobileMenu.classList.remove("opacity-0", "-translate-y-2");
-                        mobileMenu.classList.add("opacity-100", "translate-y-0");
-                        mobileMenu.setAttribute("aria-hidden", "false");
-                        mobileToggle.setAttribute("aria-expanded", "true");
-                        document.body.style.overflow = "hidden";
-                    };
-
-                    mobileToggle.addEventListener("click", function () {
-                        var isExpanded =
-                            mobileToggle.getAttribute("aria-expanded") === "true";
-                        if (isExpanded) {
-                            closeMenu();
-                        } else {
-                            openMenu();
-                        }
-                    });
-
-                    mobileMenu.querySelectorAll("a").forEach(function (link) {
-                        link.addEventListener("click", closeMenu);
-                    });
-
-                    mobileMenu.addEventListener("click", function (event) {
-                        if (event.target === mobileMenu) {
-                            closeMenu();
-                            document.body.style.overflow = "";
-                        }
-                    });
-
-                    window.__closeMobileMenu = function () {
-                        if (mobileToggle.getAttribute("aria-expanded") !== "true") {
-                            return false;
-                        }
-                        closeMenu();
-                        mobileToggle.focus();
-                        return true;
-                    };
+                var screen = document.getElementById("crt-screen");
+                if (reduced || !screen || typeof screen.animate !== "function") {
+                    apply();
+                    return;
                 }
 
-                var palette = document.getElementById("command-palette");
-                var paletteInput = document.getElementById("command-input");
-                var paletteItems = Array.from(
-                    document.querySelectorAll(".command-item")
-                );
-                var activeIndex = -1;
+                var old = document.getElementById("theme-wipe");
+                if (old) old.remove();
 
-                var setActive = function (index) {
-                    var visible = paletteItems.filter(
-                        (item) => !item.classList.contains("hidden")
-                    );
-                    paletteItems.forEach((item) => item.classList.remove("is-active"));
-                    if (!visible.length) {
-                        activeIndex = -1;
-                        return;
+                var box = screen.getBoundingClientRect();
+                var x = box.width / 2;
+                var y = box.height / 2;
+                if (origin && origin.getBoundingClientRect) {
+                    var r = origin.getBoundingClientRect();
+                    if (r.width) {
+                        x = r.left + r.width / 2 - box.left;
+                        y = r.top + r.height / 2 - box.top;
                     }
-                    activeIndex = ((index % visible.length) + visible.length) % visible.length;
-                    visible[activeIndex].classList.add("is-active");
-                    visible[activeIndex].scrollIntoView({ block: "nearest" });
+                }
+
+                var wipe = document.createElement("div");
+                wipe.id = "theme-wipe";
+                wipe.setAttribute("aria-hidden", "true");
+                wipe.style.setProperty("--wipe-x", x + "px");
+                wipe.style.setProperty("--wipe-y", y + "px");
+                wipe.style.setProperty("--wipe-bg", wasDark ? "#0b0d0c" : "#f4f1ea");
+                screen.appendChild(wipe);
+
+                // Flip the theme underneath before the circle starts closing.
+                apply();
+                void wipe.offsetWidth;
+                wipe.classList.add("is-wiping");
+
+                var done = false;
+                var cleanup = function () {
+                    if (done) return;
+                    done = true;
+                    wipe.remove();
                 };
+                wipe.addEventListener("animationend", cleanup);
+                setTimeout(cleanup, 900);
+            };
 
-                var paletteReturnFocus = null;
+            document.addEventListener("astro:page-load", initMotion);
+        </script>
 
-                var openPalette = function () {
-                    if (!palette) return;
-                    paletteReturnFocus = document.activeElement;
-                    palette.classList.remove("hidden");
-                    palette.classList.add("flex");
-                    document.body.style.overflow = "hidden";
-                    if (paletteInput) {
-                        paletteInput.value = "";
-                        paletteItems.forEach((item) => item.classList.remove("hidden"));
-                        setActive(0);
-                        paletteInput.focus();
-                    }
-                };
+        <script>
+            import { navigate } from "astro:transitions/client";
+            import { springValue } from "motion";
+            import {
+                bindShell,
+                clearLog,
+                resetShell,
+                closeMenu,
+                exec,
+                register,
+                setBlocked,
+                toggleMenu,
+                visibleCommands,
+            } from "../scripts/shell";
 
-                var closePalette = function () {
-                    if (!palette) return;
-                    if (palette.classList.contains("hidden")) return;
-                    palette.classList.add("hidden");
-                    palette.classList.remove("flex");
-                    document.body.style.overflow = "";
-                    if (paletteReturnFocus && paletteReturnFocus.focus) {
-                        paletteReturnFocus.focus();
-                    }
-                    paletteReturnFocus = null;
-                };
+            const SECTIONS: Record<string, string> = {
+                "1": "cd profile",
+                "2": "cd skills",
+                "3": "cd projects",
+                "4": "cd academic",
+                "5": "cd contact",
+            };
+            const ALIASES: Record<string, string> = {
+                "": "/",
+                "~": "/",
+                "..": "/",
+                home: "/",
+                menu: "/",
+                profile: "/profile",
+                skills: "/skills",
+                stack: "/skills",
+                projects: "/projects",
+                work: "/projects",
+                academic: "/academic",
+                education: "/academic",
+                contact: "/contact",
+            };
+            const LINKS = {
+                github: "https://github.com/DiogoPires2003",
+                linkedin: "https://www.linkedin.com/in/diogo-filipe-alves-pires-424964245/",
+                mail: "mailto:dfalvesp@gmail.com",
+            };
+            const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+            const EASE_IN_OUT = "cubic-bezier(0.77, 0, 0.175, 1)";
 
-                document
-                    .getElementById("command-trigger")
-                    ?.addEventListener("click", openPalette);
-                document
-                    .getElementById("command-trigger-mobile")
-                    ?.addEventListener("click", openPalette);
-                document
-                    .getElementById("command-theme-toggle")
-                    ?.addEventListener("click", function (event) {
-                        toggleTheme(event.currentTarget);
-                        closePalette();
-                    });
+            const $ = (id: string) => document.getElementById(id);
+            const reduced = () =>
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const normalize = (path: string) => path.replace(/\/+$/, "") || "/";
 
-                palette?.addEventListener("click", function (event) {
-                    if (event.target === palette) closePalette();
-                });
+            let booting = false;
+            let poweredOff = false;
 
-                paletteItems.forEach((item) => {
-                    item.addEventListener("click", () => closePalette());
-                });
-
-                paletteInput?.addEventListener("input", () => {
-                    var query = paletteInput.value.trim().toLowerCase();
-                    paletteItems.forEach((item) => {
-                        var label = (item.dataset.commandLabel || "").toLowerCase();
-                        item.classList.toggle("hidden", query.length > 0 && !label.includes(query));
-                    });
-                    setActive(0);
-                });
-
-                paletteInput?.addEventListener("keydown", (event) => {
-                    var visible = paletteItems.filter(
-                        (item) => !item.classList.contains("hidden")
-                    );
-                    if (event.key === "ArrowDown") {
-                        event.preventDefault();
-                        setActive(activeIndex + 1);
-                    } else if (event.key === "ArrowUp") {
-                        event.preventDefault();
-                        setActive(activeIndex - 1);
-                    } else if (event.key === "Enter") {
-                        event.preventDefault();
-                        if (activeIndex >= 0 && visible[activeIndex]) {
-                            visible[activeIndex].click();
-                        }
-                    } else if (event.key === "Tab") {
-                        // Arrow keys move through the list, so Tab has nowhere
-                        // to go and must not escape behind the overlay.
-                        event.preventDefault();
-                    } else if (event.key === "Escape") {
-                        closePalette();
-                    }
-                });
-
-                document
-                    .getElementById("to-top")
-                    ?.addEventListener("click", function () {
-                        var reducedMotion = window.matchMedia(
-                            "(prefers-reduced-motion: reduce)"
-                        ).matches;
-                        window.scrollTo({
-                            top: 0,
-                            behavior: reducedMotion ? "auto" : "smooth",
-                        });
-                    });
-
-                window.__closeCommandPalette = closePalette;
-                window.__openCommandPalette = openPalette;
+            function setInert(on: boolean) {
+                const viewport = $("crt-viewport");
+                if (viewport) viewport.inert = on;
             }
 
-            document.addEventListener("astro:page-load", bindPerPageInteractions);
+            function setLed(state: "on" | "off" | "busy") {
+                const led = $("crt-led");
+                if (!led) return;
+                led.classList.toggle("is-off", state === "off");
+                led.classList.toggle("is-busy", state === "busy");
+            }
 
-            if (!window.__portfolioGlobalInit) {
-                window.__portfolioGlobalInit = true;
+            function scrollTop() {
+                $("crt-viewport")?.scrollTo({
+                    top: 0,
+                    behavior: reduced() ? "auto" : "smooth",
+                });
+            }
 
-                // scaleX stays on the compositor; animating width would force
-                // layout and paint on every scroll event.
-                var progressFrame = null;
-                var updateScrollProgress = function () {
-                    if (progressFrame) return;
-                    progressFrame = requestAnimationFrame(function () {
-                        progressFrame = null;
-                        var bar = document.getElementById("scroll-progress");
-                        if (!bar) return;
-                        var docHeight =
-                            document.documentElement.scrollHeight - window.innerHeight;
-                        var p = docHeight > 0 ? window.scrollY / docHeight : 0;
-                        bar.style.transform =
-                            "scaleX(" + Math.min(1, Math.max(0, p)) + ")";
+            function go(path: string) {
+                if (normalize(location.pathname) === path) {
+                    scrollTop();
+                    return;
+                }
+                navigate(path);
+            }
 
-                        var toTop = document.getElementById("to-top");
-                        if (toTop) {
-                            toTop.classList.toggle(
-                                "is-visible",
-                                window.scrollY > window.innerHeight * 0.9
+            /* ---------------- Keyboard echo ---------------- */
+
+            function keyName(event: KeyboardEvent) {
+                const key = event.key;
+                if (/^[1-5]$/.test(key)) return "f" + key;
+                if (key === " ") return "space";
+                return key.toLowerCase();
+            }
+
+            function press(name: string, on: boolean) {
+                document
+                    .querySelectorAll<HTMLElement>(
+                        `.keyboard [data-key="${CSS.escape(name)}"]`
+                    )
+                    .forEach((key) => {
+                        key.classList.toggle("is-pressed", on);
+                        clearTimeout((key as any)._release);
+                        // A keyup can be lost to a page change or a blur.
+                        if (on) {
+                            (key as any)._release = setTimeout(
+                                () => key.classList.remove("is-pressed"),
+                                400
                             );
                         }
                     });
-                };
-                updateScrollProgress();
-                window.addEventListener("scroll", updateScrollProgress, {
-                    passive: true,
-                });
-                window.addEventListener("resize", function () {
-                    updateScrollProgress();
-                    if (window.innerWidth >= 768) {
-                        var menu = document.getElementById("mobile-menu");
-                        var toggle = document.getElementById("mobile-menu-toggle");
-                        if (menu && toggle?.getAttribute("aria-expanded") === "true") {
-                            menu.classList.remove("opacity-100", "translate-y-0");
-                            menu.classList.add("opacity-0", "-translate-y-2", "hidden");
-                            menu.setAttribute("aria-hidden", "true");
-                            toggle.setAttribute("aria-expanded", "false");
-                            document.body.style.overflow = "";
-                        }
-                    }
-                });
-                document.addEventListener("astro:after-swap", updateScrollProgress);
-
-                document.addEventListener("keydown", function (event) {
-                    var isK = event.key === "k" || event.key === "K";
-                    if ((event.metaKey || event.ctrlKey) && isK) {
-                        event.preventDefault();
-                        var palette = document.getElementById("command-palette");
-                        if (!palette) return;
-                        if (palette.classList.contains("hidden")) {
-                            window.__openCommandPalette?.();
-                        } else {
-                            window.__closeCommandPalette?.();
-                        }
-                    } else if (event.key === "Escape") {
-                        if (window.__closeMobileMenu?.()) return;
-                        window.__closeCommandPalette?.();
-                    }
-                });
             }
+
+            /* ---------------- Boot and power ---------------- */
+
+            function runBoot() {
+                const boot = $("crt-boot");
+                const beam = boot?.querySelector<HTMLElement>(".crt-beam");
+                const raster = boot?.querySelector<HTMLElement>(".crt-raster");
+                const post = $("crt-post");
+                const name = $("crt-boot-name");
+                const skip = $("crt-boot-skip");
+                if (!boot || !beam || !raster || !post || !name || !skip) return;
+
+                try {
+                    sessionStorage.setItem("welcomed", "1");
+                } catch (e) {}
+
+                booting = true;
+                boot.classList.remove("is-off");
+                boot.classList.add("is-active");
+                boot.style.opacity = "";
+                boot.style.pointerEvents = "";
+                post.textContent = "";
+                name.classList.remove("is-stamped");
+                skip.classList.remove("is-armed");
+                setInert(true);
+                setLed("busy");
+
+                const timers: number[] = [];
+                const at = (ms: number, fn: () => void) =>
+                    timers.push(window.setTimeout(fn, ms));
+                let armed = false;
+                let done = false;
+
+                // The gun finds the centre, sweeps a line, then the picture opens.
+                beam.animate(
+                    [
+                        { transform: "scale(0.004, 0.004)", opacity: 0 },
+                        { transform: "scale(0.004, 0.004)", opacity: 1, offset: 0.25 },
+                        { transform: "scale(1, 0.004)", opacity: 1, offset: 0.7 },
+                        { transform: "scale(1, 0.004)", opacity: 0 },
+                    ],
+                    { duration: 460, easing: EASE_OUT, fill: "both" }
+                );
+                raster.animate(
+                    [
+                        { transform: "scale(1, 0.004)", opacity: 0 },
+                        { transform: "scale(1.012, 1.02)", opacity: 1, offset: 0.65 },
+                        { transform: "none", opacity: 1 },
+                    ],
+                    { duration: 340, delay: 320, easing: EASE_OUT, fill: "both" }
+                );
+
+                // POST: each line is the machine reporting on part of itself.
+                const lines: string[] = [];
+                const render = () => {
+                    post.textContent = lines.join("\n");
+                };
+                // Lines update in place by index, so a late frame of one test
+                // can never write over the line of another.
+                const line = (text: string) => {
+                    lines.push(text);
+                    render();
+                    return lines.length - 1;
+                };
+                const set = (index: number, text: string) => {
+                    lines[index] = text;
+                    render();
+                };
+
+                at(620, () => line("DP-BIOS v2.026   (C) 2003-2026 DIOGO PIRES"));
+                at(760, () => line("CPU: CURIOUS-CORE ................... OK"));
+
+                at(900, () => {
+                    const row = line("MEMORY TEST: 0K");
+                    const start = performance.now();
+                    let settled = false;
+                    const count = (now: number) => {
+                        if (done || settled) return;
+                        const p = Math.min(1, (now - start) / 420);
+                        const kb = Math.round(16384 * (1 - Math.pow(1 - p, 3)));
+                        set(
+                            row,
+                            p < 1
+                                ? `MEMORY TEST: ${kb}K`
+                                : "MEMORY TEST: 16384K ................. OK"
+                        );
+                        if (p < 1) requestAnimationFrame(count);
+                    };
+                    requestAnimationFrame(count);
+                    // rAF stalls in a background tab; the result must still land.
+                    at(460, () => {
+                        settled = true;
+                        set(row, "MEMORY TEST: 16384K ................. OK");
+                    });
+                });
+
+                // The keyboard on the desk takes part in its own test.
+                at(1380, () => {
+                    const row = line("KEYBOARD: ");
+                    const board = document.querySelector<HTMLElement>(".keyboard");
+                    const keys = board?.offsetParent
+                        ? Array.from(board.querySelectorAll<HTMLElement>(".key"))
+                              .map((key) => ({ key, x: key.getBoundingClientRect().left }))
+                              .sort((a, b) => a.x - b.x)
+                              .map((entry) => entry.key)
+                        : [];
+                    // Timers set from here count from this line, not from power-on.
+                    keys.forEach((key, i) => {
+                        at(i * 9, () => key.classList.add("is-pressed"));
+                        at(i * 9 + 110, () => key.classList.remove("is-pressed"));
+                    });
+                    const sweep = keys.length ? keys.length * 9 + 110 : 120;
+                    at(sweep, () =>
+                        set(row, `KEYBOARD: ${keys.length || 101} KEYS ................ OK`)
+                    );
+                });
+
+                // Loading never fills evenly; the stalls are what sell it.
+                const BAR = 18;
+                const bar = (pct: number) => {
+                    const filled = Math.round((pct / 100) * BAR);
+                    return `[${"█".repeat(filled)}${"░".repeat(BAR - filled)}] ${String(pct).padStart(3, " ")}%`;
+                };
+                let barRow = -1;
+                at(1820, () => {
+                    line("LOADING DIOGO_PIRES.EXE");
+                    barRow = line(bar(0));
+                });
+                [
+                    [1880, 9],
+                    [1940, 23],
+                    [2010, 31],
+                    [2130, 38],
+                    [2190, 62],
+                    [2250, 77],
+                    [2330, 84],
+                    [2380, 100],
+                ].forEach(([ms, pct]) => at(ms, () => set(barRow, bar(pct))));
+
+                at(2440, () => name.classList.add("is-stamped"));
+                // A stray click left over from the previous page must not kill
+                // the intro before it has said anything.
+                at(600, () => {
+                    armed = true;
+                    skip.classList.add("is-armed");
+                });
+
+                const onPointer = () => armed && finish();
+                const onKey = (event: KeyboardEvent) => {
+                    if (!armed || event.key === "Tab") return;
+                    event.preventDefault();
+                    finish();
+                };
+                const onWheel = (event: WheelEvent) =>
+                    armed && Math.abs(event.deltaY) > 8 && finish();
+                window.addEventListener("pointerdown", onPointer);
+                window.addEventListener("keydown", onKey, true);
+                window.addEventListener("wheel", onWheel, { passive: true });
+                window.addEventListener("touchmove", onPointer, { passive: true });
+
+                function finish() {
+                    if (done) return;
+                    done = true;
+                    timers.forEach(clearTimeout);
+                    window.removeEventListener("pointerdown", onPointer);
+                    window.removeEventListener("keydown", onKey, true);
+                    window.removeEventListener("wheel", onWheel);
+                    window.removeEventListener("touchmove", onPointer);
+                    setInert(false);
+                    setLed("on");
+                    document
+                        .querySelectorAll(".keyboard .key.is-pressed")
+                        .forEach((key) => key.classList.remove("is-pressed"));
+                    // Usable the moment the fade starts: the fading layer lets
+                    // clicks through and the shell stops refusing commands.
+                    booting = false;
+                    boot!.style.pointerEvents = "none";
+                    // The page's own entrance plays as the picture is handed over.
+                    delete document.documentElement.dataset.boot;
+                    document.dispatchEvent(new Event("crt:booted"));
+                    const fade = boot!.animate([{ opacity: 1 }, { opacity: 0 }], {
+                        duration: 200,
+                        easing: EASE_OUT,
+                        fill: "forwards",
+                    });
+                    fade.finished
+                        .catch(() => {})
+                        .then(() => {
+                            boot!.classList.remove("is-active");
+                            boot!.style.pointerEvents = "";
+                            fade.cancel();
+                            beam!.getAnimations().forEach((a) => a.cancel());
+                            raster!.getAnimations().forEach((a) => a.cancel());
+                        });
+                }
+
+                at(2950, finish);
+            }
+
+            function powerOff() {
+                const boot = $("crt-boot");
+                const viewport = $("crt-viewport");
+                const button = $("crt-power");
+                if (!boot || !viewport || booting || poweredOff) return;
+                poweredOff = true;
+                // Power loss wipes the session: transcript, history, prompt.
+                resetShell();
+                setInert(true);
+                setLed("off");
+                button?.setAttribute("aria-pressed", "true");
+                button?.setAttribute("aria-label", "Turn the screen on");
+
+                const showOff = () => {
+                    boot.classList.add("is-active", "is-off");
+                    boot.style.opacity = "";
+                };
+                if (reduced()) {
+                    showOff();
+                    return;
+                }
+                const beam = boot.querySelector<HTMLElement>(".crt-beam");
+                viewport
+                    .animate(
+                        [
+                            { transform: "none" },
+                            { transform: "scale(1, 0.004)" },
+                        ],
+                        { duration: 160, easing: EASE_IN_OUT, fill: "forwards" }
+                    )
+                    .finished.catch(() => {})
+                    .then(() => {
+                        if (!poweredOff) return;
+                        showOff();
+                        beam?.animate(
+                            [
+                                { transform: "scale(1, 0.004)", opacity: 1 },
+                                { transform: "scale(0.004, 0.004)", opacity: 1, offset: 0.6 },
+                                { transform: "scale(0.004, 0.004)", opacity: 0 },
+                            ],
+                            { duration: 320, easing: EASE_OUT, fill: "forwards" }
+                        );
+                    });
+            }
+
+            function powerOn() {
+                const boot = $("crt-boot");
+                const viewport = $("crt-viewport");
+                const button = $("crt-power");
+                if (!poweredOff) return;
+                poweredOff = false;
+                // A fresh boot starts with an empty terminal, including the
+                // "power" line that just turned it on.
+                resetShell();
+                button?.setAttribute("aria-pressed", "false");
+                button?.setAttribute("aria-label", "Turn the screen off");
+                viewport?.getAnimations().forEach((a) => a.cancel());
+                boot
+                    ?.querySelector<HTMLElement>(".crt-beam")
+                    ?.getAnimations()
+                    .forEach((a) => a.cancel());
+                if (reduced()) {
+                    boot?.classList.remove("is-active", "is-off");
+                    setInert(false);
+                    setLed("on");
+                    return;
+                }
+                runBoot();
+            }
+
+            /* ---------------- Glass reflection ---------------- */
+
+            // The reflection trails the pointer on a spring; tied 1:1 to the
+            // mouse it reads as a sticker, not as light on glass.
+            if (
+                window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+                !reduced()
+            ) {
+                const glareX = springValue(0, { stiffness: 90, damping: 18 });
+                const glareY = springValue(0, { stiffness: 90, damping: 18 });
+                const render = () => {
+                    const glare = $("crt-glare");
+                    if (glare) {
+                        glare.style.transform = `translate(${glareX.get().toFixed(1)}px, ${glareY.get().toFixed(1)}px)`;
+                    }
+                };
+                glareX.on("change", render);
+                glareY.on("change", render);
+                window.addEventListener(
+                    "pointermove",
+                    (event) => {
+                        const nx = event.clientX / window.innerWidth - 0.5;
+                        const ny = event.clientY / window.innerHeight - 0.5;
+                        glareX.set(nx * -120);
+                        glareY.set(ny * -80);
+                    },
+                    { passive: true }
+                );
+                document.addEventListener("astro:after-swap", render);
+            }
+
+            /* ---------------- Clock ---------------- */
+
+            function tickClock() {
+                const clock = $("crt-clock");
+                if (!clock) return;
+                const now = new Date();
+                clock.textContent =
+                    String(now.getHours()).padStart(2, "0") +
+                    ":" +
+                    String(now.getMinutes()).padStart(2, "0");
+            }
+            setInterval(tickClock, 10000);
+
+            /* ---------------- Commands ---------------- */
+
+            function panic(print: (text: string, tone?: "cmd" | "accent") => void) {
+                const screen = $("crt-screen");
+                print("KERNEL PANIC: attempted to delete the portfolio.", "accent");
+                print("…just kidding. Nice try.");
+                if (!screen || reduced()) return;
+                screen.classList.remove("is-panic");
+                void screen.offsetWidth;
+                screen.classList.add("is-panic");
+                setLed("busy");
+                setTimeout(() => {
+                    screen.classList.remove("is-panic");
+                    setLed("on");
+                }, 900);
+            }
+
+            setBlocked(() => booting);
+
+            register({
+                name: "cd",
+                aliases: ["open", "goto"],
+                usage: "cd <section>",
+                summary: "Go to profile, skills, projects, academic or contact",
+                complete: () => ["profile", "skills", "projects", "academic", "contact"],
+                run({ args, print }) {
+                    const arg = args.join(" ").toLowerCase().replace(/^\/+|\/+$/g, "");
+                    const target = ALIASES[arg];
+                    if (!target) {
+                        print(`cd: no such section: ${arg}`, "accent");
+                        return;
+                    }
+                    if (!poweredOff) go(target);
+                },
+            });
+            register({
+                name: "ls",
+                aliases: ["dir"],
+                summary: "List sections",
+                run: ({ print }) => print("profile/   skills/   projects/   academic/   contact/"),
+            });
+            register({
+                name: "whoami",
+                summary: "Who is this",
+                run({ print }) {
+                    print("Diogo Pires: software engineering student & full-stack developer.");
+                    print("Universitat de Lleida · intern at IFR Group · Andorra.");
+                    print("");
+                    print("01 DRIVEN        Pushing boundaries to build scalable, modern web platforms.");
+                    print("02 FULL STACK    End-to-end, from low-level systems to web interfaces.");
+                    print("03 STUDENT       Academic rigour plus hands-on internship experience.");
+                },
+            });
+            register({
+                name: "theme",
+                usage: "theme [dark|light]",
+                summary: "Switch the screen theme",
+                complete: () => ["dark", "light"],
+                run({ args, el, print }) {
+                    const want = (args[0] || "").toLowerCase();
+                    const isDark = document.documentElement.classList.contains("dark");
+                    if ((want === "dark" && isDark) || (want === "light" && !isDark)) {
+                        print(`Already ${want}.`);
+                        return;
+                    }
+                    (window as any).__toggleTheme?.(el ?? $("theme-toggle"));
+                },
+            });
+            register({
+                name: "github",
+                summary: "Open GitHub",
+                run: () => window.open(LINKS.github, "_blank", "noopener"),
+            });
+            register({
+                name: "linkedin",
+                summary: "Open LinkedIn",
+                run: () => window.open(LINKS.linkedin, "_blank", "noopener"),
+            });
+            register({
+                name: "mail",
+                aliases: ["email"],
+                summary: "Write an email",
+                run: () => {
+                    location.href = LINKS.mail;
+                },
+            });
+            register({
+                name: "menu",
+                summary: "Go to the start menu, or back from it",
+                run: () => {
+                    if (!poweredOff) toggleMenu();
+                },
+            });
+            register({
+                name: "top",
+                summary: "Scroll back to the top",
+                hidden: true,
+                run: scrollTop,
+            });
+            register({
+                name: "power",
+                usage: "power",
+                summary: "Turn the screen off or on",
+                run: () => (poweredOff ? powerOn() : powerOff()),
+            });
+            register({
+                name: "reboot",
+                aliases: ["restart"],
+                summary: "Watch the boot sequence again",
+                run: () => {
+                    if (poweredOff) powerOn();
+                    else runBoot();
+                },
+            });
+            register({
+                name: "help",
+                aliases: ["?"],
+                summary: "List commands",
+                run({ row }) {
+                    visibleCommands().forEach((command) => {
+                        const usage = command.usage ?? command.name;
+                        // Rows that need an argument fill the prompt instead.
+                        row(
+                            usage,
+                            command.summary,
+                            /[<[]/.test(usage) ? { fill: command.name + " " } : { cmd: usage }
+                        );
+                    });
+                },
+            });
+            register({
+                name: "clear",
+                aliases: ["cls"],
+                summary: "Clear the log",
+                run: clearLog,
+            });
+            register({
+                name: "exit",
+                aliases: ["quit"],
+                summary: "Leave the menu, back to where you were",
+                run: () => closeMenu(),
+            });
+            register({
+                name: "date",
+                hidden: true,
+                summary: "",
+                run: ({ print }) => print(new Date().toString()),
+            });
+            register({
+                name: "echo",
+                hidden: true,
+                summary: "",
+                run: ({ args, print }) => print(args.join(" ")),
+            });
+            register({
+                name: "sudo",
+                hidden: true,
+                summary: "",
+                run({ args, print }) {
+                    if (args.join(" ").toLowerCase() === "hire diogo") {
+                        print("[sudo] password for recruiter: ********");
+                        print("Access granted. Opening a channel…", "accent");
+                        setTimeout(() => go("/contact"), 900);
+                    } else {
+                        print("You are not in the sudoers file. This incident will be reported.");
+                    }
+                },
+            });
+            register({
+                name: "rm",
+                hidden: true,
+                summary: "",
+                run({ args, print }) {
+                    if (/-[a-z]*r[a-z]*f|-[a-z]*f[a-z]*r/.test(args.join(" "))) panic(print);
+                    else print("rm: permission denied");
+                },
+            });
+
+            bindShell();
+
+            /* ---------------- Global keys (bound once) ---------------- */
+
+            document.addEventListener(
+                "keydown",
+                (event) => press(keyName(event), true),
+                true
+            );
+            document.addEventListener("keyup", (event) => press(keyName(event), false));
+
+            document.addEventListener("keydown", (event) => {
+                if (booting) return;
+                const isK = event.key === "k" || event.key === "K";
+                if ((event.metaKey || event.ctrlKey) && isK) {
+                    event.preventDefault();
+                    exec("menu", { source: "key" });
+                    return;
+                }
+                const target = event.target as HTMLElement | null;
+                const typing = !!target?.closest?.("input, textarea, select, [contenteditable]");
+                if (typing) return;
+                if (event.key === "Escape") {
+                    exec("menu", { source: "key" });
+                    return;
+                }
+                if (poweredOff) return;
+                if (event.metaKey || event.ctrlKey || event.altKey) return;
+                if (event.key === "/") {
+                    // Focus the prompt with the slash already typed, so
+                    // "/help" reads the way it is written on screen.
+                    event.preventDefault();
+                    const field = $("shell-input") as HTMLInputElement | null;
+                    if (field) {
+                        field.value = "/";
+                        field.focus();
+                        field.dispatchEvent(new Event("input", { bubbles: true }));
+                    }
+                    return;
+                }
+                const fn = /^F([1-5])$/.exec(event.key);
+                const n = fn ? fn[1] : /^[1-5]$/.test(event.key) ? event.key : null;
+                if (n) {
+                    event.preventDefault();
+                    exec(SECTIONS[n], { source: "key" });
+                }
+            });
+
+            /* ---------------- Per page ---------------- */
+
+            document.addEventListener("astro:page-load", () => {
+                tickClock();
+
+                // A page swap rebuilds the screen, so carry the power state over.
+                if (poweredOff) {
+                    poweredOff = false;
+                    powerOff();
+                }
+
+                const viewport = $("crt-viewport");
+                const bar = $("scroll-progress");
+                const toTop = $("to-top");
+                if (viewport) {
+                    // scaleX stays on the compositor; width would force layout
+                    // on every scroll event.
+                    let frame = 0;
+                    const update = () => {
+                        if (frame) return;
+                        frame = requestAnimationFrame(() => {
+                            frame = 0;
+                            const max = viewport.scrollHeight - viewport.clientHeight;
+                            const p = max > 0 ? viewport.scrollTop / max : 0;
+                            if (bar) bar.style.transform = `scaleX(${Math.min(1, Math.max(0, p))})`;
+                            toTop?.classList.toggle(
+                                "is-visible",
+                                viewport.scrollTop > viewport.clientHeight * 0.9
+                            );
+                        });
+                    };
+                    viewport.addEventListener("scroll", update, { passive: true });
+                    update();
+                }
+
+                if (document.documentElement.dataset.boot !== undefined && !booting) {
+                    runBoot();
+                }
+            });
         </script>
     </body>
 </html>
