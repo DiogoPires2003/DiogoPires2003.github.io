@@ -128,16 +128,13 @@ const keyRows = [
 
             applyStoredTheme();
 
-            // The first visit of a session boots the computer. Decided before
-            // first paint so the content never flashes ahead of the boot.
-            try {
-                if (
-                    !sessionStorage.getItem("welcomed") &&
-                    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                ) {
-                    document.documentElement.dataset.boot = "1";
-                }
-            } catch (e) {}
+            // Every entry to the site boots the computer: a new tab, a reload or
+            // a typed URL. Moving between sections is a client-side swap and
+            // never reaches this. Decided before first paint so the content
+            // never flashes ahead of the boot.
+            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                document.documentElement.dataset.boot = "1";
+            }
 
             if (!window.__themeInitBound) {
                 window.__themeInitBound = true;
@@ -685,10 +682,6 @@ const keyRows = [
                 const name = $("crt-boot-name");
                 const skip = $("crt-boot-skip");
                 if (!boot || !beam || !raster || !post || !name || !skip) return;
-
-                try {
-                    sessionStorage.setItem("welcomed", "1");
-                } catch (e) {}
 
                 booting = true;
                 boot.classList.remove("is-off");
