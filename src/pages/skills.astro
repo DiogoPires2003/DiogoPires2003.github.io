@@ -148,384 +148,222 @@ const lastUpdated = new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
 }).format(new Date());
 
-const nodeCategories = [...new Set(nodeCards.map((card) => card.category))];
-const filters = ["All", ...nodeCategories];
+const byCategory = (category: string) =>
+    nodeCards
+        .filter((card) => card.category === category)
+        .sort((a, b) => b.proficiency - a.proficiency);
 
-const stats = [
-    {
-        n: "01",
-        value: "1.2M+",
-        label: "Lines of code",
-        countTo: 1.2,
-        countSuffix: "M+",
-        countDecimals: 1,
-    },
-    { n: "02", value: lastUpdated, label: "Last updated" },
-    { n: "03", value: "Web & Systems", label: "Core focus" },
-];
+// Languages fill a column on their own; the smaller groups share one.
+const columns = [
+    ["Languages"],
+    ["Frameworks", "Databases"],
+    ["Tools", "Platforms"],
+].map((column) =>
+    column.map((category) => ({ category, cards: byCategory(category) }))
+);
+
+const featured = [...nodeCards].sort((a, b) => b.proficiency - a.proficiency)[0];
+const slug = (name: string) => name.toLowerCase();
 ---
 
 <Layout title="Diogo Pires | Skills">
-    <section data-reveal class="border-b-2 border-ink dark:border-paper px-4 sm:px-6 lg:px-12 py-14 sm:py-20">
-        <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-6" data-scramble>
-            N&deg; 02 &mdash; Technical Stack
-        </p>
-        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-[-0.035em] mb-6 max-w-3xl">
-            <span class="reveal-line" style="--i:0"><span>Skills &amp; Tools<span class="text-accent stamp-dot">.</span></span></span>
-        </h1>
-        <p class="reveal-up max-w-2xl text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            Languages, frameworks and tools I use regularly. Proficiency
-            reflects hands-on academic and internship experience.
-        </p>
-    </section>
+    <section
+        id="skills-board"
+        class="screen-page grid grid-rows-[auto_minmax(0,1fr)]"
+        data-skills={JSON.stringify(nodeCards)}
+    >
+        <header
+            data-reveal
+            class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 px-4 sm:px-6 lg:px-10 py-10 sm:py-12 lg:py-6 border-b-2 border-ink dark:border-paper"
+        >
+            <div>
+                <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-4" data-scramble>
+                    [02] Technical Stack
+                </p>
+                <h1 class="fit-h1-sm text-4xl sm:text-6xl font-black uppercase leading-[0.95] tracking-[-0.035em]">
+                    <span class="reveal-line" style="--i:0"><span>Skills &amp; Tools<span class="text-accent stamp-dot">.</span></span></span>
+                </h1>
+            </div>
+            <p class="reveal-up font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 lg:text-right leading-relaxed">
+                {nodeCards.length} items <span class="text-accent-text">/</span> 1.2M+ lines of code
+                <br class="hidden lg:block" />
+                <span class="lg:hidden text-accent-text"> / </span>Web &amp; systems <span class="text-accent-text">/</span> Updated {lastUpdated}
+            </p>
+        </header>
 
-    <section class="px-4 sm:px-6 lg:px-12 py-6 border-b-2 border-ink dark:border-paper" id="filter-container">
-        <div id="filter-group" class="relative isolate inline-flex flex-wrap">
-        <span id="filter-ink" class="slide-ink" aria-hidden="true"></span>
-        {filters.map((filter, i) => (
-            <button
-                data-filter={filter}
-                class:list={[
-                    "filter-btn tap-feedback px-5 py-2.5 font-mono text-xs uppercase tracking-widest border-2 border-ink dark:border-paper",
-                    i > 0 && "border-l-0",
-                    filter === "All" && "is-active",
-                ]}
-            >
-                {filter}<span class="ml-2 opacity-50">{filter === "All" ? nodeCards.length : nodeCards.filter((c) => c.category === filter).length}</span>
-            </button>
-        ))}
-        </div>
-    </section>
-
-    <section class="border-b-2 border-ink dark:border-paper" id="skill-grid">
-        <div class="hidden lg:grid grid-cols-12 px-4 sm:px-6 lg:px-12 py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 border-b border-neutral-300 dark:border-neutral-700">
-            <span class="col-span-1">No.</span>
-            <button
-                type="button"
-                id="sort-name"
-                class="sort-btn col-span-3 text-left flex items-center gap-1.5 hover:text-accent-text transition-colors"
-            >
-                Name <span class="sort-arrow" data-for="name"></span>
-            </button>
-            <span class="col-span-3">Detail</span>
-            <span class="col-span-2">Category</span>
-            <button
-                type="button"
-                id="sort-proficiency"
-                class="sort-btn col-span-2 text-left flex items-center gap-1.5 hover:text-accent-text transition-colors"
-            >
-                Proficiency <span class="sort-arrow" data-for="proficiency"></span>
-            </button>
-            <span class="col-span-1 text-right">%</span>
-        </div>
-        {nodeCards.map((card, i) => (
-            <div
-                class="skill-row stagger-item is-shown row-wipe group grid grid-cols-12 items-center gap-x-2 px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0"
-                data-category={card.category}
-                data-name={card.name}
-                data-proficiency={card.proficiency}
-            >
-                <span class="skill-index hidden sm:block col-span-1 font-mono text-xs text-neutral-400">
-                    {String(i + 1).padStart(2, "0")}
-                </span>
-                <span class="col-span-6 sm:col-span-3">
-                    <span class="row-slide font-bold uppercase text-sm sm:text-base">{card.name}</span>
-                    <span class="block sm:hidden text-xs text-neutral-500 dark:text-neutral-400">{card.detail}</span>
-                </span>
-                <span class="hidden sm:block col-span-3 text-sm text-neutral-500 dark:text-neutral-400">
-                    {card.detail}
-                </span>
-                <span class="hidden sm:block col-span-2 font-mono text-[11px] uppercase text-accent-text">
-                    [{card.category}]
-                </span>
-                <span class="col-span-5 sm:col-span-2">
-                    <div class="skill-bar-track">
-                        <div
-                            class="skill-bar-fill"
-                            data-proficiency={card.proficiency}
-                            style={`--p: 0; transition-delay: ${(i % 10) * 30}ms;`}
-                        >
+        <div
+            data-stagger="18"
+            class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[1.1fr_1fr_1fr_1.15fr] lg:grid-rows-[minmax(0,1fr)] min-h-0"
+        >
+            {columns.map((column, c) => (
+                <div class:list={[
+                    "flex flex-col min-h-0 border-ink dark:border-paper",
+                    "border-b-2 md:border-b-0 md:border-r-2",
+                    c === 2 && "md:border-r-0 lg:border-r-2",
+                ]}>
+                    {column.map((group, g) => (
+                        <div class:list={[
+                            "flex flex-col min-h-0",
+                            g > 0 && "border-t-2 border-ink dark:border-paper",
+                            column.length === 1 ? "flex-1" : g === 0 ? "flex-[1.4]" : "flex-1",
+                        ]}>
+                            <div class="panel-head">
+                                <span>{group.category}</span>
+                                <span class="text-accent-text">{String(group.cards.length).padStart(2, "0")}</span>
+                            </div>
+                            <ul class="fit-scroll flex-1">
+                                {group.cards.map((card) => (
+                                    <li class="stagger-item">
+                                        <button
+                                            type="button"
+                                            class="skill-row group"
+                                            data-cmd={`inspect ${slug(card.name)}`}
+                                            data-skill={slug(card.name)}
+                                            aria-pressed={card === featured ? "true" : "false"}
+                                        >
+                                            <span class="min-w-0 text-left">
+                                                <span class="row-slide block truncate font-bold uppercase text-sm">{card.name}</span>
+                                                <span class="block lg:hidden text-xs text-neutral-500 dark:text-neutral-400 truncate">{card.detail}</span>
+                                            </span>
+                                            <span class="seg-bar w-16 sm:w-20 lg:w-12 xl:w-16 2xl:w-20" aria-hidden="true">
+                                                <span class="skill-bar-fill" data-proficiency={card.proficiency} style="--p: 0;"></span>
+                                            </span>
+                                            <span class="w-9 text-right font-mono text-xs font-bold tabular-nums">{card.proficiency}%</span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
+                    ))}
+                </div>
+            ))}
+
+            <aside id="skill-inspector" class="hidden lg:flex flex-col min-h-0 overflow-hidden" aria-live="polite">
+                <div class="panel-head">
+                    <span>Inspect</span>
+                    <span class="normal-case tracking-normal text-accent-text" data-i="cmd">inspect {slug(featured.name)}</span>
+                </div>
+                <div class="flex-1 min-h-0 flex flex-col px-6 py-5">
+                    <p class="font-mono text-xs text-accent-text uppercase tracking-widest">[<span data-i="category">{featured.category}</span>]</p>
+                    <h2 class="mt-2 text-3xl xl:text-4xl font-black uppercase leading-none tracking-tight break-words" data-i="name">{featured.name}</h2>
+                    <p class="mt-3 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed" data-i="detail">{featured.detail}</p>
+                    <div class="mt-auto pt-4">
+                        <p class="inspect-pct flex items-baseline text-6xl font-black tabular-nums leading-none">
+                            <number-flow id="inspect-pct"></number-flow><span class="text-accent">%</span>
+                        </p>
+                        <span class="seg-bar seg-bar-lg mt-4" aria-hidden="true">
+                            <span id="inspect-fill" class="skill-bar-fill" style={`transform: scaleX(${featured.proficiency / 100});`}></span>
+                        </span>
+                        <p class="inspect-related mt-4 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Same category</p>
+                        <div class="inspect-related mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] uppercase tracking-widest" data-i="related"></div>
                     </div>
-                </span>
-                <span class="col-span-1 text-right font-mono text-xs font-bold tabular-nums" data-count-text={card.proficiency} data-suffix="%">{card.proficiency}%</span>
-            </div>
-        ))}
+                </div>
+            </aside>
+        </div>
     </section>
-
-    <section class="grid grid-cols-1 sm:grid-cols-3">
-        {stats.map((stat, i) => (
-            <div
-                data-reveal
-                style={`--i:${i}`}
-                class:list={[
-                    "stat-line px-4 sm:px-6 lg:px-12 py-8 sm:py-10",
-                    i !== stats.length - 1 && "sm:border-r border-neutral-300 dark:border-neutral-700",
-                ]}
-            >
-                <span class="font-mono text-xs text-accent-text">{stat.n}</span>
-                {stat.countTo !== undefined ? (
-                    <p class="text-2xl sm:text-3xl font-black uppercase mt-3 flex items-baseline">
-                        <number-flow class="stat-number" data-count-to={stat.countTo}></number-flow><span>{stat.countSuffix}</span>
-                    </p>
-                ) : (
-                    <p class="text-2xl sm:text-3xl font-black uppercase mt-3">{stat.value}</p>
-                )}
-                <p class="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-1">{stat.label}</p>
-            </div>
-        ))}
-    </section>
-
-    <script is:inline>
-        document.addEventListener("astro:page-load", () => {
-            const filterBtns = document.querySelectorAll(".filter-btn");
-            const rows = Array.from(document.querySelectorAll(".skill-row"));
-
-            const filterInk = document.getElementById("filter-ink");
-            const moveFilterInk = (btn) => {
-                if (!filterInk || !btn) return;
-                filterInk.style.setProperty("--x", `${btn.offsetLeft}px`);
-                filterInk.style.setProperty("--w", `${btn.offsetWidth}px`);
-                filterInk.style.setProperty("--o", 1);
-                filterInk.style.top = `${btn.offsetTop}px`;
-                filterInk.style.height = `${btn.offsetHeight}px`;
-            };
-            moveFilterInk(document.querySelector(".filter-btn.is-active"));
-            window.addEventListener("resize", () =>
-                moveFilterInk(document.querySelector(".filter-btn.is-active"))
-            );
-
-            filterBtns.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    filterBtns.forEach((b) => b.classList.remove("is-active"));
-                    btn.classList.add("is-active");
-                    moveFilterInk(btn);
-
-                    const cat = btn.dataset.filter;
-                    const shown = [];
-
-                    rows.forEach((row) => {
-                        const shouldShow =
-                            cat === "All" || row.dataset.category === cat;
-                        if (shouldShow) {
-                            const wasHidden = row.dataset.hidden === "true";
-                            row.dataset.hidden = "false";
-                            row.style.display = "grid";
-                            if (wasHidden) {
-                                row.classList.remove("is-shown");
-                            }
-                            shown.push(row);
-                        } else {
-                            row.dataset.hidden = "true";
-                            row.classList.remove("is-shown");
-                            window.setTimeout(() => {
-                                if (row.dataset.hidden === "true") {
-                                    row.style.display = "none";
-                                }
-                            }, 180);
-                        }
-                    });
-
-                    // Visibility is already decided, so numbering must not
-                    // wait on a frame callback.
-                    renumber();
-
-                    // Rows that are already on screen must not re-animate, so
-                    // only the newcomers get a stagger delay. This waits a
-                    // frame so the browser registers their hidden start state.
-                    const entering = shown.filter(
-                        (row) => !row.classList.contains("is-shown")
-                    );
-                    if (entering.length) {
-                        requestAnimationFrame(() => {
-                            if (window.__showStagger) {
-                                window.__showStagger(entering, 24);
-                            } else {
-                                entering.forEach((row) =>
-                                    row.classList.add("is-shown")
-                                );
-                            }
-                        });
-                    }
-                });
-            });
-
-            // The leading number is a position in the current view, so it has
-            // to be rewritten whenever the view changes.
-            const renumber = () => {
-                let n = 0;
-                // Read from the DOM, not the captured array: sorting reorders
-                // the rows and the number is a position in the current view.
-                document.querySelectorAll(".skill-row").forEach((row) => {
-                    if (row.dataset.hidden === "true") return;
-                    n += 1;
-                    const cell = row.querySelector(".skill-index");
-                    if (cell) cell.textContent = String(n).padStart(2, "0");
-                });
-            };
-
-            const skillGrid = document.getElementById("skill-grid");
-            const sortButtons = document.querySelectorAll(".sort-btn");
-            const reduceMotion = window.matchMedia(
-                "(prefers-reduced-motion: reduce)"
-            ).matches;
-            let sortState = { field: null, dir: 1 };
-
-            const updateSortArrows = () => {
-                document
-                    .querySelectorAll(".sort-arrow")
-                    .forEach((el) => (el.textContent = ""));
-                if (sortState.field) {
-                    const arrow = document.querySelector(
-                        `.sort-arrow[data-for="${sortState.field}"]`
-                    );
-                    if (arrow) {
-                        arrow.textContent = sortState.dir === 1 ? "▲" : "▼";
-                        arrow.classList.remove("icon-pop");
-                        void arrow.offsetWidth;
-                        arrow.classList.add("icon-pop");
-                    }
-                }
-            };
-
-            const sortRows = (field) => {
-                if (sortState.field === field) {
-                    sortState.dir *= -1;
-                } else {
-                    sortState.field = field;
-                    sortState.dir = 1;
-                }
-
-                const sorted = [...rows].sort((a, b) => {
-                    if (field === "name") {
-                        const av = a.dataset.name.toLowerCase();
-                        const bv = b.dataset.name.toLowerCase();
-                        if (av < bv) return -1 * sortState.dir;
-                        if (av > bv) return 1 * sortState.dir;
-                        return 0;
-                    }
-                    const av = parseFloat(a.dataset.proficiency);
-                    const bv = parseFloat(b.dataset.proficiency);
-                    return (av - bv) * sortState.dir;
-                });
-
-                const visibleRows = sorted.filter(
-                    (row) => row.dataset.hidden !== "true"
-                );
-                const firstRects = reduceMotion
-                    ? null
-                    : new Map(
-                          visibleRows.map((row) => [row, row.getBoundingClientRect()])
-                      );
-
-                sorted.forEach((row) => skillGrid.appendChild(row));
-                updateSortArrows();
-                renumber();
-
-                if (reduceMotion) return;
-
-                requestAnimationFrame(() => {
-                    visibleRows.forEach((row) => {
-                        const first = firstRects.get(row);
-                        const last = row.getBoundingClientRect();
-                        const deltaY = first.top - last.top;
-                        if (!deltaY) return;
-                        if (window.__flipSpring) {
-                            window.__flipSpring(row, deltaY);
-                        }
-                    });
-                });
-            };
-
-            sortButtons.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    sortRows(btn.id === "sort-name" ? "name" : "proficiency");
-                });
-            });
-
-            const tracks = document.querySelectorAll(".skill-bar-track");
-            if (tracks.length) {
-                const revealBar = (track) => {
-                    const el = track.querySelector(".skill-bar-fill");
-                    if (!el) return;
-                    const p = parseFloat(el.dataset.proficiency) / 100;
-                    el.style.setProperty("--p", String(p));
-                    el.style.transform = `scaleX(${p})`;
-                };
-                if ("IntersectionObserver" in window) {
-                    const barObserver = new IntersectionObserver(
-                        (entries) => {
-                            entries.forEach((entry) => {
-                                if (entry.isIntersecting) {
-                                    revealBar(entry.target);
-                                    barObserver.unobserve(entry.target);
-                                }
-                            });
-                        },
-                        { threshold: 0.4 }
-                    );
-                    tracks.forEach((track) => barObserver.observe(track));
-                } else {
-                    tracks.forEach(revealBar);
-                }
-            }
-        });
-    </script>
 
     <script>
         import "number-flow";
+        import { register } from "../scripts/shell";
+
+        type Skill = { name: string; category: string; detail: string; proficiency: number };
 
         document.addEventListener("astro:page-load", () => {
-            const stats = Array.from(
-                document.querySelectorAll("number-flow[data-count-to]")
-            );
-            if (!stats.length) return;
+            const board = document.getElementById("skills-board");
+            if (!board) return;
+            const skills: Skill[] = JSON.parse(board.dataset.skills || "[]");
+            const find = (name: string) =>
+                skills.find((skill) => skill.name.toLowerCase() === name.toLowerCase());
+            const inspector = document.getElementById("skill-inspector");
+            const pct = document.getElementById("inspect-pct") as any;
+            const fill = document.getElementById("inspect-fill");
+            const field = (key: string) => inspector?.querySelector<HTMLElement>(`[data-i="${key}"]`);
 
-            stats.forEach((el) => el.update(0));
+            // Text swaps instantly; only the figure animates, because this
+            // runs on every hover.
+            const inspect = (skill: Skill) => {
+                const key = skill.name.toLowerCase();
+                board.querySelectorAll<HTMLElement>(".skill-row").forEach((row) =>
+                    row.setAttribute("aria-pressed", String(row.dataset.skill === key))
+                );
+                if (!inspector) return;
+                field("name")!.textContent = skill.name;
+                field("category")!.textContent = skill.category;
+                field("detail")!.textContent = skill.detail;
+                field("cmd")!.textContent = `inspect ${key}`;
+                pct?.update?.(skill.proficiency);
+                if (fill) fill.style.transform = `scaleX(${skill.proficiency / 100})`;
+                const related = field("related")!;
+                related.textContent = "";
+                skills
+                    .filter((other) => other.category === skill.category && other !== skill)
+                    .forEach((other) => {
+                        const chip = document.createElement("button");
+                        chip.type = "button";
+                        chip.className = "link-ghost";
+                        chip.dataset.cmd = `inspect ${other.name.toLowerCase()}`;
+                        chip.innerHTML = `<span class="text-accent-text">/</span> `;
+                        chip.append(other.name);
+                        related.appendChild(chip);
+                    });
+            };
 
-            const reveal = (el) => el.update(parseFloat(el.dataset.countTo));
+            inspect(skills.reduce((a, b) => (b.proficiency > a.proficiency ? b : a), skills[0]));
 
+            register({
+                name: "inspect",
+                usage: "inspect <skill>",
+                summary: "Show a skill in the inspector",
+                scope: "page",
+                complete: () => skills.map((skill) => skill.name.toLowerCase()),
+                run({ args, print }) {
+                    const skill = find(args.join(" "));
+                    if (!skill) {
+                        print(`inspect: unknown skill: ${args.join(" ")}`, "accent");
+                        return;
+                    }
+                    inspect(skill);
+                    // Without the inspector (small screens) the answer is text.
+                    if (!inspector || inspector.offsetParent === null) {
+                        print(`${skill.name} [${skill.category}] ${skill.proficiency}%: ${skill.detail}`);
+                    }
+                },
+            });
+
+            // Hovering and focusing browse; clicking runs the command.
+            const rows = board.querySelectorAll<HTMLElement>(".skill-row");
+            const browse = (row: HTMLElement) => {
+                const skill = find(row.dataset.skill || "");
+                if (skill) inspect(skill);
+            };
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                rows.forEach((row) => row.addEventListener("pointerenter", () => browse(row)));
+            }
+            rows.forEach((row) => row.addEventListener("focus", () => browse(row)));
+
+            // Bars fill as their panel comes into view.
+            const bars = board.querySelectorAll<HTMLElement>(".skill-row .skill-bar-fill");
+            const reveal = (el: HTMLElement) => {
+                const p = parseFloat(el.dataset.proficiency || "0") / 100;
+                el.style.setProperty("--p", String(p));
+                el.style.transform = `scaleX(${p})`;
+            };
             if ("IntersectionObserver" in window) {
-                const statObserver = new IntersectionObserver(
+                const io = new IntersectionObserver(
                     (entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
-                                reveal(entry.target);
-                                statObserver.unobserve(entry.target);
+                                reveal(entry.target as HTMLElement);
+                                io.unobserve(entry.target);
                             }
                         });
                     },
                     { threshold: 0.4 }
                 );
-                stats.forEach((el) => statObserver.observe(el));
+                bars.forEach((bar) => io.observe(bar));
             } else {
-                stats.forEach(reveal);
+                bars.forEach(reveal);
             }
         });
-    </script>
-
-    <script>
-        import { animate } from "motion";
-
-        // Motion's `x`/`y`/`translateY` shorthands run on the main thread.
-        // The full transform string is hardware accelerated, which matters
-        // while the rest of the table is reflowing.
-        window.__flipSpring = function (row, deltaY) {
-            const controls = animate(
-                row,
-                {
-                    transform: [
-                        `translateY(${deltaY}px)`,
-                        "translateY(0px)",
-                    ],
-                },
-                { type: "spring", duration: 0.45, bounce: 0.1 }
-            );
-            controls.finished
-                .then(() => {
-                    row.style.transform = "";
-                })
-                .catch(() => {});
-        };
     </script>
 </Layout>
