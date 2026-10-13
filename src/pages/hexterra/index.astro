@@ -1,0 +1,1665 @@
+---
+// Hexterra lives outside the portfolio Layout: it needs the whole viewport,
+// and without ClientRouter here the portfolio does a full page load into it,
+// so Three.js never leaks into the other pages.
+
+const title = "Hexterra | Diogo Pires";
+const description = "Juego de estrategia por turnos en 3D sobre un planeta recién terraformado.";
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalURL} />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="theme-color" content="#11151c" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <main class="hx" data-hexterra data-state="loading" data-phase="boot">
+            <canvas aria-label="Tablero de Hexterra. Arrastra para girar la cámara y usa la rueda o pellizca para hacer zoom."></canvas>
+            <div class="vignette" aria-hidden="true"></div>
+
+            <a class="brand panel-in" href="/" aria-label="Volver al portfolio" style="--d: 0">
+                <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M24 3 42 13.5v21L24 45 6 34.5v-21z" />
+                    <path d="M24 13 33 18.25v10.5L24 34l-9-5.25v-10.5z" />
+                    <path d="M24 3v10M42 13.5l-9 4.75M42 34.5l-9-5.75M24 45V34M6 34.5l9-5.75M6 13.5l9 4.75" />
+                </svg>
+                <span>
+                    <span class="title">HEXTERRA</span>
+                    <span class="sub">Planeta KX-7 · Terraformación 98%</span>
+                </span>
+            </a>
+
+            <div class="audio-ctl panel-in" style="--d: 1">
+                <button type="button" data-game-menu aria-label="Menú" title="Volver al menú">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                </button>
+                <button type="button" data-toggle-music aria-pressed="true" aria-label="Música">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /><path class="off" d="M3 3l18 18" /></svg>
+                </button>
+                <button type="button" data-toggle-sfx aria-pressed="true" aria-label="Efectos de sonido">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" /><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /><path class="off" d="M16 9l6 6M22 9l-6 6" /></svg>
+                </button>
+            </div>
+            <div class="ui panel-in" data-ui style="--d: 1"></div>
+            <div class="tip" data-tip hidden></div>
+            <div class="modal-wrap handoff" data-handoff hidden></div>
+
+            <p class="hint intro-hint">Pulsa cualquier tecla o toca para saltar</p>
+
+            <div class="boot">
+                <svg class="boot-logo" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M24 3 42 13.5v21L24 45 6 34.5v-21z" />
+                    <path d="M24 13 33 18.25v10.5L24 34l-9-5.25v-10.5z" />
+                </svg>
+                <p class="boot-title">HEXTERRA</p>
+                <div class="boot-bar" data-boot-progress><span></span></div>
+                <p class="boot-line" aria-hidden="true">Descargando el planeta…</p>
+                <button type="button" class="btn primary boot-enter" data-enter>Entrar</button>
+                <p class="boot-note">Mejor con sonido</p>
+            </div>
+
+            <p class="notice" role="alert">
+                Tu navegador no puede mostrar WebGL, que Hexterra necesita para dibujar el planeta.
+            </p>
+        </main>
+
+        <script>
+            import { startHexterra } from "../../hexterra/main";
+
+            const root = document.querySelector<HTMLElement>("[data-hexterra]");
+            if (root) startHexterra(root);
+        </script>
+    </body>
+</html>
+
+<style is:global>
+    html,
+    body {
+        margin: 0;
+        height: 100%;
+        background: #11151c;
+        color: #ece8e1;
+        font-family: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overscroll-behavior: none;
+    }
+</style>
+
+<!-- The interface is built at runtime by ui/hud.ts, so its styles are global (scoped under .hx by hand). -->
+<style is:global>
+    .hx {
+        --text: #ece8e1;
+        --muted: rgb(236 232 225 / 0.62);
+        --accent: #a9cdd6;
+        --panel: rgb(16 20 27 / 0.66);
+        --panel-solid: rgb(20 24 32 / 0.92);
+        --line: rgb(255 255 255 / 0.1);
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --gap: max(16px, env(safe-area-inset-left));
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        color: var(--text);
+        background: #1b2230;
+        user-select: none;
+        -webkit-user-select: none;
+        font-size: 14px;
+    }
+    .hx *,
+    .hx *::before,
+    .hx *::after {
+        box-sizing: border-box;
+    }
+    .hx canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        cursor: grab;
+        outline: none;
+    }
+    .hx canvas:active {
+        cursor: grabbing;
+    }
+    .hx p {
+        margin: 0;
+    }
+    .hx [hidden] {
+        display: none !important;
+    }
+    .hx .vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 60%, rgb(0 0 0 / 0.35) 100%);
+    }
+    .hx .hint-text {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+    }
+    .hx .error {
+        color: #f2a08f;
+        font-size: 13px;
+    }
+    .hx .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    /* ---------- Entrance ---------- */
+    .hx .panel-in {
+        opacity: 0;
+        transform: translateY(-6px);
+        transition:
+            opacity 600ms var(--ease-out),
+            transform 700ms var(--ease-out);
+        transition-delay: calc(var(--d, 0) * 90ms);
+    }
+    .hx[data-phase="play"] .panel-in {
+        opacity: 1;
+        transform: none;
+    }
+    .hx[data-phase="intro"] .ui {
+        pointer-events: none;
+    }
+
+    .hx .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        backdrop-filter: blur(16px) saturate(120%);
+        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+    }
+
+    /* ---------- Brand ---------- */
+    .hx .brand {
+        position: absolute;
+        top: max(18px, env(safe-area-inset-top));
+        left: var(--gap);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: inherit;
+        text-decoration: none;
+        text-shadow: 0 1px 12px rgb(0 0 0 / 0.45);
+        z-index: 3;
+    }
+    .hx .logo {
+        width: 30px;
+        height: 30px;
+        fill: none;
+        stroke: var(--text);
+        stroke-width: 1.4;
+    }
+    .hx .title {
+        display: block;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.34em;
+    }
+    .hx .sub {
+        display: block;
+        margin-top: 3px;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .hx .brand:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+    }
+
+    /* ---------- Buttons ---------- */
+    .hx .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: 600 12px/1 "Chakra Petch", sans-serif;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #15191f;
+        background: var(--text);
+        border: 0;
+        border-radius: 8px;
+        padding: 11px 15px;
+        cursor: pointer;
+        transition:
+            transform 140ms var(--ease-out),
+            background-color 180ms,
+            opacity 180ms;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .hx .btn:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+    .hx .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    .hx .btn.ghost {
+        color: var(--text);
+        background: rgb(255 255 255 / 0.06);
+        box-shadow: inset 0 0 0 1px var(--line);
+    }
+    .hx .btn.small {
+        padding: 8px 11px;
+        font-size: 11px;
+    }
+    .hx .btn.wide {
+        width: 100%;
+    }
+    .hx .btn .mi {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+    }
+    .hx .link {
+        background: none;
+        border: 0;
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+        padding: 4px;
+    }
+    @media (hover: hover) {
+        .hx .btn:not(:disabled):hover {
+            background: #fff;
+        }
+        .hx .btn.ghost:not(:disabled):hover {
+            background: rgb(255 255 255 / 0.12);
+        }
+        .hx .link:hover {
+            color: var(--text);
+        }
+    }
+    .hx button:focus-visible,
+    .hx input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .hx .ri {
+        fill: none;
+        stroke: var(--c);
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+    }
+    .hx .mi {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vertical-align: -2px;
+    }
+    .hx .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        border-radius: 6px;
+        background: rgb(255 255 255 / 0.08);
+        font-size: 12px;
+    }
+    .hx .chips {
+        display: inline-flex;
+        gap: 3px;
+        flex-wrap: wrap;
+    }
+    .hx .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: var(--p);
+        flex: none;
+    }
+
+    /* ---------- Audio toggles ---------- */
+    .hx .audio-ctl {
+        position: absolute;
+        top: max(18px, env(safe-area-inset-top));
+        right: var(--gap);
+        display: flex;
+        gap: 6px;
+        z-index: 3;
+    }
+    .hx .audio-ctl button {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        color: var(--text);
+        cursor: pointer;
+        transition:
+            transform 140ms var(--ease-out),
+            opacity 180ms;
+    }
+    .hx .audio-ctl button:active {
+        transform: scale(0.94);
+    }
+    .hx .audio-ctl svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .hx:not([data-playing="true"]) [data-game-menu] {
+        display: none;
+    }
+    .hx .audio-ctl .off {
+        display: none;
+    }
+    .hx .audio-ctl [aria-pressed="false"] {
+        opacity: 0.55;
+    }
+    .hx .audio-ctl [aria-pressed="false"] .off {
+        display: inline;
+    }
+    .hx .audio-ctl [aria-pressed="false"] .on {
+        display: none;
+    }
+
+    /* ---------- Main menu ---------- */
+    .hx .menu-card {
+        width: min(460px, 100%);
+        gap: 16px;
+        padding: 28px 26px 18px;
+    }
+    .hx .menu-title {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 700;
+        font-size: clamp(30px, 6vw, 40px);
+        letter-spacing: 0.3em;
+        margin-right: -0.3em;
+    }
+    .hx .pitch {
+        font-size: 14px;
+        line-height: 1.55;
+        color: rgb(236 232 225 / 0.85);
+    }
+    .hx .pitch-points {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 9px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .hx .pitch-points li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .hx .menu-actions {
+        display: grid;
+        gap: 8px;
+        margin-top: 4px;
+    }
+    .hx .btn.accent {
+        background: #e7cf9c;
+        color: #1c1913;
+    }
+    .hx .lobby-links {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* ---------- Tutorial coach ---------- */
+    .hx .coach {
+        right: var(--gap);
+        bottom: max(18px, env(safe-area-inset-bottom));
+        width: 300px;
+        padding: 16px 16px 10px;
+        display: grid;
+        gap: 8px;
+        background: var(--panel-solid);
+        border-color: rgb(231 207 156 / 0.45);
+        animation: modal-in 320ms var(--ease-out);
+        z-index: 3;
+    }
+    .hx .coach h3 {
+        margin: 0;
+        font-size: 16px;
+    }
+    .hx .coach-text {
+        font-size: 13px;
+        line-height: 1.55;
+        color: rgb(236 232 225 / 0.86);
+    }
+    .hx .coach-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2px;
+    }
+    .hx .coach .dots {
+        display: flex;
+        gap: 4px;
+    }
+    .hx .coach .dots i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgb(255 255 255 / 0.15);
+    }
+    .hx .coach .dots i.done {
+        background: rgb(231 207 156 / 0.6);
+    }
+    .hx .coach .dots i.now {
+        background: #e7cf9c;
+    }
+    .hx .coach .waiting {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #e7cf9c;
+        animation: blink-soft 1.6s ease-in-out infinite;
+    }
+    .hx .coach .link {
+        justify-self: start;
+        padding-left: 0;
+    }
+    .hx .coach-target {
+        outline: 2px solid #e7cf9c;
+        outline-offset: 4px;
+        border-radius: 10px;
+        animation: spotlight 1.6s ease-in-out infinite;
+    }
+    @media (max-width: 1300px) and (min-width: 761px) {
+        .hx .coach {
+            bottom: calc(var(--dock-h, 180px) + 14px);
+        }
+    }
+    @keyframes spotlight {
+        50% {
+            outline-color: rgb(231 207 156 / 0.25);
+            outline-offset: 7px;
+        }
+    }
+    @keyframes blink-soft {
+        50% {
+            opacity: 0.45;
+        }
+    }
+
+    /* ---------- Lobby ---------- */
+    .hx .lobby {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 80px var(--gap) var(--gap);
+        pointer-events: none;
+    }
+    .hx .lobby-card {
+        pointer-events: auto;
+        width: min(420px, 100%);
+        padding: 22px;
+        display: grid;
+        gap: 14px;
+        background: var(--panel-solid);
+    }
+    .hx .lobby-card h2 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: 16px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+    .hx .lobby-body {
+        display: grid;
+        gap: 12px;
+    }
+    .hx .tabs {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 10px;
+        background: rgb(255 255 255 / 0.05);
+    }
+    .hx .tabs button {
+        flex: 1;
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font: 600 12px "Chakra Petch", sans-serif;
+        letter-spacing: 0.06em;
+        padding: 9px 6px;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+    .hx .tabs button[aria-selected="true"] {
+        background: rgb(255 255 255 / 0.1);
+        color: var(--text);
+    }
+    .hx .tabs button:disabled {
+        cursor: default;
+    }
+    .hx .seats {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+    }
+    .hx .seats li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        background: rgb(255 255 255 / 0.04);
+        border-left: 3px solid var(--p);
+    }
+    .hx .seats input,
+    .hx .field input {
+        flex: 1;
+        min-width: 0;
+        font: inherit;
+        font-size: 16px;
+        color: var(--text);
+        background: rgb(255 255 255 / 0.06);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 8px 10px;
+        user-select: text;
+    }
+    .hx .seats input {
+        font-size: 14px;
+        background: transparent;
+        border-color: transparent;
+    }
+    .hx .seat-name {
+        flex: 1;
+    }
+    .hx .kind {
+        font: 600 11px "Chakra Petch", sans-serif;
+        letter-spacing: 0.06em;
+        color: var(--text);
+        background: rgb(255 255 255 / 0.08);
+        border: 0;
+        border-radius: 6px;
+        padding: 6px 9px;
+        cursor: pointer;
+    }
+    .hx .kind.static {
+        background: none;
+        color: var(--muted);
+        cursor: default;
+    }
+    .hx .x {
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 4px;
+    }
+    .hx .field {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .hx .code-input {
+        font-family: "Orbitron", sans-serif !important;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+    }
+    .hx .planet-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .hx .planet-row b {
+        color: var(--text);
+    }
+    .hx .room-code {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        padding: 12px;
+        border-radius: 10px;
+        background: rgb(255 255 255 / 0.05);
+    }
+    .hx .room-code span {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .hx .room-code strong {
+        font-family: "Orbitron", sans-serif;
+        font-size: 30px;
+        letter-spacing: 0.3em;
+        margin-right: -0.3em;
+        user-select: all;
+    }
+
+    /* ---------- Game layout ---------- */
+    .hx .game > * {
+        position: absolute;
+    }
+    .hx .banner {
+        top: max(18px, env(safe-area-inset-top));
+        left: 50%;
+        translate: -50% 0;
+        display: grid;
+        justify-items: center;
+        gap: 3px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        font-size: 14px;
+        text-align: center;
+        max-width: min(560px, calc(100% - 420px));
+        transition: box-shadow 300ms;
+    }
+    .hx .banner[data-mine="true"] {
+        box-shadow:
+            0 0 0 1px rgb(255 255 255 / 0.35),
+            0 10px 30px rgb(0 0 0 / 0.3);
+    }
+    .hx .banner .round {
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .hx .dice {
+        top: calc(max(18px, env(safe-area-inset-top)) + 64px);
+        left: 50%;
+        translate: -50% 0;
+        display: flex;
+        gap: 8px;
+        pointer-events: none;
+    }
+    .hx .die {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 5px;
+        border-radius: 8px;
+        background: #ece8e1;
+        box-shadow: 0 6px 16px rgb(0 0 0 / 0.35);
+        animation: die-in 520ms var(--ease-out);
+    }
+    .hx .die i {
+        place-self: center;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+    }
+    .hx .die i.on {
+        background: #1d2128;
+    }
+    .hx .die + .die {
+        animation-delay: 60ms;
+    }
+    @keyframes die-in {
+        from {
+            transform: translateY(-14px) rotate(-120deg) scale(0.6);
+            opacity: 0;
+        }
+    }
+    .hx .room-chip {
+        top: max(18px, env(safe-area-inset-top));
+        right: calc(var(--gap) + 128px);
+        font: 500 12px "Chakra Petch", sans-serif;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 14px;
+    }
+    .hx .room-chip b {
+        color: var(--text);
+        font-family: "Orbitron", sans-serif;
+        letter-spacing: 0.2em;
+    }
+
+    .hx .players {
+        top: calc(max(18px, env(safe-area-inset-top)) + 50px);
+        right: var(--gap);
+        width: 230px;
+        display: grid;
+        gap: 8px;
+    }
+    .hx .player {
+        padding: 10px 12px;
+        border-left: 3px solid var(--p);
+        transition:
+            transform 300ms var(--ease-out),
+            background-color 300ms;
+    }
+    .hx .player.active {
+        background: rgb(30 36 46 / 0.82);
+        transform: translateX(-6px);
+    }
+    .hx .pname {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 13px;
+    }
+    .hx .pname em {
+        font-style: normal;
+        color: var(--muted);
+        font-weight: 400;
+        font-size: 11px;
+    }
+    .hx .pstats {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .hx .pstats .vp {
+        color: var(--text);
+        margin-right: auto;
+    }
+    .hx .pstats .vp b {
+        font-family: "Chakra Petch", sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+    }
+    .hx .badges {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+    }
+    .hx .badge {
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.1);
+    }
+
+    .hx .costs {
+        top: calc(max(18px, env(safe-area-inset-top)) + 58px);
+        left: var(--gap);
+        width: 240px;
+        padding: 4px 12px 12px;
+    }
+    .hx .costs.closed {
+        padding-bottom: 4px;
+    }
+    .hx .costs.closed .costs-body {
+        display: none;
+    }
+    .hx .costs-head {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        background: none;
+        border: 0;
+        color: var(--muted);
+        font: 600 11px "Chakra Petch", sans-serif;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 9px 0;
+        cursor: pointer;
+    }
+    .hx .cost-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 0;
+        border-top: 1px solid var(--line);
+    }
+    .hx .cost-name {
+        display: grid;
+        font-weight: 600;
+        font-size: 13px;
+    }
+    .hx .cost-name small {
+        font-weight: 400;
+        font-size: 11px;
+        color: var(--muted);
+    }
+    .hx .cost-extra {
+        display: grid;
+        gap: 5px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.35;
+    }
+    .hx .cost-extra b {
+        color: var(--text);
+        font-weight: 600;
+    }
+    .hx .cost-extra span {
+        float: right;
+        color: var(--text);
+    }
+
+    .hx .log {
+        left: var(--gap);
+        bottom: max(18px, env(safe-area-inset-bottom));
+        width: 260px;
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted);
+        text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+        pointer-events: none;
+    }
+    .hx .log p:last-child {
+        color: var(--text);
+    }
+
+    .hx .dock {
+        left: 50%;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        translate: -50% 0;
+        width: min(720px, calc(100% - 600px));
+        min-width: 560px;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+    }
+    .hx .hand {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+    .hx .card {
+        display: grid;
+        justify-items: center;
+        gap: 2px;
+        padding: 8px 4px 6px;
+        border-radius: 9px;
+        background: rgb(255 255 255 / 0.06);
+        border: 1px solid var(--line);
+        border-top: 2px solid var(--c, var(--line));
+        color: var(--text);
+        font: inherit;
+        transition:
+            opacity 200ms,
+            transform 200ms var(--ease-out);
+    }
+    .hx .card b {
+        font-family: "Chakra Petch", sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+    }
+    .hx .card small {
+        font-size: 10px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+    }
+    .hx .card.zero {
+        opacity: 0.45;
+    }
+    .hx .tech-card {
+        --c: #ece8e1;
+        cursor: pointer;
+    }
+    .hx .tech-card:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+    @media (hover: hover) {
+        .hx .tech-card:not(:disabled):hover {
+            transform: translateY(-2px);
+        }
+    }
+    .hx .actions {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+    .hx .actions .row {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+    }
+    .hx .build {
+        display: grid;
+        gap: 5px;
+        justify-items: start;
+        padding: 8px 10px;
+        border-radius: 9px;
+        border: 1px solid var(--line);
+        background: rgb(255 255 255 / 0.06);
+        color: var(--text);
+        font: 600 12px "Chakra Petch", sans-serif;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition:
+            background-color 160ms,
+            transform 140ms var(--ease-out),
+            opacity 160ms;
+    }
+    .hx .build:disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+    }
+    .hx .build.active {
+        background: var(--text);
+        color: #15191f;
+    }
+    .hx .build.active .chip {
+        background: rgb(0 0 0 / 0.12);
+    }
+    .hx .build:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+    @media (hover: hover) {
+        .hx .build:not(:disabled):not(.active):hover {
+            background: rgb(255 255 255 / 0.12);
+        }
+    }
+    .hx .roll {
+        flex: 1;
+        min-height: 46px;
+        font-size: 13px;
+    }
+
+    .hx .confirm {
+        left: 50%;
+        bottom: calc(var(--dock-h, 180px) + 10px);
+        translate: -50% 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 10px 10px 16px;
+        animation: modal-in 240ms var(--ease-out);
+        z-index: 2;
+    }
+    .hx .confirm p {
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    @media (max-width: 760px) {
+        .hx .confirm {
+            left: var(--gap);
+            right: var(--gap);
+            translate: none;
+            flex-wrap: wrap;
+        }
+        .hx .confirm p {
+            white-space: normal;
+        }
+        .hx .confirm .row {
+            width: 100%;
+        }
+        .hx .confirm .row .btn {
+            flex: 1;
+        }
+    }
+
+    /* ---------- Modals ---------- */
+    .hx .modal-wrap {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: var(--gap);
+        background: rgb(8 10 14 / 0.35);
+        z-index: 5;
+        animation: fade-in 200ms var(--ease-out);
+    }
+    .hx .modal {
+        width: min(380px, 100%);
+        max-height: calc(100dvh - 40px);
+        overflow: auto;
+        padding: 20px;
+        display: grid;
+        gap: 10px;
+        background: var(--panel-solid);
+        animation: modal-in 260ms var(--ease-out);
+    }
+    .hx .wide-modal {
+        width: min(520px, 100%);
+    }
+    .hx .modal h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+    .hx .modal h4 {
+        margin: 6px 0 4px;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    /* An open dialog updating in place doesn't replay its entrance. */
+    .hx .modal-wrap.settled,
+    .hx .modal-wrap.settled .modal {
+        animation: none;
+    }
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+    }
+    @keyframes modal-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px) scale(0.98);
+        }
+    }
+    .hx .stepper {
+        display: grid;
+        grid-template-columns: 22px 1fr 30px 26px 30px;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+    }
+    .hx .stepper .sname {
+        font-size: 13px;
+    }
+    .hx .stepper b {
+        text-align: center;
+        font-family: "Chakra Petch", sans-serif;
+        font-weight: 700;
+    }
+    .hx .stepper button {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        border: 0;
+        background: rgb(255 255 255 / 0.08);
+        color: var(--text);
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .hx .stepper button:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+    .hx .bank-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    .hx .pickrow {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: rgb(255 255 255 / 0.05);
+        color: var(--text);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        text-align: left;
+    }
+    .hx .pickrow span {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--muted);
+    }
+    .hx .pickrow.on {
+        border-color: rgb(255 255 255 / 0.6);
+        background: rgb(255 255 255 / 0.12);
+    }
+    .hx .pickrow:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+    .hx .choices {
+        display: grid;
+        gap: 8px;
+    }
+    .hx .choices .btn {
+        justify-content: flex-start;
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 14px;
+    }
+    .hx .resp {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+    }
+    .hx .resp em {
+        font-style: normal;
+        color: var(--muted);
+        margin-left: auto;
+    }
+    .hx .resp .btn {
+        margin-left: 8px;
+    }
+    .hx .offer {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 9px;
+        background: rgb(255 255 255 / 0.05);
+    }
+    .hx .offer > span {
+        color: var(--muted);
+        font-size: 12px;
+    }
+    .hx .hand-line {
+        display: inline-flex;
+        gap: 4px;
+    }
+    .hx .row {
+        display: flex;
+        gap: 8px;
+    }
+    .hx .modal .row .btn {
+        flex: 1;
+    }
+    .hx .tech-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+    }
+    .hx .tech-row p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+    }
+    .hx .tech-row em {
+        font-size: 11px;
+        color: var(--muted);
+    }
+    .hx .pick {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    .hx .pickr {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 6px;
+        border-radius: 7px;
+        border: 1px solid var(--line);
+        background: rgb(255 255 255 / 0.05);
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .hx .pickr.on {
+        border-color: rgb(255 255 255 / 0.6);
+    }
+    .hx .rules {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .hx .rules ol {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 4px;
+    }
+
+    /* ---------- Toast, floaters, tooltip ---------- */
+    .hx .toast {
+        position: absolute;
+        left: 50%;
+        top: calc(max(18px, env(safe-area-inset-top)) + 112px);
+        translate: -50% 0;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: var(--panel-solid);
+        border: 1px solid var(--line);
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(-6px);
+        transition:
+            opacity 240ms var(--ease-out),
+            transform 240ms var(--ease-out);
+        pointer-events: none;
+        z-index: 6;
+        max-width: calc(100% - 32px);
+        text-align: center;
+    }
+    .hx .toast.show {
+        opacity: 1;
+        transform: none;
+    }
+    .hx .floaters {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .hx .floater {
+        position: fixed;
+        translate: -50% -50%;
+        font: 700 15px "Chakra Petch", sans-serif;
+        text-shadow: 0 2px 8px rgb(0 0 0 / 0.6);
+        animation: float-up 1.9s var(--ease-out) both;
+    }
+    .hx .floater span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgb(16 20 27 / 0.75);
+        border: 1px solid var(--p);
+    }
+    @keyframes float-up {
+        0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.85);
+        }
+        15% {
+            opacity: 1;
+            transform: none;
+        }
+        75% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-46px);
+        }
+    }
+    .hx .tip {
+        position: fixed;
+        left: 0;
+        top: 0;
+        display: grid;
+        gap: 2px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: var(--panel-solid);
+        border: 1px solid var(--line);
+        font-size: 12px;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .hx .tip span {
+        color: var(--muted);
+    }
+    @media (hover: none) {
+        .hx .tip {
+            display: none;
+        }
+    }
+
+    /* ---------- Hints & boot ---------- */
+    .hx .hint {
+        position: absolute;
+        left: 50%;
+        bottom: max(26px, env(safe-area-inset-bottom));
+        translate: -50% 0;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: var(--muted);
+        text-shadow: 0 1px 8px rgb(0 0 0 / 0.5);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 600ms var(--ease-out);
+    }
+    .hx[data-phase="intro"] .intro-hint {
+        opacity: 1;
+    }
+    .hx .boot {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 18px;
+        background: radial-gradient(ellipse at 50% 60%, #222a38 0%, #12161d 70%);
+        transition:
+            opacity 900ms var(--ease-out),
+            visibility 0s linear 900ms;
+        z-index: 10;
+    }
+    .hx[data-state="ready"] .boot,
+    .hx[data-state="no-webgl"] .boot {
+        opacity: 0;
+        visibility: hidden;
+    }
+    .hx .boot-logo {
+        width: 64px;
+        height: 64px;
+        fill: none;
+        stroke: var(--text);
+        stroke-width: 1.1;
+        stroke-dasharray: 140;
+        stroke-dashoffset: 140;
+        animation: draw 1.6s var(--ease-out) forwards;
+    }
+    .hx .boot-title {
+        font-family: "Orbitron", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.5em;
+        margin-right: -0.5em;
+    }
+    .hx .boot-bar {
+        width: 180px;
+        height: 2px;
+        border-radius: 1px;
+        background: rgb(255 255 255 / 0.12);
+        overflow: hidden;
+    }
+    .hx .boot-bar span {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: var(--text);
+        transform-origin: left;
+        transform: scaleX(var(--progress, 0.04));
+        transition: transform 300ms var(--ease-out);
+    }
+    .hx .boot-enter,
+    .hx .boot-note {
+        display: none;
+    }
+    .hx[data-state="gate"] .boot-bar,
+    .hx[data-state="gate"] .boot-line {
+        display: none;
+    }
+    .hx[data-state="gate"] .boot-enter {
+        display: inline-flex;
+        min-width: 180px;
+        animation: modal-in 400ms var(--ease-out);
+    }
+    .hx[data-state="gate"] .boot-note {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .hx .boot-line {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    @keyframes draw {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+    .hx .notice {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(360px, calc(100% - 32px));
+        text-align: center;
+        line-height: 1.5;
+    }
+    .hx[data-state="no-webgl"] .notice {
+        display: block;
+    }
+
+    /* ---------- Narrow screens ---------- */
+    @media (max-width: 1100px) {
+        .hx .costs {
+            width: 210px;
+        }
+        .hx .players {
+            width: 200px;
+        }
+        .hx .dock {
+            width: calc(100% - 2 * var(--gap));
+            min-width: 0;
+        }
+        .hx .log {
+            display: none;
+        }
+        .hx .banner {
+            max-width: calc(100% - 2 * var(--gap));
+            top: calc(max(18px, env(safe-area-inset-top)) + 46px);
+        }
+        .hx .dice {
+            top: calc(max(18px, env(safe-area-inset-top)) + 108px);
+        }
+    }
+    @media (max-width: 760px) {
+        .hx {
+            --top: max(12px, env(safe-area-inset-top));
+        }
+        .hx .sub {
+            display: none;
+        }
+        .hx .title {
+            font-size: 15px;
+        }
+        .hx .brand {
+            top: var(--top);
+        }
+        .hx .players {
+            top: calc(var(--top) + 44px);
+            left: var(--gap);
+            right: var(--gap);
+            width: auto;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .hx .player {
+            flex: 1 0 auto;
+            min-width: 92px;
+            padding: 6px 8px;
+        }
+        .hx .player.active {
+            transform: none;
+            box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35);
+        }
+        .hx .pname {
+            font-size: 12px;
+        }
+        .hx .pname em {
+            display: none;
+        }
+        .hx .pstats {
+            margin-top: 2px;
+        }
+        .hx .pstats span:not(.vp) {
+            display: none;
+        }
+        .hx .pstats .vp b {
+            font-size: 15px;
+        }
+        .hx .badges {
+            display: none;
+        }
+        .hx .banner {
+            top: calc(var(--top) + 108px);
+            left: var(--gap);
+            right: calc(var(--gap) + 82px);
+            translate: none;
+            max-width: none;
+            justify-items: start;
+            text-align: left;
+            padding: 7px 14px;
+            font-size: 13px;
+            border-radius: 12px;
+        }
+        .hx .dice {
+            top: calc(var(--top) + 110px);
+            left: auto;
+            right: var(--gap);
+            translate: none;
+            gap: 4px;
+        }
+        .hx .die {
+            width: 26px;
+            height: 26px;
+            padding: 4px;
+        }
+        .hx .die i {
+            width: 4px;
+            height: 4px;
+        }
+        .hx .costs {
+            top: auto;
+            bottom: calc(var(--dock-h, 220px) + 6px);
+            left: var(--gap);
+            width: auto;
+            max-width: calc(100% - 2 * var(--gap));
+            padding: 0 12px;
+        }
+        .hx .costs:not(.closed) {
+            padding-bottom: 10px;
+        }
+        .hx .dock {
+            bottom: max(10px, env(safe-area-inset-bottom));
+            padding: 8px;
+            gap: 8px;
+        }
+        .hx .hand {
+            gap: 4px;
+        }
+        .hx .card {
+            padding: 6px 2px 4px;
+        }
+        .hx .card b {
+            font-size: 15px;
+        }
+        .hx .card small {
+            display: none;
+        }
+        .hx .actions {
+            gap: 6px;
+        }
+        .hx .build {
+            flex: 1 1 22%;
+            min-width: 0;
+            padding: 6px;
+            font-size: 11px;
+            gap: 4px;
+        }
+        .hx .build .chips {
+            gap: 1px;
+        }
+        .hx .build .chip {
+            padding: 1px;
+        }
+        .hx .build .ri {
+            width: 11px;
+            height: 11px;
+        }
+        .hx .actions .row {
+            width: 100%;
+            margin: 0;
+        }
+        .hx .actions .row .btn {
+            flex: 1;
+        }
+        .hx .audio-ctl {
+            top: var(--top);
+        }
+        .hx .audio-ctl button {
+            width: 32px;
+            height: 32px;
+        }
+        .hx .menu-card {
+            padding: 22px 18px 14px;
+        }
+        .hx .room-chip {
+            top: var(--top);
+            right: calc(var(--gap) + 114px);
+            padding: 7px 10px;
+        }
+        .hx .bank-grid {
+            grid-template-columns: 1fr;
+        }
+        .hx .toast {
+            top: calc(var(--top) + 200px);
+        }
+        .hx .coach {
+            top: calc(var(--top) + 160px);
+            bottom: auto;
+            left: var(--gap);
+            right: var(--gap);
+            width: auto;
+            padding: 12px 14px 8px;
+        }
+        .hx .coach-text {
+            font-size: 12px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hx .boot-logo {
+            animation: none;
+            stroke-dashoffset: 0;
+        }
+        .hx .panel-in {
+            transition-duration: 1ms;
+            transition-delay: 0ms;
+        }
+        .hx .die,
+        .hx .floater,
+        .hx .modal,
+        .hx .modal-wrap {
+            animation: none;
+        }
+    }
+</style>
