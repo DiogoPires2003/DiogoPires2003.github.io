@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 const sections = [
     { n: "1", label: "profile", href: "/profile", cmd: "cd profile", desc: "Who I am, at a glance" },
     { n: "2", label: "skills", href: "/skills", cmd: "cd skills", desc: "Languages, frameworks, tools" },
-    { n: "3", label: "projects", href: "/projects", cmd: "cd projects", desc: "Coming soon" },
+    { n: "3", label: "projects", href: "/projects", cmd: "cd projects", desc: "Hexterra, a 3D strategy game" },
     { n: "4", label: "academic", href: "/academic", cmd: "cd academic", desc: "Education and milestones" },
     { n: "5", label: "contact", href: "/contact", cmd: "cd contact", desc: "Email, LinkedIn, GitHub" },
 ];
@@ -30,7 +30,8 @@ const sections = [
                 ))}
             </nav>
             <p class="term-tip">
-                Type <button type="button" class="term-inline" data-cmd="/help">/help</button> to see other commands.
+                Type <button type="button" class="term-inline" data-cmd="/help">/help</button> to see other commands, or
+                <button type="button" class="term-inline" data-cmd="hexterra">hexterra</button> to play.
             </p>
             <p class="term-comment term-keys"># ↑↓ select · enter open · 1-5 jump · tab completes · esc goes back</p>
             <div id="crt-log" aria-live="polite"></div>

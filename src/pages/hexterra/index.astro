@@ -30,7 +30,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             <canvas aria-label="Tablero de Hexterra. Arrastra para girar la cámara y usa la rueda o pellizca para hacer zoom."></canvas>
             <div class="vignette" aria-hidden="true"></div>
 
-            <a class="brand panel-in" href="/" aria-label="Volver al portfolio" style="--d: 0">
+            <a class="brand panel-in" href="/projects/" aria-label="Volver al portfolio" title="Volver al portfolio" style="--d: 0">
                 <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
                     <path d="M24 3 42 13.5v21L24 45 6 34.5v-21z" />
                     <path d="M24 13 33 18.25v10.5L24 34l-9-5.25v-10.5z" />
@@ -437,6 +437,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     .hx .lobby-links {
         display: flex;
         justify-content: space-between;
+        gap: 12px;
+    }
+    .hx .modal > .link {
+        justify-self: center;
     }
 
     /* ---------- Tutorial coach ---------- */
