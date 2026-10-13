@@ -73,6 +73,9 @@ const TECH_HELP: Record<TechCard, string> = {
     science: "1 punto de influencia oculto.",
 };
 
+/** Where "back to the portfolio" goes: the page that lists the game. */
+const PORTFOLIO_URL = "/projects/";
+
 const PLANET_NAMES = ["Sintonía", "Vértice", "Aurora", "Nexo", "Cénit", "Ámbar"];
 
 export class Hud {
@@ -207,7 +210,10 @@ export class Hud {
                     <button class="btn primary wide" data-play-menu>Jugar</button>
                     <button class="btn ${firstTime ? "accent" : "ghost"} wide" data-tutorial>${firstTime ? "Tutorial (recomendado)" : "Tutorial"}</button>
                 </div>
-                <button class="link" data-rules>Cómo se juega</button>
+                <div class="lobby-links">
+                    <a class="link" href="${PORTFOLIO_URL}">← Volver al portfolio</a>
+                    <button class="link" data-rules>Cómo se juega</button>
+                </div>
             </div>`;
     }
 
@@ -256,6 +262,7 @@ export class Hud {
                 <button class="btn ghost" data-close>Seguir jugando</button>
                 <button class="btn primary" data-leave>Volver al menú</button>
             </div>
+            <a class="link" href="${PORTFOLIO_URL}">← Salir al portfolio</a>
         </div>`, "leave");
     }
 
