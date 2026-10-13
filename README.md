@@ -29,10 +29,18 @@ on GitHub Pages at [diogopires2003.github.io](https://diogopires2003.github.io).
 ├── src/
 │   ├── assets/
 │   │   └── profile.jpg             # Profile photo (processed by Astro's Image component)
+│   ├── hexterra/                   # Hexterra, the 3D board game at /hexterra/
+│   │   ├── core/                   # Rules, board graph and bots: plain TS, no Three.js, unit-tested
+│   │   ├── net/                    # Sessions: local hot-seat, online rooms over WebRTC (PeerJS)
+│   │   ├── ui/                     # Main menu, tutorial coach, game HUD (DOM)
+│   │   ├── audio/                  # Synthesised music and sound effects (Web Audio)
+│   │   ├── render/                 # Three.js: HDRI lighting, ocean, sculpted tiles, props, pieces
+│   │   └── main.ts                 # Wires core, render and the HUD together
 │   ├── layouts/
 │   │   └── Layout.astro            # Shared header, footer, theme toggle, command palette
 │   └── pages/
 │       ├── index.astro             # Home — hero, about, highlights, tech stack
+│       ├── hexterra/index.astro    # Full-screen game page (no shared Layout)
 │       ├── skills.astro            # Technical stack table
 │       ├── academic.astro          # Education & certifications timeline
 │       └── contact.astro           # Contact links
@@ -51,6 +59,12 @@ All commands run from the project root:
 | `npm install`         | Install dependencies                          |
 | `npm run dev`          | Start the local dev server at `localhost:4321` |
 | `npm run build`        | Build the production site to `./dist/`        |
+| `npm test`             | Run the Hexterra rule tests (Vitest)          |
+
+Hexterra takes `?seed=<n>` to deal a given board and `?sala=<CODE>` to open
+the join screen for an online room. Online play is peer-to-peer: PeerJS's
+public broker only brokers the handshake, so the static site needs no server. Its HDRI and PBR textures live in
+`public/hexterra/` (CC0, Poly Haven; see `CREDITS.md` there).
 | `npm run preview`      | Preview the production build locally          |
 | `npm run astro ...`    | Run Astro CLI commands (e.g. `astro check`)   |
 

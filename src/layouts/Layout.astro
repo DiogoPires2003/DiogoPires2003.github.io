@@ -1054,6 +1054,15 @@ const keyRows = [
                 run: () => window.open(LINKS.github, "_blank", "noopener"),
             });
             register({
+                name: "hexterra",
+                aliases: ["play"],
+                summary: "Play Hexterra, a 3D strategy game",
+                // A full page load: the game page runs without the router.
+                run: () => {
+                    location.href = "/hexterra/";
+                },
+            });
+            register({
                 name: "linkedin",
                 summary: "Open LinkedIn",
                 run: () => window.open(LINKS.linkedin, "_blank", "noopener"),
