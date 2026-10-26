@@ -2,30 +2,32 @@
 // The generator owns the logic; this file only supplies theme and words.
 
 // Rooms: preposition, whether they take "the", and which objects they hold.
+// `stand` objects are things a person sits, lies or stands on; `block` objects
+// fill their cell, so nobody can be there.
 export const ROOMS = {
-  'Dining Car': { prep: 'in', article: true, stand: ['seat', 'window', 'lamp'], block: ['table'] },
-  'Lounge Car': { prep: 'in', article: true, stand: ['seat', 'rug', 'lamp'], block: ['piano', 'table'] },
-  'Corridor': { prep: 'in', article: true, stand: ['window', 'rug', 'lamp'], block: ['trunk'] },
-  'Platform': { prep: 'on', article: true, stand: ['suitcase', 'lamp'], block: ['trunk', 'crate'] },
-  'Sleeper No. 1': { prep: 'in', article: false, stand: ['bunk', 'window'], block: ['trunk'] },
+  'Dining Car': { prep: 'in', article: true, stand: ['seat'], block: ['table', 'lamp'] },
+  'Lounge Car': { prep: 'in', article: true, stand: ['seat', 'rug'], block: ['piano', 'table', 'lamp'] },
+  'Corridor': { prep: 'in', article: true, stand: ['rug', 'suitcase'], block: ['trunk', 'lamp'] },
+  'Platform': { prep: 'on', article: true, stand: ['bench', 'suitcase'], block: ['trunk', 'crate', 'lamp'] },
+  'Sleeper No. 1': { prep: 'in', article: false, stand: ['bunk', 'rug'], block: ['trunk'] },
   'Sleeper No. 2': { prep: 'in', article: false, stand: ['bunk', 'seat'], block: ['trunk'] },
-  'Sleeper No. 3': { prep: 'in', article: false, stand: ['bunk', 'lamp'], block: ['trunk'] },
-  'Washroom': { prep: 'in', article: true, stand: ['rug', 'lamp'], block: ['basin'] },
-  "Conductor's Cabin": { prep: 'in', article: true, stand: ['seat', 'window'], block: ['desk'] },
-  'Baggage Car': { prep: 'in', article: true, stand: ['suitcase', 'lamp'], block: ['trunk', 'crate'] },
-  'Mail Car': { prep: 'in', article: true, stand: ['seat', 'lamp'], block: ['mailsack', 'desk'] },
-  'Kitchen Car': { prep: 'in', article: true, stand: ['rug', 'window'], block: ['stove', 'table'] },
+  'Sleeper No. 3': { prep: 'in', article: false, stand: ['bunk', 'stool'], block: ['trunk', 'lamp'] },
+  'Washroom': { prep: 'in', article: true, stand: ['rug', 'stool'], block: ['basin'] },
+  "Conductor's Cabin": { prep: 'in', article: true, stand: ['seat', 'stool'], block: ['desk', 'lamp'] },
+  'Baggage Car': { prep: 'in', article: true, stand: ['suitcase'], block: ['trunk', 'crate', 'lamp'] },
+  'Mail Car': { prep: 'in', article: true, stand: ['stool', 'seat'], block: ['mailsack', 'desk'] },
+  'Kitchen Car': { prep: 'in', article: true, stand: ['rug', 'stool'], block: ['stove', 'table'] },
   'Staff Quarters': { prep: 'in', article: true, stand: ['bunk', 'seat'], block: ['trunk'] },
-  'Pantry': { prep: 'in', article: true, stand: ['rug', 'lamp'], block: ['crate'] },
+  'Pantry': { prep: 'in', article: true, stand: ['stool'], block: ['crate'] },
   'Rose Suite': { prep: 'in', article: true, stand: ['bunk', 'seat', 'rug'], block: ['table'] },
-  'Ivory Suite': { prep: 'in', article: true, stand: ['bunk', 'window', 'rug'], block: ['trunk'] },
-  'Gold Suite': { prep: 'in', article: true, stand: ['bunk', 'seat', 'lamp'], block: ['piano'] },
-  'Observation Car': { prep: 'in', article: true, stand: ['seat', 'window'], block: ['table'] },
-  'Customs Office': { prep: 'in', article: true, stand: ['seat', 'lamp'], block: ['desk', 'crate'] },
-  'Waiting Room': { prep: 'in', article: true, stand: ['seat', 'rug', 'window'], block: ['table'] },
-  'Locomotive': { prep: 'in', article: true, stand: ['window', 'lamp'], block: ['firebox'] },
-  'Coal Tender': { prep: 'on', article: true, stand: ['lamp'], block: ['coal'] },
-  'Sleeper Car': { prep: 'in', article: true, stand: ['bunk', 'window'], block: ['trunk'] },
+  'Ivory Suite': { prep: 'in', article: true, stand: ['bunk', 'rug', 'seat'], block: ['trunk', 'lamp'] },
+  'Gold Suite': { prep: 'in', article: true, stand: ['bunk', 'seat'], block: ['piano', 'lamp'] },
+  'Observation Car': { prep: 'in', article: true, stand: ['seat', 'bench'], block: ['table'] },
+  'Customs Office': { prep: 'in', article: true, stand: ['bench', 'seat'], block: ['desk', 'crate'] },
+  'Waiting Room': { prep: 'in', article: true, stand: ['bench', 'rug'], block: ['table', 'lamp'] },
+  'Locomotive': { prep: 'in', article: true, stand: ['stool'], block: ['firebox'] },
+  'Coal Tender': { prep: 'on', article: true, stand: [], block: ['coal'] },
+  'Sleeper Car': { prep: 'in', article: true, stand: ['bunk', 'rug'], block: ['trunk', 'lamp'] },
 };
 
 export const TIERS = [
@@ -121,16 +123,17 @@ export const CASES = [
   {
     title: 'Departure from Paris',
     intro: "The Midnight Express has barely left the Gare de l'Est when a scream rings out. {victim} lies still, and you are the only detective aboard. Sir Sterling, the British diplomat, keeps one hand on a locked dispatch box.",
-    // A guided walkthrough. It describes this case's generated layout (seed 1930),
-    // and the test checks its steps against the solution.
+    // A guided walkthrough. It describes this case's generated layout (seed 1930);
+    // {X} becomes the name of the person with initial X, and the test checks the
+    // steps against the solution.
     tutorial: {
       steps: [
-        { initial: 'T', text: 'Your first case. Every row and every column holds exactly one person, the victim included. Start with the victim: Mr. Thorne was standing under a lamp, and there is only one lamp on the board (row 2, column 1). Tap T below, then tap the lamp.' },
-        { initial: 'N', text: 'Mr. Thorne now owns row 2 and column 1, so nobody else can use them (they are shaded). Mr. Norcross was on the Platform, room 1 at the top left. Only one Platform cell is still free. Tap N, then tap that cell.' },
-        { initial: 'C', text: 'Conductor Czerny was standing on a rug. There are two rugs in row 4, but column 2 already belongs to Mr. Norcross. Tap C, then tap the other rug.' },
-        { initial: 'O', text: 'Madame Ortolan was in the Lounge Car (room 3). Rows 1, 2 and 4 are taken, so she is in row 3, in the only column nobody has yet. Tap O and place her.' },
+        { initial: 'F', text: 'Your first case. Every row and every column holds exactly one person, the victim included. Start with the victim: {F} was sitting on a suitcase, and there is only one suitcase on the board (row 2, column 1). Tap F below, then tap the suitcase itself.' },
+        { initial: 'S', text: '{F} now owns row 2 and column 1, so nobody else can use them (they are shaded). {S} was on the Platform, room 1 at the top left. Only one Platform cell is still free. Tap S, then tap that cell.' },
+        { initial: 'L', text: '{L} was sitting in a seat. There are five seats, but rows 1 and 2 and column 2 are already taken, which rules out four of them. Tap L, then tap the one seat left.' },
+        { initial: 'M', text: '{M} was in the Lounge Car (room 3). Rows 1, 2 and 4 are taken, so that leaves row 3, in the only column nobody has yet. Tap M and place {M} there.' },
       ],
-      accuse: 'Everyone is in place. The murderer is the only person who was alone with the victim. Mr. Thorne is on the Platform with just one other person. Tap Accuse and name them.',
+      accuse: 'Everyone is in place. The murderer is the only person who was alone with the victim. {F} is on the Platform with just one other person. Tap Accuse and name them.',
     },
   },
   { title: 'The Marne at Midnight', intro: 'Somewhere along the Marne, the lights flicker for three seconds. When they come back, {victim} has slumped over in the dark.' },
@@ -185,7 +188,7 @@ export const CASES = [
   { title: 'A View of Nothing', intro: 'Night falls over the plains and every window turns to black glass. Nobody sees what happens to {victim}.' },
   { title: 'Stamps and Passports', intro: '{victim} noticed that two passengers carried passports with the same photograph. That was one detail too many.' },
   { title: 'The Black Sea Breeze', intro: 'The air smells of salt: the sea is near. {victim} opened a window for the breeze and did not close it.' },
-  { title: 'Waiting Room Blues', intro: 'A delay strands everyone in the station waiting room. When the train is ready to leave, {victim} is not.' },
+  { title: 'Waiting Room Blues', intro: 'A long delay strands the train at a station in the middle of nowhere. When it is finally ready to leave, {victim} is not.' },
   {
     title: 'Last Stop Before the Sea',
     intro: 'Varna at dawn. Mr. Orlov, the bookseller, had found the Nightjar\'s cipher hidden in a novel. He was killed before he could hand it to you.',

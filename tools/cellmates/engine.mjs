@@ -3,9 +3,9 @@
 // Shared by the generator and the test that validates public/cellmates/cases.json.
 
 // People can stand on these...
-export const OCCUPIABLE = ['seat', 'bunk', 'rug', 'window', 'lamp', 'suitcase'];
+export const OCCUPIABLE = ['seat', 'bunk', 'rug', 'bench', 'stool', 'suitcase'];
 // ...but never on these.
-export const BLOCKING = ['table', 'piano', 'stove', 'trunk', 'mailsack', 'crate', 'coal', 'basin', 'desk', 'firebox'];
+export const BLOCKING = ['table', 'piano', 'stove', 'trunk', 'mailsack', 'crate', 'coal', 'basin', 'desk', 'firebox', 'lamp'];
 
 
 export function buildBoard(p) {

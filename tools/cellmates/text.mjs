@@ -3,7 +3,7 @@
 import { ROOMS } from './story.mjs';
 
 export const OBJECT_NAMES = {
-  seat: 'seat', bunk: 'bunk', rug: 'rug', window: 'window', lamp: 'lamp', suitcase: 'suitcase',
+  seat: 'seat', bunk: 'bunk', rug: 'rug', bench: 'bench', stool: 'stool', suitcase: 'suitcase', lamp: 'lamp',
   table: 'table', piano: 'piano', stove: 'stove', trunk: 'trunk', mailsack: 'mail sack',
   crate: 'crate', coal: 'coal heap', basin: 'washbasin', desk: 'desk', firebox: 'firebox',
 };
@@ -12,8 +12,8 @@ const ON_OBJECT = {
   seat: 'was sitting in a seat',
   bunk: 'was lying on a bunk',
   rug: 'was standing on a rug',
-  window: 'was standing at a window',
-  lamp: 'was standing under a lamp',
+  bench: 'was sitting on a bench',
+  stool: 'was sitting on a stool',
   suitcase: 'was sitting on a suitcase',
 };
 

@@ -38,6 +38,29 @@ describe('cellmates story', () => {
     }
   });
 
+  it('never brings back the dead or the arrested, and the culprit is seen first', () => {
+    const gone = new Map();
+    const seen = new Set();
+    for (const c of data.cases) {
+      const victim = c.characters.find((ch) => ch.victim).name;
+      const murderer = c.characters.find((ch) => ch.initial === c.murderer).name;
+      for (const ch of c.characters) expect(gone.has(ch.name), c.id + ': ' + ch.name + ' left in ' + gone.get(ch.name)).toBe(false);
+      if (c.level > 2) expect(seen.has(murderer), c.id + ': ' + murderer + ' appears for the first time as the culprit').toBe(true);
+      for (const ch of c.characters) seen.add(ch.name);
+      gone.set(victim, c.id);
+      gone.set(murderer, c.id);
+    }
+  });
+
+  it('only puts people on things you can sit, lie or stand on', () => {
+    for (const c of data.cases) {
+      for (const [ini, [r, col]] of Object.entries(c.solution)) {
+        const o = c.objects.find((x) => x.row === r && x.col === col);
+        if (o) expect(['seat', 'bunk', 'rug', 'bench', 'stool', 'suitcase'], c.id + ' ' + ini).toContain(o.type);
+      }
+    }
+  });
+
   it('walks the tutorial through every person', () => {
     const c = data.cases[0];
     const steps = c.tutorial.steps.map((s) => s.initial);

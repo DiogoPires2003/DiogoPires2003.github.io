@@ -63,11 +63,21 @@ function castStory(rng, puzzles) {
   let next = 0;
   for (let L = 1; L <= puzzles.length; L++) {
     const f = fate[L - 1];
-    f.victim = (FIXED[L] && FIXED[L].victim) || passengers[next++];
+    if (FIXED[L] && FIXED[L].victim) f.victim = FIXED[L].victim;
+    else {
+      // The victim's initial must differ from a fixed murderer's.
+      let j = next;
+      while (FIXED[L] && FIXED[L].murderer && initialOf(passengers[j]) === initialOf(FIXED[L].murderer)) j++;
+      [passengers[next], passengers[j]] = [passengers[j], passengers[next]];
+      f.victim = passengers[next++];
+    }
     if (FIXED[L] && FIXED[L].murderer) f.murderer = FIXED[L].murderer;
     else {
       let j = next;
-      while (initialOf(passengers[j]) === initialOf(f.victim)) j++;
+      // Killers of nearby cases need different initials, or they could not share a case before striking.
+      const near = [f.victim];
+      for (let d = 1; d <= 3 && L - d >= 1; d++) near.push(fate[L - 1 - d].murderer);
+      while (near.some((x) => initialOf(x) === initialOf(passengers[j]))) j++;
       [passengers[next], passengers[j]] = [passengers[j], passengers[next]];
       f.murderer = passengers[next++];
     }
@@ -78,8 +88,11 @@ function castStory(rng, puzzles) {
     const { victim, murderer } = fate[idx];
     const people = [victim, murderer];
     const taken = new Set(people.map(initialOf));
+    // Killers of the next three cases come first, so each is seen before striking; then the next victims.
     const soon = [];
-    for (let d = 1; d <= 2 && idx + d < fate.length; d++) soon.push(fate[idx + d].murderer, fate[idx + d].victim);
+    for (let d = 1; d <= 3 && idx + d < fate.length; d++) soon.push(fate[idx + d].murderer);
+    for (let d = 1; d <= 2 && idx + d < fate.length; d++) soon.push(fate[idx + d].victim);
+    const killers = soon.slice(0, 3);
     const aboard = shuffle(rng, CAST.filter((c) => c.from <= L).map((c) => c.name));
     // At most half the witnesses are foreshadowed; the rest come from the recurring cast.
     let foreshadowed = 0;
@@ -87,7 +100,7 @@ function castStory(rng, puzzles) {
     for (const name of [...soon, ...aboard]) {
       if (people.length === p.size) break;
       const isSoon = soon.includes(name) && !CAST.some((c) => c.name === name);
-      if (isSoon && foreshadowed >= cap) continue;
+      if (isSoon && foreshadowed >= cap && !killers.includes(name)) continue;
       if (gone.has(name) || people.includes(name) || taken.has(initialOf(name))) continue;
       const core = CAST.find((c) => c.name === name);
       if (core && core.from > L) continue;
@@ -121,7 +134,8 @@ function assemble(p, cast, L, tier) {
     .sort((a, b) => (a.initial < b.initial ? -1 : 1));
   const byInitial = Object.fromEntries(characters.map((c) => [c.initial, c.name]));
   for (const c of characters) c.clue = clueText(c, p.roomNames, (i) => byInitial[i]);
-  const fill = (s) => s.replaceAll('{victim}', cast.victim).replaceAll('{murderer}', cast.murderer);
+  const fill = (s) => s.replaceAll('{victim}', cast.victim).replaceAll('{murderer}', cast.murderer)
+    .replace(/\{([A-Z])\}/g, (_, i) => byInitial[i]);
   return {
     id: 'case-' + String(L).padStart(2, '0'),
     level: L,
@@ -130,7 +144,7 @@ function assemble(p, cast, L, tier) {
     intro: fill(story.intro),
     outro: fill(story.outro || OUTROS[(L - 1) % OUTROS.length]),
     finale: !!story.outro,
-    ...(story.tutorial ? { tutorial: story.tutorial } : {}),
+    ...(story.tutorial ? { tutorial: { steps: story.tutorial.steps.map((s) => ({ initial: s.initial, text: fill(s.text) })), accuse: fill(story.tutorial.accuse) } } : {}),
     size: p.size,
     rooms: p.rooms,
     roomNames: p.roomNames,

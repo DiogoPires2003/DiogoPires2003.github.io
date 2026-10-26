@@ -7,7 +7,7 @@ Object icons from [game-icons.net](https://game-icons.net), licensed under
 |---|---|---|
 | seat | armchair | Caro Asercion |
 | bunk | bunk-beds | Delapouite |
-| window | window | Delapouite |
+| stool | bar-stool | Delapouite |
 | lamp | old-lantern | Delapouite |
 | suitcase | suitcase | Delapouite |
 | piano | grand-piano | Caro Asercion |
@@ -18,4 +18,4 @@ Object icons from [game-icons.net](https://game-icons.net), licensed under
 | washbasin | sink | Caro Asercion |
 | firebox | furnace | Delapouite |
 
-The table, stove, desk and rug icons were drawn for Cellmates.
+The table, stove, desk, bench and rug icons were drawn for Cellmates.
