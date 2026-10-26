@@ -27,3 +27,6 @@ The route map's train is steam-locomotive by Delapouite.
 
 Colour mode loads the Limelight, Josefin Sans, Special Elite and Caveat
 fonts from Google Fonts (open licences); e-ink mode uses system fonts.
+
+The route map's coastlines are Natural Earth 1:50m land (public domain),
+via the world-atlas package, projected and simplified for the map.
