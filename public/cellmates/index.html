@@ -111,17 +111,35 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 .legend li { display: inline-block; margin: 2px 12px 2px 0; }
 .legend .sw { display: inline-block; min-width: 20px; padding: 0 3px; border: 2px solid #000; text-align: center; font-size: 11px; font-family: Arial, sans-serif; margin-right: 4px; }
 
+#hint { margin: 4px 0; font-size: 15px; font-style: italic; }
+#palette .btn[aria-pressed="true"] .nm, #palette .btn[aria-pressed="true"] .ini { color: inherit; }
+#coach, .box { border: 3px solid #000; padding: 8px 12px; margin: 8px 0 12px; }
+#coach p { margin: 4px 0; }
+.coach-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+.cell.taken { background: #e4e4e4; }
+.cell.wrong { box-shadow: inset 0 0 0 4px #000; }
+.cell.wrong .who { text-decoration: line-through; }
+.legend-title { font-size: 15px; margin: 12px 0 0; }
+.legend .ic, .clue .ic { width: 1.2em; height: 1.2em; vertical-align: -0.25em; fill: #000; }
+.rb { display: inline-block; min-width: 1.3em; padding: 0 2px; border: 1px solid #000; font-size: 12px; line-height: 1.3; text-align: center; font-family: Arial, sans-serif; vertical-align: 0.1em; margin-left: 2px; }
+.clue-head { margin-top: 10px; }
+.nw { white-space: nowrap; }
+
 /* Clues */
 #clue-toggle { margin-top: 10px; }
 #clues { list-style: none; margin: 8px 0; padding: 0; }
-#clues li { margin: 0 0 6px; }
+#clues li { margin: 0 0 6px; position: relative; }
+#clues li.focus .clue { border-width: 4px; }
+.done { position: absolute; right: 6px; top: 6px; min-height: 32px; padding: 3px 8px; font-size: 14px; border: 2px solid #000; border-radius: 4px; background: #fff; }
+.done[aria-pressed="true"] { background: #000; color: #fff; }
+.clue { padding-right: 70px !important; }
 .clue { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; }
 .clue .badge { display: inline-block; min-width: 28px; padding: 0 4px; margin-right: 6px; border: 2px solid #000; text-align: center; font-weight: bold; }
 .clue .role { font-size: 14px; font-style: italic; }
 .clue .vic { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid #000; padding: 0 4px; margin-left: 4px; }
 .clue .txt { display: block; margin-top: 4px; }
-.clue[aria-pressed="true"] .txt { text-decoration: line-through; color: #555; }
-.clue[aria-pressed="true"] { border-style: dashed; }
+.done-li .txt { text-decoration: line-through; color: #555; }
+.done-li .clue { border-style: dashed; }
 
 /* Help & settings */
 .help li { margin-bottom: 4px; }
@@ -184,7 +202,23 @@ html.standard .p3 { color: var(--p3); } html.standard .p4 { color: var(--p4); } 
 html.standard .p6 { color: var(--p6); } html.standard .p7 { color: var(--p7); } html.standard .p8 { color: var(--p8); }
 html.standard .clue { background: var(--card); border-color: var(--line); }
 html.standard .clue .badge { border-color: currentColor; }
-html.standard .clue[aria-pressed="true"] .txt { color: var(--muted); }
+html.standard .done-li .txt { color: var(--muted); }
+html.standard .done { background: var(--card); border-color: var(--line); color: var(--ink); }
+html.standard .done[aria-pressed="true"] { background: var(--wood); color: var(--card); }
+html.standard #coach, html.standard .box { background: var(--card); border-color: var(--brass); border-radius: 6px; }
+html.standard #coach { border-left-width: 8px; }
+html.standard .coach-title, html.standard #hint { color: var(--muted); }
+html.standard .cell.taken { background: rgba(60, 40, 20, 0.16); }
+@media (prefers-color-scheme: dark) {
+  html.standard .cell.taken { background: rgba(0, 0, 0, 0.42); }
+}
+html.standard .cell.wrong { box-shadow: inset 0 0 0 4px #b3261e; }
+html.standard #clues li.focus .clue { border-color: var(--focus); border-width: 3px; }
+html.standard .legend .ic, html.standard .clue .ic { fill: var(--brass); }
+html.standard .rb { border-color: var(--edge); }
+html.standard .rb.r0 { background: var(--r0); } html.standard .rb.r1 { background: var(--r1); } html.standard .rb.r2 { background: var(--r2); }
+html.standard .rb.r3 { background: var(--r3); } html.standard .rb.r4 { background: var(--r4); } html.standard .rb.r5 { background: var(--r5); }
+html.standard .rb.r6 { background: var(--r6); } html.standard .rb.r7 { background: var(--r7); } html.standard .rb.r8 { background: var(--r8); }
 html.standard #accuse, html.standard #solved { background: var(--card); border-color: var(--brass); border-radius: 6px; }
 html.standard .legend .sw { border-color: var(--edge); color: var(--ink); }
 html.standard .legend .r0 { background: var(--r0); } html.standard .legend .r1 { background: var(--r1); }
@@ -206,7 +240,7 @@ html.standard .btn, html.standard .clue, html.standard .level, html.standard #gr
   html.standard .board-col { flex: 0 0 auto; width: 58%; max-width: 640px; margin-right: 24px; }
   html.standard .clue-col { flex: 1 1 auto; min-width: 0; }
   html.standard #clue-toggle { display: none; }
-  html.standard #clues { display: block !important; }
+  html.standard #clue-box { display: block !important; }
 }
 
 /* ---------- E-ink mode: no motion, larger type, crisp edges ---------- */
@@ -239,15 +273,21 @@ html.eink .levels li { width: 100%; }
     <p class="kicker" id="case-kicker"></p>
     <h2 id="case-title"></h2>
     <p class="intro" id="case-intro"></p>
+    <div id="coach" class="hide" role="status" aria-live="polite">
+      <p class="coach-title">Detective's notebook</p>
+      <p id="coach-text"></p>
+    </div>
     <div class="layout">
       <div class="board-col" id="board-col">
         <table id="grid" role="grid" aria-label="Crime scene"></table>
         <p id="cellinfo" aria-live="polite"></p>
-        <div id="palette" role="group" aria-label="Place a person"></div>
+        <p id="hint"></p>
+        <div id="palette" role="group" aria-label="Tools"></div>
         <div class="tools">
           <button class="btn" id="undo" type="button">Undo</button>
           <button class="btn" id="check" type="button">Check</button>
           <button class="btn primary" id="accuse-btn" type="button">Accuse</button>
+          <button class="btn" id="rules-btn" type="button" aria-expanded="false" aria-controls="rules">Rules</button>
         </div>
         <p id="msg" role="status" aria-live="polite"></p>
         <div id="accuse" class="hide">
@@ -260,12 +300,26 @@ html.eink .levels li { width: 100%; }
           <p id="outro"></p>
           <button class="btn primary" id="next" type="button">Next case</button>
         </div>
+        <div id="rules" class="box hide">
+          <ul class="help">
+            <li>Every row and every column holds exactly one person, the victim included.</li>
+            <li>Nobody stands on a hatched cell (table, piano, stove, trunk…). Seats, bunks, rugs, windows, lamps and suitcases can be stood on.</li>
+            <li><strong>Beside</strong> an object: sharing an edge with it. <strong>Diagonally next to</strong> someone: touching corners.</li>
+            <li><strong>Left of</strong> / <strong>above</strong>: anywhere further left or higher up.</li>
+            <li>The murderer is the only person alone with the victim in a room.</li>
+          </ul>
+        </div>
+        <h3 class="legend-title">Map key</h3>
         <ul class="legend" id="legend" aria-label="Rooms"></ul>
+        <ul class="legend" id="objkey" aria-label="Objects"></ul>
       </div>
       <div class="clue-col">
-        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clues">Hide clues</button>
-        <ol id="clues" aria-label="Clues. Tap a clue to mark it as used."></ol>
-        <p class="note">Tap a clue to cross it off once you have used it.</p>
+        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clue-box">Hide clues</button>
+        <div id="clue-box">
+          <h3 class="clue-head">Statements</h3>
+          <p class="note">Tap a statement to pick that person. Tap <em>Done</em> to cross it off.</p>
+          <ol id="clues"></ol>
+        </div>
         <p><button class="btn small" id="restart" type="button">Restart case</button></p>
       </div>
     </div>
@@ -276,7 +330,7 @@ html.eink .levels li { width: 100%; }
     <ul class="help">
       <li>Each case is a floor plan of the train. Thick lines separate rooms.</li>
       <li>Every <strong>row</strong> and every <strong>column</strong> holds exactly one person, victim included.</li>
-      <li>Nobody can stand on a <strong>shaded</strong> cell: tables, pianos, stoves, trunks, crates, desks, washbasins, mail sacks, coal and the firebox.</li>
+      <li>Nobody can stand on a <strong>hatched</strong> cell: tables, pianos, stoves, trunks, crates, desks, washbasins, mail sacks, coal and the firebox.</li>
       <li>People can stand on seats, bunks, rugs, windows, lamps and suitcases. "Sitting in a seat" means standing on a seat cell.</li>
       <li><strong>Beside</strong> an object: in a cell that shares an edge with it.</li>
       <li><strong>Diagonally next to</strong> someone: the two cells touch at a corner.</li>
@@ -286,8 +340,9 @@ html.eink .levels li { width: 100%; }
     </ul>
     <h3>Controls</h3>
     <ul class="help">
-      <li>Tap a cell, then tap a name to place that person. Placing someone again moves them.</li>
-      <li>Tap <strong>×</strong> once to start marking: every cell you tap gets an × (tap again to remove it). Tap <strong>×</strong> again to stop.</li>
+      <li>Pick a tool under the board: a person, <strong>×</strong> or the eraser. Then tap cells.</li>
+      <li>A person goes where you tap (tapping again moves them). <strong>×</strong> and the eraser stay on until you tap them again.</li>
+      <li>Rows and columns that already have someone are shaded, because nobody else can go there.</li>
       <li><strong>Check</strong> tells you whether your placements fit. <strong>Accuse</strong> names the killer.</li>
       <li>Keyboard: arrow keys move, a letter places that person, <kbd>X</kbd> marks, <kbd>Backspace</kbd> clears, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes.</li>
     </ul>
@@ -300,6 +355,9 @@ html.eink .levels li { width: 100%; }
     </div>
     <div class="opt">
       <button class="btn small" type="button" id="lock" aria-pressed="false">Lock cases until the previous one is solved</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="shade" aria-pressed="true">Shade taken rows and columns</button>
     </div>
     <div class="opt">
       <button class="btn small" type="button" id="reset-all">Erase all progress</button>
@@ -364,16 +422,18 @@ html.eink .levels li { width: 100%; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
 
   // ---------- state ----------
+  if (store.settings.shade === undefined) store.settings.shade = true;
   var data = null, current = null, n = 0;
   var cells = [];          // '' | initial | 'x', one per cell
   var board = null;        // { room: [], obj: [], roomIndex: {} }
-  var sel = -1;            // selected cell index
+  var sel = -1;            // selected cell index (keyboard and info line)
+  var tool = '';           // '' | an initial | 'x' | 'erase'
   var history = [];        // undo stack: arrays of [index, previous value]
-  var marksOnly = false;
-  var used = {};           // initials whose clue is crossed off
+  var used = {};           // initials whose statement is crossed off
   var colorOf = {};        // initial -> palette index
   var cellEls = [];        // button per cell
-  var lastConflicts = {};
+  var painted = {};        // last class state per cell, to touch the DOM only on change
+  var wrongCells = {};     // cells flagged by Check until the next move
 
   function caseState(id) {
     var s = store.progress[id];
@@ -420,7 +480,7 @@ html.eink .levels li { width: 100%; }
       html += '<div class="tier"><h3>Chapter ' + (t + 1) + ': ' + esc(tier.name) + ' <span class="note">' + esc(tier.leg) + '</span></h3><ul class="levels">';
       for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) {
         var c = data.cases[i], st = store.progress[c.id], locked = isLocked(i);
-        var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size;
+        var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size + (c.tutorial ? ' · guided' : '');
         html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
           '<span class="num">' + c.level + '.</span>' + esc(c.title) + '<span class="state">' + state + '</span></button></li>';
       }
@@ -453,6 +513,9 @@ html.eink .levels li { width: 100%; }
     for (var k = 0; k < current.characters.length; k++) if (current.characters[k].initial === ini) return current.characters[k];
     return null;
   }
+  function icon(type, cls) {
+    return '<svg class="' + cls + '" viewBox="0 0 512 512" aria-hidden="true" focusable="false">' + ICONS[type] + '</svg>';
+  }
 
   function openCase(idx) {
     if (isLocked(idx)) return;
@@ -465,7 +528,8 @@ html.eink .levels li { width: 100%; }
     used = st.used || {};
     history = [];
     sel = -1;
-    marksOnly = false;
+    tool = '';
+    wrongCells = {};
     colorOf = {};
     for (var k = 0; k < current.characters.length; k++) colorOf[current.characters[k].initial] = k;
     store.last = current.id;
@@ -481,10 +545,14 @@ html.eink .levels li { width: 100%; }
     renderClues();
     renderLegend();
     setMsg('');
+    $('cellinfo').innerHTML = '';
     show($('accuse'), false);
     showSolved(st.solved);
+    // New players see the rules open on the first cases.
+    showRules(current.level <= 3 && !st.solved && !current.tutorial);
     screen('play');
     sizeGrid();
+    updateCoach();
   }
 
   function emptyCells() { var a = []; for (var i = 0; i < n * n; i++) a.push(''); return a; }
@@ -504,7 +572,7 @@ html.eink .levels li { width: 100%; }
         if (isBlocked(i)) cls += ' blocked';
         var inner = '';
         if (board.first[room] === i) inner += '<span class="tag" aria-hidden="true">' + (board.roomIndex[room] + 1) + '</span>';
-        if (board.obj[i]) inner += '<svg viewBox="0 0 512 512" aria-hidden="true" focusable="false">' + ICONS[board.obj[i]] + '</svg>';
+        if (board.obj[i]) inner += icon(board.obj[i], 'obj');
         inner += '<span class="who" aria-hidden="true"></span>';
         html += '<td class="' + cls + '" role="gridcell"><button type="button" class="cell" data-i="' + i + '" tabindex="-1">' + inner + '</button></td>';
       }
@@ -513,11 +581,11 @@ html.eink .levels li { width: 100%; }
     html += '</tbody>';
     $('grid').innerHTML = html;
     cellEls = [];
+    painted = {};
     var btns = $('grid').getElementsByTagName('button');
     for (var b = 0; b < btns.length; b++) cellEls[+btns[b].getAttribute('data-i')] = btns[b];
-    lastConflicts = {};
     for (var k = 0; k < n * n; k++) paintCell(k);
-    paintConflicts();
+    paintBoard();
     if (cellEls[0]) cellEls[0].setAttribute('tabindex', '0');
   }
 
@@ -540,7 +608,8 @@ html.eink .levels li { width: 100%; }
   }
 
   function describe(i) {
-    var r = Math.floor(i / n), c = i % n, parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]]];
+    var r = Math.floor(i / n), c = i % n;
+    var parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]] + ' (room ' + (board.roomIndex[board.room[i]] + 1) + ')'];
     if (board.obj[i]) parts.push(OBJECT_NAMES[board.obj[i]] + (isBlocked(i) ? ' (nobody can stand here)' : ''));
     var v = cells[i];
     if (v === 'x') parts.push('ruled out');
@@ -554,59 +623,70 @@ html.eink .levels li { width: 100%; }
     who.className = 'who' + (v === 'x' ? ' x' : v ? ' p' + colorOf[v] : '');
     who.innerHTML = v === 'x' ? '×' : v;
     btn.setAttribute('aria-label', describe(i));
-    toggleClass(btn, 'sel', i === sel);
     toggleClass(btn, 'occ', !!v);
   }
 
-  // Marks people who share a row or column with someone else.
-  function paintConflicts() {
-    var rows = {}, cols = {}, i, now = {};
+  // Row/column conflicts, shading of taken lines, Check results and the selection.
+  function paintBoard() {
+    var rows = {}, cols = {}, i;
     for (i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') {
       var r = Math.floor(i / n), c = i % n;
       rows[r] = (rows[r] || 0) + 1; cols[c] = (cols[c] || 0) + 1;
     }
-    for (i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x' && (rows[Math.floor(i / n)] > 1 || cols[i % n] > 1)) now[i] = 1;
-    for (i = 0; i < n * n; i++) if (!!now[i] !== !!lastConflicts[i]) toggleClass(cellEls[i], 'conflict', !!now[i]);
-    lastConflicts = now;
+    for (i = 0; i < n * n; i++) {
+      var person = cells[i] && cells[i] !== 'x';
+      var line = rows[Math.floor(i / n)] || cols[i % n];
+      var state = {
+        conflict: person && (rows[Math.floor(i / n)] > 1 || cols[i % n] > 1),
+        taken: store.settings.shade && !person && !!line && !isBlocked(i),
+        wrong: !!wrongCells[i],
+        sel: i === sel
+      };
+      var last = painted[i] || {};
+      for (var k in state) if (state.hasOwnProperty(k) && !!last[k] !== !!state[k]) toggleClass(cellEls[i], k, !!state[k]);
+      painted[i] = state;
+    }
   }
 
   function select(i, focus) {
-    var prev = sel;
+    if (sel >= 0 && cellEls[sel]) cellEls[sel].setAttribute('tabindex', '-1');
     sel = i;
-    if (prev >= 0 && cellEls[prev]) { toggleClass(cellEls[prev], 'sel', false); cellEls[prev].setAttribute('tabindex', '-1'); }
     if (i >= 0) {
-      toggleClass(cellEls[i], 'sel', true);
       cellEls[i].setAttribute('tabindex', '0');
       if (focus) cellEls[i].focus();
       $('cellinfo').innerHTML = esc(describe(i));
     }
-    updatePalette();
+    paintBoard();
   }
 
   // Applies a list of [index, value] changes as one undoable move.
   function apply(changes) {
-    var undo = [], touched = [];
+    var undoList = [], touched = [];
     for (var k = 0; k < changes.length; k++) {
       var i = changes[k][0];
       if (cells[i] === changes[k][1]) continue;
-      undo.push([i, cells[i]]);
+      undoList.push([i, cells[i]]);
       cells[i] = changes[k][1];
       touched.push(i);
     }
-    if (!undo.length) return;
-    history.push(undo);
+    if (!undoList.length) return false;
+    history.push(undoList);
     if (history.length > 200) history.shift();
     afterChange(touched);
+    return true;
   }
 
   function afterChange(touched) {
+    wrongCells = {};
     for (var k = 0; k < touched.length; k++) paintCell(touched[k]);
-    paintConflicts();
+    paintBoard();
     if (sel >= 0) $('cellinfo').innerHTML = esc(describe(sel));
     updatePalette();
     setMsg('');
     caseState(current.id).cells = cells.slice();
     save();
+    autoCheck();
+    updateCoach();
   }
 
   function undo() {
@@ -617,39 +697,48 @@ html.eink .levels li { width: 100%; }
     afterChange(touched);
   }
 
-  function place(ini) {
-    if (sel < 0) { setMsg('Select a cell first.'); return; }
-    if (isBlocked(sel)) { setMsg('Nobody can stand on a ' + OBJECT_NAMES[board.obj[sel]] + '.'); return; }
+  // Puts a person on cell i (moving them if already placed); again on the same cell removes them.
+  function place(ini, i) {
+    if (isBlocked(i)) { setMsg('Nobody can stand on a ' + OBJECT_NAMES[board.obj[i]] + '. Pick another cell.'); return false; }
     var changes = [];
-    if (cells[sel] === ini) changes.push([sel, '']);
+    if (cells[i] === ini) changes.push([i, '']);
     else {
-      for (var i = 0; i < n * n; i++) if (cells[i] === ini) changes.push([i, '']);
-      changes.push([sel, ini]);
+      for (var j = 0; j < n * n; j++) if (cells[j] === ini) changes.push([j, '']);
+      changes.push([i, ini]);
     }
-    apply(changes);
+    return apply(changes);
   }
 
   function mark(i) {
-    if (i < 0) { setMsg('Select a cell first.'); return; }
     if (isBlocked(i)) return;
-    if (cells[i] && cells[i] !== 'x') return;
+    if (cells[i] && cells[i] !== 'x') { setMsg('Someone is standing there. Use the eraser to remove them first.'); return; }
     apply([[i, cells[i] === 'x' ? '' : 'x']]);
   }
 
-  function clearCell() { if (sel >= 0 && cells[sel]) apply([[sel, '']]); }
+  function erase(i) { if (cells[i]) apply([[i, '']]); }
 
-  // ---------- palette, clues, legend ----------
+  // A tap on the board uses the current tool.
+  function useTool(i) {
+    select(i, false);
+    if (!tool) { setHint(true); return; }
+    if (tool === 'x') mark(i);
+    else if (tool === 'erase') erase(i);
+    else if (place(tool, i) && cells[i] === tool) setTool(''); // a person is placed once, then the tool lets go
+  }
+
+  // ---------- tools, statements, legend ----------
   function renderPalette() {
     var html = '';
     for (var k = 0; k < current.characters.length; k++) {
       var ch = current.characters[k];
-      html += '<button type="button" class="btn" data-ini="' + ch.initial + '" aria-label="Place ' + esc(ch.name) + '">' +
+      html += '<button type="button" class="btn" data-tool="' + ch.initial + '" aria-pressed="false" aria-label="Place ' + esc(ch.name) + '">' +
         '<span class="ini p' + k + '">' + ch.initial + '</span><span class="nm">' + esc(shortName(ch.name)) + '</span></button>';
     }
-    html += '<button type="button" class="btn" data-ini="x" aria-label="Marking mode: tap cells to rule them out" aria-pressed="' + (marksOnly ? 'true' : 'false') + '"><span class="ini">×</span><span class="nm">mark</span></button>';
-    html += '<button type="button" class="btn" data-ini="" aria-label="Clear this cell"><span class="ini">–</span><span class="nm">clear</span></button>';
+    html += '<button type="button" class="btn" data-tool="x" aria-pressed="false" aria-label="Mark cells with ×"><span class="ini">×</span><span class="nm">mark</span></button>';
+    html += '<button type="button" class="btn" data-tool="erase" aria-pressed="false" aria-label="Eraser"><span class="ini">–</span><span class="nm">erase</span></button>';
     $('palette').innerHTML = html;
     updatePalette();
+    setHint(false);
   }
 
   function shortName(name) { var p = name.split(' '); return p.length > 1 ? p[p.length - 1] : name; }
@@ -659,21 +748,52 @@ html.eink .levels li { width: 100%; }
     var placed = {};
     for (var i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') placed[cells[i]] = 1;
     for (var k = 0; k < btns.length; k++) {
-      var ini = btns[k].getAttribute('data-ini');
-      // The × switch works without a selected cell.
-      btns[k].disabled = ini !== 'x' && (sel < 0 || isBlocked(sel));
-      if (ini && ini !== 'x') toggleClass(btns[k], 'placed', !!placed[ini]);
+      var t = btns[k].getAttribute('data-tool');
+      btns[k].setAttribute('aria-pressed', t === tool ? 'true' : 'false');
+      if (t.length === 1 && t !== 'x') toggleClass(btns[k], 'placed', !!placed[t]);
     }
+    var lis = $('clues').getElementsByTagName('li');
+    for (var j = 0; j < lis.length; j++) toggleClass(lis[j], 'focus', lis[j].getAttribute('data-ini') === tool);
+  }
+
+  function setTool(t) {
+    tool = tool === t ? '' : t;
+    updatePalette();
+    setHint(false);
+  }
+
+  function setHint(nudge) {
+    var text;
+    if (tool === 'x') text = 'Marking: tap cells to add or remove ×. Tap × again to stop.';
+    else if (tool === 'erase') text = 'Erasing: tap cells to clear them. Tap the eraser again to stop.';
+    else if (tool) text = 'Placing ' + personByInitial(tool).name + ': tap a cell.';
+    else text = nudge ? 'Pick a person, × or the eraser below first, then tap the board.' : 'Pick a person, × or the eraser, then tap cells on the board.';
+    $('hint').innerHTML = esc(text);
+  }
+
+  // Adds the room number after room names and an icon after objects in a statement.
+  function decorate(text) {
+    var html = esc(text);
+    for (var type in OBJECT_NAMES) if (OBJECT_NAMES.hasOwnProperty(type)) {
+      html = html.replace(new RegExp('\\b(a|any) ' + OBJECT_NAMES[type] + '\\b', 'g'), '$1 <span class="nw">' + OBJECT_NAMES[type] + ' ' + icon(type, 'ic') + '</span>');
+    }
+    for (var k = 0; k < board.keys.length; k++) {
+      var name = esc(current.roomNames[board.keys[k]]);
+      html = html.split(name).join('<span class="nw">' + name + ' <span class="rb r' + k + '" title="Room ' + (k + 1) + '">' + (k + 1) + '</span></span>');
+    }
+    return html;
   }
 
   function renderClues() {
     var html = '';
     for (var k = 0; k < current.characters.length; k++) {
       var ch = current.characters[k];
-      html += '<li><button type="button" class="clue" data-clue="' + ch.initial + '" aria-pressed="' + (used[ch.initial] ? 'true' : 'false') + '">' +
+      html += '<li data-ini="' + ch.initial + '"' + (used[ch.initial] ? ' class="done-li"' : '') + '>' +
+        '<button type="button" class="clue" data-pick="' + ch.initial + '" aria-label="Pick ' + esc(ch.name) + '. ' + esc(ch.clue) + '">' +
         '<span class="badge p' + k + '">' + ch.initial + '</span><strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
         (ch.victim ? '<span class="vic">Victim</span>' : '') +
-        '<span class="txt">' + esc(ch.clue) + '</span></button></li>';
+        '<span class="txt">' + decorate(ch.clue) + '</span></button>' +
+        '<button type="button" class="done" data-done="' + ch.initial + '" aria-pressed="' + (used[ch.initial] ? 'true' : 'false') + '" aria-label="Cross off ' + esc(ch.name) + '">Done</button></li>';
     }
     $('clues').innerHTML = html;
   }
@@ -684,29 +804,76 @@ html.eink .levels li { width: 100%; }
       html += '<li><span class="sw r' + k + '">' + (k + 1) + '</span>' + esc(current.roomNames[board.keys[k]]) + '</li>';
     }
     $('legend').innerHTML = html;
+    var seen = {}, stand = '', block = '';
+    for (var i = 0; i < n * n; i++) {
+      var t = board.obj[i];
+      if (!t || seen[t]) continue;
+      seen[t] = 1;
+      var item = '<li>' + icon(t, 'ic') + ' ' + esc(OBJECT_NAMES[t]) + '</li>';
+      if (BLOCKING[t]) block += item; else stand += item;
+    }
+    $('objkey').innerHTML = (stand ? '<li><em>Can stand on:</em></li>' + stand : '') + (block ? '<li><em>Nobody stands on:</em></li>' + block : '');
+  }
+
+  function showRules(open) {
+    show($('rules'), open);
+    $('rules-btn').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  // ---------- guided first case ----------
+  function updateCoach() {
+    var tut = current.tutorial;
+    show($('coach'), !!tut);
+    if (!tut) return;
+    var text = '', sol = current.solution, k;
+    if (caseState(current.id).solved) text = 'Case closed! That is the whole method: use the most specific statement, then let taken rows and columns narrow down the rest. From now on you are on your own.';
+    else {
+      for (k = 0; k < tut.steps.length && !text; k++) {
+        var ini = tut.steps[k].initial, at = sol[ini][0] * n + sol[ini][1];
+        var where = -1;
+        for (var i = 0; i < n * n; i++) if (cells[i] === ini) where = i;
+        if (where >= 0 && where !== at) text = personByInitial(ini).name + ' is not in the right place yet. Read the statement again, or tap Undo.';
+        else if (where < 0) text = 'Step ' + (k + 1) + ' of ' + tut.steps.length + ': ' + tut.steps[k].text;
+      }
+      if (!text) text = tut.accuse;
+    }
+    $('coach-text').innerHTML = esc(text);
   }
 
   // ---------- check & accuse ----------
   function setMsg(text) { $('msg').innerHTML = esc(text); }
 
   function evaluate() {
-    var placed = 0, wrong = 0, badMarks = 0, sol = current.solution;
+    var placed = 0, wrong = [], badMarks = [], sol = current.solution;
     var at = {};
     for (var ini in sol) if (sol.hasOwnProperty(ini)) at[sol[ini][0] * n + sol[ini][1]] = ini;
     for (var i = 0; i < n * n; i++) {
-      if (cells[i] === 'x') { if (at[i]) badMarks++; }
-      else if (cells[i]) { placed++; if (at[i] !== cells[i]) wrong++; }
+      if (cells[i] === 'x') { if (at[i]) badMarks.push(i); }
+      else if (cells[i]) { placed++; if (at[i] !== cells[i]) wrong.push(i); }
     }
-    return { placed: placed, wrong: wrong, badMarks: badMarks, complete: placed === n && wrong === 0 };
+    return { placed: placed, wrong: wrong, badMarks: badMarks, complete: placed === n && !wrong.length };
   }
 
   function check() {
-    var e = evaluate();
-    if (e.wrong) setMsg(e.wrong === 1 ? 'One person is not where the evidence puts them.' : e.wrong + ' people are not where the evidence puts them.');
-    else if (e.badMarks) setMsg('Your placements hold up, but one of your × marks rules out a spot someone really was in.');
+    var e = evaluate(), k;
+    wrongCells = {};
+    for (k = 0; k < e.wrong.length; k++) wrongCells[e.wrong[k]] = 1;
+    for (k = 0; k < e.badMarks.length; k++) wrongCells[e.badMarks[k]] = 1;
+    paintBoard();
+    if (e.wrong.length) setMsg((e.wrong.length === 1 ? 'One person is' : e.wrong.length + ' people are') + ' not where the statements put them (outlined and crossed out). Tap Undo or move them.');
+    else if (e.badMarks.length) setMsg('Your placements hold up, but an outlined × rules out a spot where someone really was.');
     else if (e.complete) setMsg('Everyone is exactly where they were. Time to accuse someone.');
-    else if (!e.placed) setMsg('Nobody placed yet. Start with the most specific clue.');
+    else if (!e.placed) setMsg('Nobody placed yet. Start with the most specific statement.');
     else setMsg('So far so good: ' + e.placed + ' of ' + n + ' placed correctly.');
+  }
+
+  // When the last person goes on the board, say whether the scene holds up.
+  function autoCheck() {
+    if (caseState(current.id).solved) return;
+    var e = evaluate();
+    if (e.placed < n) { show($('accuse'), false); return; }
+    if (e.complete) { setMsg('Everyone is in place and the scene holds up. Who was alone with the victim?'); openAccuse(); }
+    else setMsg('Everyone is placed, but something does not fit. Tap Check to see who is wrong.');
   }
 
   function openAccuse() {
@@ -718,20 +885,19 @@ html.eink .levels li { width: 100%; }
     }
     $('suspects').innerHTML = html;
     show($('accuse'), true);
-    setMsg('');
   }
 
   function accuse(ini) {
-    show($('accuse'), false);
     var e = evaluate();
-    if (e.placed < n) { setMsg('Place everyone before you accuse anyone. The killer is the only one alone with the victim.'); return; }
-    if (e.wrong) { setMsg('Your reconstruction of the scene does not hold up yet. Use Check to find out how far off it is.'); return; }
-    if (ini !== current.murderer) { setMsg(personByInitial(ini).name + ' has an alibi: someone else was alone with the victim.'); return; }
-    var st = caseState(current.id);
-    st.solved = true;
+    if (e.placed < n) { show($('accuse'), false); setMsg('Place everyone first, the victim included. Then you can see who was alone with the victim.'); return; }
+    if (e.wrong.length) { show($('accuse'), false); setMsg('Your reconstruction does not hold up yet. Tap Check to see who is out of place.'); return; }
+    if (ini !== current.murderer) { setMsg(personByInitial(ini).name + ' has an alibi: someone else was alone with the victim. Look at the victim\'s room.'); return; }
+    show($('accuse'), false);
+    caseState(current.id).solved = true;
     save();
     showSolved(true);
     setMsg('');
+    updateCoach();
   }
 
   function showSolved(isSolved) {
@@ -746,30 +912,31 @@ html.eink .levels li { width: 100%; }
   // ---------- events ----------
   on($('grid'), 'click', function (ev) {
     var btn = closest(ev.target, 'data-i');
-    if (!btn) return;
-    var i = +btn.getAttribute('data-i');
-    if (marksOnly) { select(i, false); mark(i); return; }
-    select(i, false);
+    if (btn) useTool(+btn.getAttribute('data-i'));
   });
 
   on($('palette'), 'click', function (ev) {
-    var btn = closest(ev.target, 'data-ini');
-    if (!btn || btn.disabled) return;
-    var ini = btn.getAttribute('data-ini');
-    if (ini === 'x') { setMarking(!marksOnly); return; }
-    if (marksOnly) setMarking(false);
-    if (ini === '') clearCell();
-    else place(ini);
+    var btn = closest(ev.target, 'data-tool');
+    if (btn) setTool(btn.getAttribute('data-tool'));
   });
 
   on($('clues'), 'click', function (ev) {
-    var btn = closest(ev.target, 'data-clue');
-    if (!btn) return;
-    var ini = btn.getAttribute('data-clue');
-    if (used[ini]) delete used[ini]; else used[ini] = 1;
-    btn.setAttribute('aria-pressed', used[ini] ? 'true' : 'false');
-    caseState(current.id).used = used;
-    save();
+    var done = closest(ev.target, 'data-done');
+    if (done) {
+      var ini = done.getAttribute('data-done');
+      if (used[ini]) delete used[ini]; else used[ini] = 1;
+      done.setAttribute('aria-pressed', used[ini] ? 'true' : 'false');
+      toggleClass(done.parentNode, 'done-li', !!used[ini]);
+      caseState(current.id).used = used;
+      save();
+      return;
+    }
+    var pick = closest(ev.target, 'data-pick');
+    if (pick) {
+      setTool(pick.getAttribute('data-pick'));
+      // On a phone the board is above the statements: bring it (and the notebook, if any) back into view.
+      if (tool && $('board-col').getBoundingClientRect().top < 0) (current.tutorial ? $('coach') : $('grid')).scrollIntoView();
+    }
   });
 
   on($('tiers'), 'click', function (ev) {
@@ -786,13 +953,7 @@ html.eink .levels li { width: 100%; }
   on($('check'), 'click', check);
   on($('accuse-btn'), 'click', openAccuse);
   on($('accuse-cancel'), 'click', function () { show($('accuse'), false); });
-  // × is a switch: while it is on, every tapped cell toggles an ×.
-  function setMarking(onOff) {
-    marksOnly = onOff;
-    var btns = $('palette').getElementsByTagName('button');
-    for (var k = 0; k < btns.length; k++) if (btns[k].getAttribute('data-ini') === 'x') btns[k].setAttribute('aria-pressed', onOff ? 'true' : 'false');
-    setMsg(onOff ? 'Marking: tap cells to add or remove ×. Tap × again to stop.' : '');
-  }
+  on($('rules-btn'), 'click', function () { showRules(hasClass($('rules'), 'hide')); });
   on($('next'), 'click', function () {
     if (current.index >= data.cases.length - 1) showCases();
     else openCase(current.index + 1);
@@ -806,10 +967,11 @@ html.eink .levels li { width: 100%; }
     caseState(current.id).used = used;
     save();
     renderClues();
+    updatePalette();
   });
   on($('clue-toggle'), 'click', function () {
-    var open = hasClass($('clues'), 'hide');
-    show($('clues'), open);
+    var open = hasClass($('clue-box'), 'hide');
+    show($('clue-box'), open);
     $('clue-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
     $('clue-toggle').innerHTML = open ? 'Hide clues' : 'Show clues';
   });
@@ -817,7 +979,7 @@ html.eink .levels li { width: 100%; }
   on($('nav-help'), 'click', function () { syncSettings(); screen('help'); });
   on($('help-back'), 'click', function () {
     if (!data) return;
-    if (current) { screen('play'); sizeGrid(); } else showCases();
+    if (current) { screen('play'); sizeGrid(); paintBoard(); } else showCases();
   });
 
   // Settings
@@ -828,6 +990,7 @@ html.eink .levels li { width: 100%; }
       if (m) btns[k].setAttribute('aria-pressed', (store.settings.mode || 'auto') === m ? 'true' : 'false');
     }
     $('lock').setAttribute('aria-pressed', store.settings.lock ? 'true' : 'false');
+    $('shade').setAttribute('aria-pressed', store.settings.shade ? 'true' : 'false');
   }
   on($('screen-help'), 'click', function (ev) {
     var btn = closest(ev.target, 'data-mode');
@@ -838,6 +1001,7 @@ html.eink .levels li { width: 100%; }
     location.reload();
   });
   on($('lock'), 'click', function () { store.settings.lock = !store.settings.lock; save(); syncSettings(); });
+  on($('shade'), 'click', function () { store.settings.shade = !store.settings.shade; save(); syncSettings(); });
   on($('reset-all'), 'click', function () {
     if (!window.confirm('Erase progress on all fifty cases?')) return;
     store.progress = {};
@@ -846,7 +1010,7 @@ html.eink .levels li { width: 100%; }
     showCases();
   });
 
-  // Keyboard: arrows move, letters place, X marks, Backspace clears, Ctrl+Z undoes.
+  // Keyboard: arrows move, a letter places that person, X marks, Backspace clears, Ctrl+Z undoes.
   on(document, 'keydown', function (ev) {
     if (!current || hasClass($('screen-play'), 'hide')) return;
     var key = ev.key || '', code = ev.keyCode;
@@ -866,10 +1030,10 @@ html.eink .levels li { width: 100%; }
       return;
     }
     if (sel < 0) return;
-    if (key === 'Backspace' || key === 'Delete' || code === 8 || code === 46) { ev.preventDefault(); clearCell(); return; }
+    if (key === 'Backspace' || key === 'Delete' || code === 8 || code === 46) { ev.preventDefault(); erase(sel); return; }
     var letter = key.length === 1 ? key.toUpperCase() : (code >= 65 && code <= 90 ? String.fromCharCode(code) : '');
     if (letter === 'X') { ev.preventDefault(); mark(sel); return; }
-    if (letter && personByInitial(letter)) { ev.preventDefault(); place(letter); }
+    if (letter && personByInitial(letter)) { ev.preventDefault(); place(letter, sel); }
   });
 
   var resizeTimer = null;

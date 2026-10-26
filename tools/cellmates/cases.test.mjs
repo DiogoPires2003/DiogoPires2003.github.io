@@ -7,6 +7,7 @@ import { parse } from 'acorn';
 import { validateCase, logicalSolve } from './engine.mjs';
 import { SPECS } from './generator.mjs';
 import { clueText } from './text.mjs';
+import { ROOMS } from './story.mjs';
 
 const root = new URL('../../public/cellmates/', import.meta.url);
 const data = JSON.parse(readFileSync(new URL('cases.json', root), 'utf8'));
@@ -25,6 +26,23 @@ describe('cellmates cases', () => {
       for (const ch of c.characters) expect(ch.clue).toBe(clueText(ch, c.roomNames, nameOf));
     });
   }
+});
+
+describe('cellmates story', () => {
+  it('only mentions rooms that are on the board', () => {
+    for (const c of data.cases) {
+      const onBoard = Object.values(c.roomNames).map((r) => r.toLowerCase());
+      for (const room of Object.keys(ROOMS)) {
+        if (c.intro.toLowerCase().includes(room.toLowerCase())) expect(onBoard, c.id + ' mentions ' + room).toContain(room.toLowerCase());
+      }
+    }
+  });
+
+  it('walks the tutorial through every person', () => {
+    const c = data.cases[0];
+    const steps = c.tutorial.steps.map((s) => s.initial);
+    expect([...steps].sort()).toEqual(c.characters.map((ch) => ch.initial).sort());
+  });
 });
 
 describe('cellmates page', () => {

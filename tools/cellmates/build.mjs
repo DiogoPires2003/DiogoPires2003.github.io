@@ -130,6 +130,7 @@ function assemble(p, cast, L, tier) {
     intro: fill(story.intro),
     outro: fill(story.outro || OUTROS[(L - 1) % OUTROS.length]),
     finale: !!story.outro,
+    ...(story.tutorial ? { tutorial: story.tutorial } : {}),
     size: p.size,
     rooms: p.rooms,
     roomNames: p.roomNames,

@@ -46,7 +46,8 @@ The code decides the logic and the text only describes it.
 **story.mjs** holds the theme: rooms and their objects, the recurring cast,
 one-off passengers, and the title and intro of every case. Witnesses who will
 kill or die in the next case or two appear in earlier cases, so the culprit
-is never a stranger. Each chapter finale arrests one of the Nightjar's
+is never a stranger. Case 1 also carries a step-by-step `tutorial`, written for
+its layout at the default seed. Each chapter finale arrests one of the Nightjar's
 accomplices, and case 50 unmasks the Nightjar.
 
 ## Case format
