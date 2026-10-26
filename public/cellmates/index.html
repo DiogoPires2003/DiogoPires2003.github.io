@@ -438,9 +438,28 @@ html.eink .levels li { width: 100%; }
   var wrongCells = {};     // cells flagged by Check until the next move
 
   function caseState(id) {
-    var s = store.progress[id];
-    if (!s) { s = store.progress[id] = { cells: null, used: {}, solved: false }; }
+    var s = savedState(caseById(id));
+    if (!s) { s = store.progress[id] = { cells: null, used: {}, solved: false, sig: signature(caseById(id)) }; }
     return s;
+  }
+
+  function caseById(id) {
+    for (var k = 0; k < data.cases.length; k++) if (data.cases[k].id === id) return data.cases[k];
+    return null;
+  }
+
+  // Identifies a puzzle's layout and cast, so progress saved for an older
+  // version of a case is not applied to a different puzzle.
+  function signature(c) {
+    var who = [];
+    for (var k = 0; k < c.characters.length; k++) who.push(c.characters[k].initial);
+    return c.rooms.join('/') + '|' + who.join('');
+  }
+
+  // Saved progress for a case, or null if none was saved for this version of it.
+  function savedState(c) {
+    var s = store.progress[c.id];
+    return s && s.sig === signature(c) ? s : null;
   }
 
   // ---------- loading ----------
@@ -471,7 +490,7 @@ html.eink .levels li { width: 100%; }
 
   function isLocked(i) {
     if (!store.settings.lock || i === 0) return false;
-    var prev = store.progress[data.cases[i - 1].id];
+    var prev = savedState(data.cases[i - 1]);
     return !(prev && prev.solved);
   }
 
@@ -481,7 +500,7 @@ html.eink .levels li { width: 100%; }
       var tier = data.tiers[t];
       html += '<div class="tier"><h3>Chapter ' + (t + 1) + ': ' + esc(tier.name) + ' <span class="note">' + esc(tier.leg) + '</span></h3><ul class="levels">';
       for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) {
-        var c = data.cases[i], st = store.progress[c.id], locked = isLocked(i);
+        var c = data.cases[i], st = savedState(c), locked = isLocked(i);
         var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size + (c.tutorial ? ' · guided' : '');
         html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
           '<span class="num">' + c.level + '.</span>' + esc(c.title) + '<span class="state">' + state + '</span></button></li>';
@@ -527,6 +546,8 @@ html.eink .levels li { width: 100%; }
     board = buildBoard(current);
     var st = caseState(current.id);
     cells = st.cells && st.cells.length === n * n ? st.cells.slice() : emptyCells();
+    // Drop anything that is not a mark or someone in this case.
+    for (var i = 0; i < cells.length; i++) if (cells[i] && cells[i] !== 'x' && !personByInitial(cells[i])) cells[i] = '';
     used = st.used || {};
     history = [];
     sel = -1;
