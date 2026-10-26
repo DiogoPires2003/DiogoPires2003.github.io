@@ -128,10 +128,10 @@ export const CASES = [
     // steps against the solution.
     tutorial: {
       steps: [
-        { initial: 'F', text: 'Your first case. Every row and every column holds exactly one person, the victim included. Start with the victim: {F} was sitting on a suitcase, and there is only one suitcase on the board (row 2, column 1). Tap F below, then tap the suitcase itself.' },
-        { initial: 'S', text: '{F} now owns row 2 and column 1, so nobody else can use them (they are shaded). {S} was on the Platform, room 1 at the top left. Only one Platform cell is still free. Tap S, then tap that cell.' },
-        { initial: 'L', text: '{L} was sitting in a seat. There are five seats, but rows 1 and 2 and column 2 are already taken, which rules out four of them. Tap L, then tap the one seat left.' },
-        { initial: 'M', text: '{M} was in the Lounge Car (room 3). Rows 1, 2 and 4 are taken, so that leaves row 3, in the only column nobody has yet. Tap M and place {M} there.' },
+        { initial: 'F', text: 'Your first case. Every row and every column holds exactly one person, the victim included. Start with the victim: {F} was sitting on a suitcase, and there is only one suitcase on the board (row 2, column 1). Tap the statement of {F} on the list to pick them, then tap the suitcase itself. The statement crosses itself off once they are placed.' },
+        { initial: 'S', text: '{F} now owns row 2 and column 1, so nobody else can use them (they are shaded). {S} was on the Platform, room 1 at the top left. Only one Platform cell is still free. Tap the statement of {S}, then tap that cell.' },
+        { initial: 'L', text: '{L} was sitting in a seat. There are five seats, but rows 1 and 2 and column 2 are already taken, which rules out four of them. Tap the statement of {L}, then tap the one seat left.' },
+        { initial: 'M', text: '{M} was in the Lounge Car (room 3). Rows 1, 2 and 4 are taken, so that leaves row 3, in the only column nobody has yet. Tap the statement of {M} and place them there.' },
       ],
       accuse: 'Everyone is in place. The murderer is the only person who was alone with the victim. {F} is on the Platform with just one other person. Tap Accuse and name them.',
     },

@@ -101,7 +101,6 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 #palette .btn { min-width: 52px; }
 #palette .ini { font-weight: bold; font-size: 20px; }
 #palette .nm { display: block; font-size: 12px; }
-#palette .placed { text-decoration: underline; }
 .tools { margin: 8px 0; }
 #msg { min-height: 1.45em; font-weight: bold; margin: 8px 0; }
 #accuse, #solved { border: 3px solid #000; padding: 10px 12px; margin: 10px 0; }
@@ -130,9 +129,6 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 #clues { list-style: none; margin: 8px 0; padding: 0; }
 #clues li { margin: 0 0 6px; position: relative; }
 #clues li.focus .clue { border-width: 4px; }
-.done { position: absolute; right: 6px; top: 6px; min-height: 32px; padding: 3px 8px; font-size: 14px; border: 2px solid #000; border-radius: 4px; background: #fff; }
-.done[aria-pressed="true"] { background: #000; color: #fff; }
-.clue { padding-right: 70px !important; }
 .clue { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; }
 .clue .badge { display: inline-block; min-width: 28px; padding: 0 4px; margin-right: 6px; border: 2px solid #000; text-align: center; font-weight: bold; }
 .clue .role { font-size: 14px; font-style: italic; }
@@ -203,8 +199,6 @@ html.standard .p6 { color: var(--p6); } html.standard .p7 { color: var(--p7); } 
 html.standard .clue { background: var(--card); border-color: var(--line); }
 html.standard .clue .badge { border-color: currentColor; }
 html.standard .done-li .txt { color: var(--muted); }
-html.standard .done { background: var(--card); border-color: var(--line); color: var(--ink); }
-html.standard .done[aria-pressed="true"] { background: var(--wood); color: var(--card); }
 html.standard #coach, html.standard .box { background: var(--card); border-color: var(--brass); border-radius: 6px; }
 html.standard #coach { border-left-width: 8px; }
 html.standard .coach-title, html.standard #hint { color: var(--muted); }
@@ -300,11 +294,19 @@ html.eink .levels li { width: 100%; }
           <p id="outro"></p>
           <button class="btn primary" id="next" type="button">Next case</button>
         </div>
+      </div>
+      <div class="clue-col">
+        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clue-box">Hide clues</button>
+        <div id="clue-box">
+          <h3 class="clue-head">Statements</h3>
+          <p class="note">Tap a statement to pick that person, then tap their cell on the board. Statements cross themselves off once that person is placed.</p>
+          <ol id="clues"></ol>
+        </div>
         <div id="rules" class="box hide">
           <ul class="help">
             <li>Every row and every column holds exactly one person, the victim included.</li>
             <li>Nobody can be on a hatched cell (table, lamp, piano, stove, trunk…).</li>
-            <li>"In a seat", "on a bench", "on a rug": on that object's own cell. "Beside" an object: on a cell sharing an edge with it.</li>
+            <li>"In a seat", "on a bench", "on a rug": on that object's own cell.</li>
             <li><strong>Beside</strong> an object: sharing an edge with it. <strong>Diagonally next to</strong> someone: touching corners.</li>
             <li><strong>Left of</strong> / <strong>above</strong>: anywhere further left or higher up.</li>
             <li>The murderer is the only person alone with the victim in a room.</li>
@@ -313,14 +315,6 @@ html.eink .levels li { width: 100%; }
         <h3 class="legend-title">Map key</h3>
         <ul class="legend" id="legend" aria-label="Rooms"></ul>
         <ul class="legend" id="objkey" aria-label="Objects"></ul>
-      </div>
-      <div class="clue-col">
-        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clue-box">Hide clues</button>
-        <div id="clue-box">
-          <h3 class="clue-head">Statements</h3>
-          <p class="note">Tap a statement to pick that person. Tap <em>Done</em> to cross it off.</p>
-          <ol id="clues"></ol>
-        </div>
         <p><button class="btn small" id="restart" type="button">Restart case</button></p>
       </div>
     </div>
@@ -341,8 +335,8 @@ html.eink .levels li { width: 100%; }
     </ul>
     <h3>Controls</h3>
     <ul class="help">
-      <li>Pick a tool under the board: a person, <strong>×</strong> or the eraser. Then tap cells.</li>
-      <li>A person goes where you tap (tapping again moves them). <strong>×</strong> and the eraser stay on until you tap them again.</li>
+      <li>Tap a person's statement to pick them, then tap their cell. Tap another cell later to move them. Their statement is crossed off while they are on the board.</li>
+      <li><strong>×</strong> and the eraser under the board stay on until you tap them again.</li>
       <li>Rows and columns that already have someone are shaded, because nobody else can go there.</li>
       <li><strong>Check</strong> tells you whether your placements fit. <strong>Accuse</strong> names the killer.</li>
       <li>Keyboard: arrow keys move, a letter places that person, <kbd>X</kbd> marks, <kbd>Backspace</kbd> clears, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes.</li>
@@ -431,7 +425,6 @@ html.eink .levels li { width: 100%; }
   var sel = -1;            // selected cell index (keyboard and info line)
   var tool = '';           // '' | an initial | 'x' | 'erase'
   var history = [];        // undo stack: arrays of [index, previous value]
-  var used = {};           // initials whose statement is crossed off
   var colorOf = {};        // initial -> palette index
   var cellEls = [];        // button per cell
   var painted = {};        // last class state per cell, to touch the DOM only on change
@@ -439,7 +432,7 @@ html.eink .levels li { width: 100%; }
 
   function caseState(id) {
     var s = savedState(caseById(id));
-    if (!s) { s = store.progress[id] = { cells: null, used: {}, solved: false, sig: signature(caseById(id)) }; }
+    if (!s) { s = store.progress[id] = { cells: null, solved: false, sig: signature(caseById(id)) }; }
     return s;
   }
 
@@ -548,7 +541,6 @@ html.eink .levels li { width: 100%; }
     cells = st.cells && st.cells.length === n * n ? st.cells.slice() : emptyCells();
     // Drop anything that is not a mark or someone in this case.
     for (var i = 0; i < cells.length; i++) if (cells[i] && cells[i] !== 'x' && !personByInitial(cells[i])) cells[i] = '';
-    used = st.used || {};
     history = [];
     sel = -1;
     tool = '';
@@ -752,11 +744,6 @@ html.eink .levels li { width: 100%; }
   // ---------- tools, statements, legend ----------
   function renderPalette() {
     var html = '';
-    for (var k = 0; k < current.characters.length; k++) {
-      var ch = current.characters[k];
-      html += '<button type="button" class="btn" data-tool="' + ch.initial + '" aria-pressed="false" aria-label="Place ' + esc(ch.name) + '">' +
-        '<span class="ini p' + k + '">' + ch.initial + '</span><span class="nm">' + esc(shortName(ch.name)) + '</span></button>';
-    }
     html += '<button type="button" class="btn" data-tool="x" aria-pressed="false" aria-label="Mark cells with ×"><span class="ini">×</span><span class="nm">mark</span></button>';
     html += '<button type="button" class="btn" data-tool="erase" aria-pressed="false" aria-label="Eraser"><span class="ini">–</span><span class="nm">erase</span></button>';
     $('palette').innerHTML = html;
@@ -770,13 +757,15 @@ html.eink .levels li { width: 100%; }
     var btns = $('palette').getElementsByTagName('button');
     var placed = {};
     for (var i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') placed[cells[i]] = 1;
-    for (var k = 0; k < btns.length; k++) {
-      var t = btns[k].getAttribute('data-tool');
-      btns[k].setAttribute('aria-pressed', t === tool ? 'true' : 'false');
-      if (t.length === 1 && t !== 'x') toggleClass(btns[k], 'placed', !!placed[t]);
-    }
+    for (var k = 0; k < btns.length; k++) btns[k].setAttribute('aria-pressed', btns[k].getAttribute('data-tool') === tool ? 'true' : 'false');
+    // Statements cross themselves off while their person is on the board.
     var lis = $('clues').getElementsByTagName('li');
-    for (var j = 0; j < lis.length; j++) toggleClass(lis[j], 'focus', lis[j].getAttribute('data-ini') === tool);
+    for (var j = 0; j < lis.length; j++) {
+      var ini = lis[j].getAttribute('data-ini');
+      toggleClass(lis[j], 'focus', ini === tool);
+      toggleClass(lis[j], 'done-li', !!placed[ini]);
+      lis[j].firstChild.setAttribute('aria-pressed', ini === tool ? 'true' : 'false');
+    }
   }
 
   function setTool(t) {
@@ -790,7 +779,7 @@ html.eink .levels li { width: 100%; }
     if (tool === 'x') text = 'Marking: tap cells to add or remove ×. Tap × again to stop.';
     else if (tool === 'erase') text = 'Erasing: tap cells to clear them. Tap the eraser again to stop.';
     else if (tool) text = 'Placing ' + personByInitial(tool).name + ': tap a cell.';
-    else text = nudge ? 'Pick a person, × or the eraser below first, then tap the board.' : 'Pick a person, × or the eraser, then tap cells on the board.';
+    else text = nudge ? 'Pick someone first: tap their statement, then tap this cell.' : 'Tap a statement to pick that person, then tap their cell. × marks cells, the eraser clears them.';
     $('hint').innerHTML = esc(text);
   }
 
@@ -811,14 +800,14 @@ html.eink .levels li { width: 100%; }
     var html = '';
     for (var k = 0; k < current.characters.length; k++) {
       var ch = current.characters[k];
-      html += '<li data-ini="' + ch.initial + '"' + (used[ch.initial] ? ' class="done-li"' : '') + '>' +
-        '<button type="button" class="clue" data-pick="' + ch.initial + '" aria-label="Pick ' + esc(ch.name) + '. ' + esc(ch.clue) + '">' +
+      html += '<li data-ini="' + ch.initial + '">' +
+        '<button type="button" class="clue" data-pick="' + ch.initial + '" aria-pressed="false" aria-label="Pick ' + esc(ch.name) + '. ' + esc(ch.clue) + '">' +
         '<span class="badge p' + k + '">' + ch.initial + '</span><strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
         (ch.victim ? '<span class="vic">Victim</span>' : '') +
-        '<span class="txt">' + decorate(ch.clue) + '</span></button>' +
-        '<button type="button" class="done" data-done="' + ch.initial + '" aria-pressed="' + (used[ch.initial] ? 'true' : 'false') + '" aria-label="Cross off ' + esc(ch.name) + '">Done</button></li>';
+        '<span class="txt">' + decorate(ch.clue) + '</span></button></li>';
     }
     $('clues').innerHTML = html;
+    updatePalette();
   }
 
   function renderLegend() {
@@ -944,16 +933,6 @@ html.eink .levels li { width: 100%; }
   });
 
   on($('clues'), 'click', function (ev) {
-    var done = closest(ev.target, 'data-done');
-    if (done) {
-      var ini = done.getAttribute('data-done');
-      if (used[ini]) delete used[ini]; else used[ini] = 1;
-      done.setAttribute('aria-pressed', used[ini] ? 'true' : 'false');
-      toggleClass(done.parentNode, 'done-li', !!used[ini]);
-      caseState(current.id).used = used;
-      save();
-      return;
-    }
     var pick = closest(ev.target, 'data-pick');
     if (pick) {
       setTool(pick.getAttribute('data-pick'));
@@ -976,7 +955,11 @@ html.eink .levels li { width: 100%; }
   on($('check'), 'click', check);
   on($('accuse-btn'), 'click', openAccuse);
   on($('accuse-cancel'), 'click', function () { show($('accuse'), false); });
-  on($('rules-btn'), 'click', function () { showRules(hasClass($('rules'), 'hide')); });
+  on($('rules-btn'), 'click', function () {
+    var open = hasClass($('rules'), 'hide');
+    showRules(open);
+    if (open) $('rules').scrollIntoView();
+  });
   on($('next'), 'click', function () {
     if (current.index >= data.cases.length - 1) showCases();
     else openCase(current.index + 1);
@@ -986,11 +969,6 @@ html.eink .levels li { width: 100%; }
     var changes = [];
     for (var i = 0; i < n * n; i++) if (cells[i]) changes.push([i, '']);
     apply(changes);
-    used = {};
-    caseState(current.id).used = used;
-    save();
-    renderClues();
-    updatePalette();
   });
   on($('clue-toggle'), 'click', function () {
     var open = hasClass($('clue-box'), 'hide');
