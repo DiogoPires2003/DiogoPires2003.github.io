@@ -1,0 +1,1702 @@
+<!doctype html>
+<html lang="en" class="standard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cellmates: The Midnight Express</title>
+<script>
+// Display mode, decided before first paint: ?mode= > saved setting > device > standard.
+(function () {
+  var mode = null, m;
+  try { m = /[?&]mode=(eink|standard)\b/.exec(location.search); if (m) mode = m[1]; } catch (e) {}
+  if (!mode) {
+    try {
+      var saved = JSON.parse(localStorage.getItem('cellmates:v1') || '{}');
+      if (saved.settings && (saved.settings.mode === 'eink' || saved.settings.mode === 'standard')) mode = saved.settings.mode;
+    } catch (e) {}
+  }
+  if (!mode) {
+    var ua = navigator.userAgent || '';
+    if (/Kindle/.test(ua) && !/Silk/.test(ua)) mode = 'eink';
+    else if (window.matchMedia && (matchMedia('(monochrome)').matches || matchMedia('(update: slow)').matches)) mode = 'eink';
+  }
+  document.documentElement.className = mode || 'standard';
+  if (document.documentElement.className === 'standard') {
+    var font = document.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:wght@400;600;700&family=Special+Elite&family=Caveat:wght@500;700&display=swap';
+    document.getElementsByTagName('head')[0].appendChild(font);
+  }
+})();
+</script>
+<style>
+/* Base styles are plain, high-contrast black and white with no custom
+   properties: this is the e-ink look, and what an old browser falls back to.
+   html.standard layers colour, themes and motion on top. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #fff; color: #000;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.45;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+.hide { display: none !important; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 32px; }
+
+.bar { border-bottom: 3px solid #000; background: #fff; }
+.bar .wrap { padding-top: 8px; padding-bottom: 8px; overflow: hidden; }
+.bar h1 { display: inline-block; margin: 0; font-size: 22px; letter-spacing: 0.04em; vertical-align: middle; }
+.bar h1 small { font-size: 14px; font-weight: normal; letter-spacing: 0; }
+.bar .nav { float: right; }
+.btn {
+  display: inline-block; min-height: 44px; padding: 8px 14px; margin: 3px 2px;
+  border: 2px solid #000; border-radius: 4px; background: #fff; text-align: center;
+  font-size: 17px; line-height: 1.2; vertical-align: middle;
+}
+.btn[aria-pressed="true"], .btn.on { background: #000; color: #fff; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.btn.small { min-height: 36px; padding: 5px 10px; font-size: 15px; }
+:focus { outline: 3px solid #000; outline-offset: 2px; }
+
+h2 { font-size: 24px; margin: 18px 0 4px; }
+h3 { font-size: 19px; margin: 18px 0 6px; }
+.kicker { margin: 14px 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+.intro { margin: 6px 0 12px; }
+.note { font-size: 15px; }
+
+/* Case list */
+.tier { margin-bottom: 20px; }
+.levels { list-style: none; margin: 0; padding: 0; }
+.levels li { display: inline-block; width: 49%; vertical-align: top; padding: 3px; }
+.level {
+  display: block; width: 100%; min-height: 56px; padding: 8px 10px; text-align: left;
+  border: 2px solid #000; border-radius: 4px; background: #fff;
+}
+.level .num { font-weight: bold; margin-right: 6px; }
+.level .num:after { content: "."; }
+.punch, .car-plate, .bogies, .tg-head { display: none; }
+.level .state { display: block; font-size: 14px; }
+.level.solved { border-width: 4px; }
+.level[disabled] { border-style: dashed; cursor: default; }
+
+/* Board */
+.board-col { position: relative; }
+#grid { border-collapse: collapse; margin: 6px 0 8px; }
+#grid th { font-size: 13px; font-weight: normal; text-align: center; padding: 0; }
+#grid td { padding: 0; border: 1px solid #777; position: relative; background: #fff; }
+#grid td.bt { border-top: 4px solid #000; }
+#grid td.bb { border-bottom: 4px solid #000; }
+#grid td.bl { border-left: 4px solid #000; }
+#grid td.br { border-right: 4px solid #000; }
+#grid td.blocked { background: #c8c8c8; }
+.cell {
+  display: block; width: 100%; height: 100%; margin: 0; padding: 0;
+  border: 0; background: transparent; position: relative; overflow: hidden;
+}
+.cell .who { position: absolute; left: 0; top: 0; width: 100%; height: 100%; text-align: center; font-weight: bold; }
+.cell .x { font-weight: normal; }
+.cell .obj { position: absolute; left: 50%; top: 50%; fill: #000; }
+.cell.occ .obj { left: auto; top: auto; right: 2px; bottom: 2px; margin: 0 !important; }
+
+/* Room names written on the plan */
+#board-wrap { position: relative; display: inline-block; }
+#labels { position: absolute; left: 0; top: 0; }
+.rlabel { position: absolute; padding: 0 3px; background: #fff; font: bold 10px/1.3 Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+
+/* Portraits: a bust with period headwear, and the initial in the corner */
+.tok { display: inline-block; position: relative; width: 44px; height: 44px; border: 2px solid #000; border-radius: 50%; background: #fff; vertical-align: middle; line-height: 1; }
+.tok .pt { display: block; width: 100%; height: 100%; border-radius: 50%; fill: #000; color: #fff; }
+.pt .halo, .pt .bg { fill: currentColor; stroke: currentColor; }
+.tini { position: absolute; right: -5px; bottom: -4px; min-width: 1.4em; padding: 0 2px; border: 1px solid #000; border-radius: 3px; background: #fff; color: #000; font: bold 12px/1.3 Arial, sans-serif; text-align: center; }
+.cell .tini { right: 0; bottom: 0; }
+.tok.huge { width: 96px; height: 96px; }
+.tok.huge .tini { font-size: 18px; }
+.clue .tok { float: left; margin: 2px 10px 4px 0; }
+.clue .who-line { display: block; }
+#suspects .btn { padding-left: 8px; }
+#suspects .tok { width: 36px; height: 36px; margin-right: 6px; }
+.cell.sel { box-shadow: inset 0 0 0 4px #000; }
+.cell.conflict { border: 3px dotted #000; }
+.cell:focus { outline: none; }
+.cell:focus.sel { box-shadow: inset 0 0 0 4px #000, inset 0 0 0 7px #fff, inset 0 0 0 9px #000; }
+
+#cellinfo { min-height: 1.45em; margin: 0 0 6px; font-size: 15px; }
+#palette .btn { min-width: 52px; }
+#palette .ini { font-weight: bold; font-size: 20px; }
+#palette .nm { display: block; font-size: 12px; }
+.tools { margin: 8px 0; }
+#msg { min-height: 1.45em; font-weight: bold; margin: 8px 0; }
+#accuse, #solved { border: 3px solid #000; padding: 10px 12px; margin: 10px 0; }
+#accuse p, #solved p { margin: 4px 0 8px; }
+#solved .card { text-align: center; }
+.stamp { display: inline-block; margin: 4px 0 12px !important; padding: 2px 12px; border: 3px solid #000; font: bold 20px Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; }
+#culprit p { margin: 8px 0; }
+.linkish { border: 0; background: none; padding: 0 0 6px; text-decoration: underline; font-size: 15px; }
+
+/* Route map and chapter tickets */
+#route svg { display: block; width: 100%; height: auto; max-width: 900px; margin: 0 auto; }
+#route .seg-hit { cursor: pointer; }
+#route .sea { fill: #f2f2f2; }
+#route .hatch { stroke: #c8c8c8; stroke-width: 0.8; }
+#route .ripple { fill: none; stroke: #000; stroke-linejoin: round; }
+#route .ripple.r2 { stroke-width: 7; opacity: 0.08; }
+#route .ripple.r1 { stroke-width: 3.5; opacity: 0.16; }
+#route .land { fill: #fff; stroke: #000; stroke-width: 0.9; stroke-linejoin: round; }
+#route .river { fill: none; stroke: #000; stroke-width: 1.3; stroke-linejoin: round; opacity: 0.7; }
+#route .peak { fill: none; stroke: #444; stroke-width: 1.1; stroke-linejoin: round; }
+#route .peak-shade { fill: #888; }
+#route .country { font: 7.5px Arial, sans-serif; letter-spacing: 0.32em; fill: #777; }
+#route .sea-name { font: italic 9px Georgia, serif; letter-spacing: 0.2em; fill: #555; }
+#route .sleepers { fill: none; stroke: #000; stroke-width: 7; stroke-dasharray: 1.2 3.4; }
+#route .rail { fill: none; stroke: #000; stroke-width: 2.2; stroke-linejoin: round; }
+#route .done { fill: none; stroke: #000; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+#route .minor { fill: #fff; stroke: #000; stroke-width: 1.3; }
+#route .minor-t { font: italic 7.5px Georgia, serif; fill: #333; }
+#route .stop { fill: #fff; stroke: #000; stroke-width: 2.2; }
+#route .stop.reached { fill: #000; }
+#route .stop-dot { fill: #000; }
+#route .stop.reached + .stop-dot { fill: #fff; }
+#route .city { font: bold 13px Georgia, serif; fill: #000; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+#route .chip { fill: #fff; stroke: #000; stroke-width: 1.5; }
+#route .chip-t { font: bold 8px Georgia, serif; fill: #000; }
+#route .loco { fill: #000; }
+#route .cart-box { fill: #fff; stroke: #000; stroke-width: 1.5; }
+#route .cart-line { fill: none; stroke: #000; stroke-width: 0.6; }
+#route .cart-t { font: bold 17px Georgia, serif; fill: #000; }
+#route .cart-s { font: bold 8px Arial, sans-serif; letter-spacing: 0.3em; fill: #000; }
+#route .cart-s2 { font: italic 8px Georgia, serif; fill: #333; }
+#route .cmp-ring { fill: none; stroke: #000; stroke-width: 0.8; }
+#route .cmp-star { fill: #fff; stroke: #000; stroke-width: 0.8; }
+#route .cmp-star2 { fill: #000; }
+#route .cmp-n { font: bold 9px Georgia, serif; }
+#route .frame-out { fill: none; stroke: #000; stroke-width: 2.5; }
+#route .frame-in { fill: none; stroke: #000; stroke-width: 0.8; }
+#route .corner { fill: #fff; stroke: #000; stroke-width: 1.2; }
+.ticket { border: 2px dashed #000; border-radius: 6px; padding: 8px 12px; margin: 22px 0 8px; overflow: hidden; }
+.ticket .tk-ch { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; }
+.ticket strong { font-size: 20px; }
+.ticket .tk-tier { margin-left: 8px; font-style: italic; }
+.ticket .tk-prog { float: right; font-size: 15px; margin-top: 6px; }
+.pbar { display: block; height: 6px; margin-top: 6px; border: 1px solid #000; }
+.pbar i { display: block; height: 100%; background: #000; }
+
+.legend { list-style: none; padding: 0; margin: 8px 0; font-size: 15px; }
+.legend li { display: inline-block; margin: 2px 12px 2px 0; }
+
+#hint { margin: 4px 0; font-size: 15px; font-style: italic; }
+#palette .btn[aria-pressed="true"] .nm, #palette .btn[aria-pressed="true"] .ini { color: inherit; }
+#coach, .box { border: 3px solid #000; padding: 8px 12px; margin: 8px 0 12px; }
+#coach p { margin: 4px 0; }
+.coach-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+.cell.taken { background: #e4e4e4; }
+.cell.wrong { box-shadow: inset 0 0 0 4px #000; }
+.cell.wrong .who { text-decoration: line-through; }
+.legend-title { font-size: 15px; margin: 12px 0 0; }
+.legend .ic, .clue .ic { width: 1.2em; height: 1.2em; vertical-align: -0.25em; fill: #000; }
+.clue-head { margin-top: 10px; }
+.nw { white-space: nowrap; }
+
+/* Clues */
+#clue-toggle { margin-top: 10px; }
+#clues { list-style: none; margin: 8px 0; padding: 0; }
+#clues li { margin: 0 0 6px; position: relative; }
+#clues li.focus .clue { border-width: 4px; }
+.clue { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; }
+.clue .role { font-size: 14px; font-style: italic; }
+.clue .vic { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid #000; padding: 0 4px; margin-left: 4px; }
+.clue .txt { display: block; margin-top: 4px; clear: none; }
+.clue:after { content: ""; display: block; clear: both; }
+.done-li .txt { text-decoration: line-through; color: #555; }
+.done-li .clue { border-style: dashed; }
+
+/* Help & settings */
+.help li { margin-bottom: 4px; }
+.opt { margin: 6px 0; }
+kbd { border: 1px solid #000; border-radius: 3px; padding: 0 4px; font-family: inherit; font-size: 15px; }
+
+/* ---------- Standard mode: colour, themes, motion ---------- */
+html.standard {
+  --paper: #f7f1e5; --card: #fffaf0; --ink: #221b14; --muted: #5d5244;
+  --wood: #6b3f1f; --brass: #9a7426; --green: #1f3b2d; --line: #8a7c68; --edge: #2a2118;
+  --block: #cbbfa9; --focus: #1f5fbf;
+  --r0: #f1dfbd; --r1: #d6e6cf; --r2: #d7e2ef; --r3: #f0d4cf; --r4: #e3d8ee; --r5: #ece2bf; --r6: #cfe6e2; --r7: #e8d6c6; --r8: #dfe0c8;
+  --p0: #8b1e1e; --p1: #1d4a7a; --p2: #2a5e2c; --p3: #6e4300; --p4: #5b2a86; --p5: #0c5c5c; --p6: #93306a; --p7: #3d3d3d; --p8: #7a5000;
+  --tokfg: #fffaf0; --fl: rgba(80, 50, 20, 0.13); --fl2: rgba(130, 40, 40, 0.13); --sea: #cfe0e8;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard {
+    --paper: #17130f; --card: #211b15; --ink: #f1e8d8; --muted: #c2b49d;
+    --wood: #c08a5a; --brass: #d8b45c; --green: #0f2219; --line: #6d604f; --edge: #e8dcc6;
+    --block: #4a4035; --focus: #7fb0ff;
+    --r0: #3d3222; --r1: #263826; --r2: #24303f; --r3: #40292a; --r4: #342a40; --r5: #3a3420; --r6: #1f3a36; --r7: #3b2d24; --r8: #33341f;
+    --p0: #ff9a8a; --p1: #9cc6ff; --p2: #9be29a; --p3: #f2c27a; --p4: #d1a8ff; --p5: #7fe0dc; --p6: #ff9fd0; --p7: #e4e4e4; --p8: #ffd27a;
+    --tokfg: #1b1510; --fl: rgba(255, 240, 215, 0.07); --fl2: rgba(255, 180, 160, 0.08); --sea: #1d2f3a;
+  }
+}
+html.standard body { background: var(--paper); color: var(--ink); }
+html.standard .bar { background: var(--green); color: #f3e6c4; border-bottom: 3px solid var(--brass); }
+html.standard .bar h1 { color: #f3e6c4; }
+html.standard .bar .btn { background: transparent; color: #f3e6c4; border-color: #c9a75a; }
+html.standard .btn { background: var(--card); color: var(--ink); border-color: var(--wood); }
+html.standard .btn[aria-pressed="true"], html.standard .btn.on { background: var(--wood); color: var(--card); }
+html.standard .btn.primary { background: var(--green); color: #f3e6c4; border-color: var(--green); }
+@media (prefers-color-scheme: dark) {
+  html.standard .btn.primary { background: var(--brass); color: #17130f; border-color: var(--brass); }
+}
+html.standard :focus { outline-color: var(--focus); }
+html.standard .kicker, html.standard .note, html.standard .clue .role { color: var(--muted); }
+html.standard .level { background: var(--card); border-color: var(--line); }
+html.standard .level.solved { border-color: var(--green); border-width: 2px; box-shadow: inset 6px 0 0 var(--green); }
+html.standard #grid { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); }
+html.standard #grid th { color: var(--muted); }
+html.standard #grid td { border-color: var(--line); }
+html.standard #grid td.bt { border-top-color: var(--edge); }
+html.standard #grid td.bb { border-bottom-color: var(--edge); }
+html.standard #grid td.bl { border-left-color: var(--edge); }
+html.standard #grid td.br { border-right-color: var(--edge); }
+html.standard #grid td.r0 { background: var(--r0); } html.standard #grid td.r1 { background: var(--r1); }
+html.standard #grid td.r2 { background: var(--r2); } html.standard #grid td.r3 { background: var(--r3); }
+html.standard #grid td.r4 { background: var(--r4); } html.standard #grid td.r5 { background: var(--r5); }
+html.standard #grid td.r6 { background: var(--r6); } html.standard #grid td.r7 { background: var(--r7); }
+html.standard #grid td.r8 { background: var(--r8); }
+/* Floors: planks, carpet, a corridor runner, tiles, flagstones and steel plate */
+html.standard #grid td.f-wood { background-image: repeating-linear-gradient(0deg, var(--fl) 0, var(--fl) 1px, transparent 1px, transparent 10px); }
+html.standard #grid td.f-carpet { background-image: radial-gradient(circle, var(--fl2) 20%, transparent 24%); background-size: 10px 10px; }
+html.standard #grid td.f-runner { background-image: linear-gradient(0deg, transparent 22%, var(--fl2) 22%, var(--fl2) 78%, transparent 78%), repeating-linear-gradient(90deg, var(--fl) 0, var(--fl) 1px, transparent 1px, transparent 12px); }
+html.standard #grid td.f-tile { background-image: linear-gradient(45deg, var(--fl) 25%, transparent 25%, transparent 75%, var(--fl) 75%), linear-gradient(45deg, var(--fl) 25%, transparent 25%, transparent 75%, var(--fl) 75%); background-size: 14px 14px; background-position: 0 0, 7px 7px; }
+html.standard #grid td.f-stone { background-image: linear-gradient(90deg, var(--fl) 1px, transparent 1px), linear-gradient(0deg, var(--fl) 1px, transparent 1px); background-size: 50% 50%; }
+html.standard #grid td.f-metal { background-image: repeating-linear-gradient(45deg, var(--fl) 0, var(--fl) 2px, transparent 2px, transparent 8px), repeating-linear-gradient(-45deg, var(--fl) 0, var(--fl) 2px, transparent 2px, transparent 8px); }
+html.standard #grid td.blocked { background-image: repeating-linear-gradient(45deg, transparent 0, transparent 5px, rgba(60, 40, 20, 0.18) 5px, rgba(60, 40, 20, 0.18) 7px); }
+html.standard .cell .obj { fill: var(--brass); }
+html.standard .blocked .cell .obj { fill: var(--wood); }
+html.standard .rlabel { color: var(--ink); border-radius: 3px; opacity: 0.88; }
+html.standard .rlabel.r0 { background: var(--r0); } html.standard .rlabel.r1 { background: var(--r1); } html.standard .rlabel.r2 { background: var(--r2); }
+html.standard .rlabel.r3 { background: var(--r3); } html.standard .rlabel.r4 { background: var(--r4); } html.standard .rlabel.r5 { background: var(--r5); }
+html.standard .rlabel.r6 { background: var(--r6); } html.standard .rlabel.r7 { background: var(--r7); } html.standard .rlabel.r8 { background: var(--r8); }
+html.standard .tok { background: currentColor; border-color: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+html.standard .tok .pt { fill: var(--tokfg); color: inherit; }
+html.standard .tini { background: var(--card); color: var(--ink); border-color: var(--line); }
+html.standard .tok.pop { animation: pop 0.28s ease-out; }
+@keyframes pop { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+html.standard .ticket { background: var(--card); border-color: var(--wood); }
+
+html.standard .ticket .tk-ch, html.standard .ticket .tk-tier { color: var(--muted); }
+html.standard .pbar { border-color: var(--line); border-radius: 3px; }
+html.standard .pbar i { background: var(--brass); }
+html.standard .stamp { color: #9b1c1c; border-color: #9b1c1c; transform: rotate(-5deg); }
+@media (prefers-color-scheme: dark) { html.standard .stamp { color: #ff8a7a; border-color: #ff8a7a; } }
+/* The ending opens over the page right after a case is solved. */
+html.standard #solved.modal { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 50; margin: 0; padding: 16px; border: 0; border-radius: 0; background: rgba(15, 10, 5, 0.62); display: flex; align-items: center; justify-content: center; animation: fade 0.3s ease-out; }
+html.standard #solved.modal .card { max-width: 460px; max-height: 100%; overflow: auto; padding: 22px; background: var(--card); border: 3px solid var(--brass); border-radius: 10px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); animation: rise 0.35s ease-out; }
+html.standard #solved.modal .stamp { animation: stamp 0.45s 0.25s ease-out both; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes stamp { from { transform: rotate(-5deg) scale(2.4); opacity: 0; } to { transform: rotate(-5deg) scale(1); opacity: 1; } }
+@supports (text-decoration-color: red) {
+  html.standard .clue .txt { text-decoration: line-through; text-decoration-color: transparent; transition: text-decoration-color 0.4s ease, color 0.4s ease; }
+  html.standard .done-li .clue .txt { text-decoration-color: var(--muted); }
+}
+html.standard .clue { transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.4s ease, transform 0.15s ease; }
+html.standard .done-li .clue { opacity: 0.72; }
+html.standard #clues li.focus .clue { transform: translateX(4px); }
+html.standard .cell .x { color: var(--muted); }
+html.standard .cell.sel { box-shadow: inset 0 0 0 4px var(--focus); }
+html.standard .cell:focus.sel { box-shadow: inset 0 0 0 4px var(--focus); }
+html.standard .cell.conflict { border-color: #b3261e; }
+html.standard .p0 { color: var(--p0); } html.standard .p1 { color: var(--p1); } html.standard .p2 { color: var(--p2); }
+html.standard .p3 { color: var(--p3); } html.standard .p4 { color: var(--p4); } html.standard .p5 { color: var(--p5); }
+html.standard .p6 { color: var(--p6); } html.standard .p7 { color: var(--p7); } html.standard .p8 { color: var(--p8); }
+html.standard .clue { background: var(--card); border-color: var(--line); }
+html.standard .done-li .txt { color: var(--muted); }
+html.standard #coach, html.standard .box { background: var(--card); border-color: var(--brass); border-radius: 6px; }
+html.standard #coach { border-left-width: 8px; }
+html.standard .coach-title, html.standard #hint { color: var(--muted); }
+html.standard .cell.taken { background: rgba(60, 40, 20, 0.16); }
+@media (prefers-color-scheme: dark) {
+  html.standard .cell.taken { background: rgba(0, 0, 0, 0.42); }
+}
+html.standard .cell.wrong { box-shadow: inset 0 0 0 4px #b3261e; }
+html.standard #clues li.focus .clue { border-color: var(--focus); border-width: 3px; }
+html.standard .legend .ic, html.standard .clue .ic { fill: var(--brass); }
+html.standard #accuse, html.standard #solved { background: var(--card); border-color: var(--brass); border-radius: 6px; }
+html.standard .btn, html.standard .clue, html.standard .level, html.standard #grid td { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+@media (hover: hover) {
+  html.standard .btn:hover, html.standard .level:hover, html.standard .clue:hover { border-color: var(--brass); }
+  html.standard .cell:hover { box-shadow: inset 0 0 0 2px var(--brass); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.standard * { transition: none !important; animation: none !important; }
+}
+/* Tablet landscape and desktop: grid left, clues right. */
+@media (min-width: 860px) {
+  html.standard .layout { display: flex; align-items: flex-start; }
+  html.standard .board-col { flex: 0 0 auto; width: 58%; max-width: 640px; margin-right: 24px; }
+  html.standard .clue-col { flex: 1 1 auto; min-width: 0; }
+  html.standard #clue-toggle { display: none; }
+  html.standard #clue-box { display: block !important; }
+}
+
+/* ---------- Colour mode: Art Deco skin (lacquer, mahogany, brass and paper) ---------- */
+html.standard {
+  --display: Limelight, Georgia, serif;
+  --label: "Josefin Sans", "Trebuchet MS", Arial, sans-serif;
+  --type: "Special Elite", "Courier New", Courier, monospace;
+  --hand: Caveat, "Comic Sans MS", cursive;
+  --paper: #efe4cb; --card: #fbf5e6; --paper2: #f4ead2;
+  --mahogany: #4a2614; --mahogany2: #2e160b; --lacquer: #13291f;
+  --brass-hi: #f3dc9b; --brass-lo: #8a6524; --burgundy: #7a1f24;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard {
+    --paper: #1a110b; --card: #2a1f16; --paper2: #241a12;
+    --mahogany: #3a1d0f; --mahogany2: #1d0e06; --lacquer: #0b1a13;
+    --brass-hi: #f6e2a6; --brass-lo: #9c7630; --burgundy: #e06a62;
+  }
+}
+/* Walls: a quiet Art Deco fan pattern on ivory, or dark panelling at night. */
+html.standard body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 26px, rgba(154, 116, 38, 0.10) 27px, rgba(154, 116, 38, 0.10) 28px, transparent 29px),
+    radial-gradient(circle at 50% 100%, transparent 16px, rgba(154, 116, 38, 0.08) 17px, rgba(154, 116, 38, 0.08) 18px, transparent 19px);
+  background-size: 60px 30px;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard body {
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 120px),
+      repeating-linear-gradient(90deg, rgba(255, 210, 160, 0.025) 0, rgba(255, 210, 160, 0.025) 2px, transparent 2px, transparent 7px),
+      linear-gradient(180deg, var(--mahogany), var(--mahogany2));
+    background-size: auto;
+  }
+}
+
+/* Header: green lacquer, a brass double rule and a gilded name. */
+html.standard .bar {
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 2px, transparent 2px, transparent 9px), linear-gradient(180deg, #1d3d2e, var(--lacquer));
+  border-bottom: 0; box-shadow: 0 3px 0 var(--brass-lo), 0 6px 0 var(--lacquer), 0 8px 0 var(--brass-hi), 0 12px 18px rgba(0, 0, 0, 0.25);
+  margin-bottom: 12px;
+}
+html.standard .bar h1 { font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; }
+html.standard .logo {
+  font-size: 30px; text-transform: uppercase; color: var(--brass-hi);
+  background: linear-gradient(180deg, #fff3c8 10%, #e6c36a 45%, #9c7630 55%, #f0d58a 90%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+html.standard .bar h1 small { font-family: var(--label); font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: #cdb98a; margin-left: 10px; }
+
+/* Brass buttons with a bevel; the primary one is lacquer with gold lettering. */
+html.standard .btn {
+  font-family: var(--label); font-weight: 600; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #2b1a06; border: 1px solid var(--brass-lo); border-radius: 3px;
+  background: linear-gradient(180deg, #fbefc4 0%, #e3c57c 48%, #c9a253 52%, #e8cf8c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+html.standard .btn.small { font-size: 13px; }
+html.standard .btn.primary, html.standard .btn[aria-pressed="true"] {
+  color: var(--brass-hi); border-color: var(--brass-hi);
+  background: linear-gradient(180deg, #24493a, var(--lacquer));
+  box-shadow: inset 0 0 0 2px var(--lacquer), inset 0 0 0 3px rgba(243, 220, 155, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+html.standard .bar .btn { background: transparent; color: var(--brass-hi); border-color: rgba(243, 220, 155, 0.7); box-shadow: none; }
+@media (hover: hover) {
+  html.standard .btn:hover { filter: brightness(1.06); border-color: var(--brass-lo); }
+}
+html.standard #palette .btn { min-width: 64px; }
+html.standard #palette .ini { font-family: Georgia, serif; font-size: 22px; letter-spacing: 0; }
+html.standard .linkish { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: var(--burgundy); }
+
+/* Case header: deco title, and the story as a typed telegram. */
+html.standard h2, html.standard #cases-title { font-family: var(--display); font-weight: normal; font-size: 32px; letter-spacing: 0.04em; color: var(--ink); }
+html.standard h3 { font-family: var(--label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; font-size: 15px; }
+html.standard .kicker { font-family: var(--label); font-weight: 600; letter-spacing: 0.24em; font-size: 12px; color: var(--brass-lo); }
+html.standard .telegram {
+  position: relative; margin: 8px 0 14px; padding: 12px 16px 10px; max-width: 760px;
+  background: linear-gradient(180deg, #f6edd2, #efe2bf); color: #2b2012;
+  border: 1px solid #cbb683; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14), inset 0 0 0 4px #f6edd2, inset 0 0 0 5px rgba(122, 31, 36, 0.35);
+  transform: rotate(-0.4deg);
+}
+html.standard .tg-head { display: block; margin: 0 0 4px; font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--burgundy); }
+html.standard .telegram .intro { font-family: var(--type); font-size: 16px; line-height: 1.55; margin: 0; color: #2b2012; }
+html.standard .telegram .linkish { color: #7a1f24; }
+
+/* The detective's notebook: lined paper and handwriting. */
+html.standard #coach {
+  background: repeating-linear-gradient(180deg, transparent 0, transparent 27px, rgba(29, 74, 122, 0.22) 27px, rgba(29, 74, 122, 0.22) 28px), #fffdf4;
+  border: 0; border-left: 3px double #c0504d; border-radius: 2px; color: #1d2a4a;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16); padding: 6px 16px 8px 22px;
+}
+html.standard #coach p { font-family: var(--hand); font-size: 23px; line-height: 28px; margin: 0; }
+html.standard #coach .coach-title { font-family: var(--label); font-size: 11px; letter-spacing: 0.3em; color: #c0504d; line-height: 28px; }
+
+/* The board travels in a carriage: mahogany body, curved roof, brass trim and bogies. */
+html.standard .carriage {
+  position: relative; display: inline-block; padding: 30px 16px 12px; margin: 4px 0 0;
+  border-radius: 26px 26px 8px 8px;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0, rgba(0, 0, 0, 0.12) 1px, transparent 1px, transparent 6px), linear-gradient(180deg, #6a3a1f, var(--mahogany) 40%, var(--mahogany2));
+  box-shadow: inset 0 0 0 2px var(--brass-hi), inset 0 0 0 5px var(--mahogany), inset 0 0 0 6px var(--brass-lo), 0 14px 26px rgba(0, 0, 0, 0.3);
+}
+html.standard .carriage:before {
+  content: ""; position: absolute; left: 8px; right: 8px; top: -10px; height: 22px;
+  border-radius: 40px 40px 0 0; background: linear-gradient(180deg, #2b2b2b, #111);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18);
+}
+html.standard .car-plate {
+  display: block; position: absolute; left: 50%; top: 5px; margin: 0; padding: 1px 12px; white-space: nowrap;
+  transform: translateX(-50%); border-radius: 2px;
+  background: linear-gradient(180deg, #fbefc4, #c9a253); color: #2b1a06; border: 1px solid #6b4a14;
+  font: 700 10px/1.5 var(--label); letter-spacing: 0.24em; text-transform: uppercase;
+}
+html.standard #grid { box-shadow: 0 0 0 3px var(--mahogany2), 0 0 0 4px var(--brass-lo); margin: 0; }
+html.standard #grid th { color: #f0dfb4; font-family: var(--label); font-weight: 600; font-size: 12px; }
+html.standard .bogies { display: block; width: 100%; height: 34px; margin-top: 4px; overflow: visible; }
+html.standard .bogies .chassis { fill: #1a1a1a; }
+html.standard .bogies .frame { fill: #2b2b2b; }
+html.standard .bogies .wheel circle { fill: #222; stroke: var(--brass-lo); stroke-width: 3; }
+html.standard .bogies .wheel .hub { fill: var(--brass-hi); stroke: none; }
+html.standard .bogies .rails { stroke: #6b5a44; stroke-width: 3; }
+html.standard .rlabel { font-family: var(--label); font-weight: 700; letter-spacing: 0.12em; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
+html.standard #cellinfo, html.standard #hint { font-family: var(--label); font-size: 14px; letter-spacing: 0.04em; font-style: normal; }
+
+/* Portraits as cameos in gilt frames. */
+html.standard .tok { border: 2px solid var(--brass-hi); box-shadow: 0 0 0 1px var(--brass-lo), 0 2px 5px rgba(0, 0, 0, 0.35); }
+html.standard .tini { font-family: var(--label); background: linear-gradient(180deg, #fbefc4, #d6b464); color: #2b1a06; border-color: #6b4a14; }
+
+/* Statements: witness cards with typed testimony. */
+html.standard #clues li { margin-bottom: 10px; }
+html.standard .clue {
+  font-family: Georgia, serif; border: 1px solid #d3bf8e; border-radius: 2px; color: #2b2012;
+  background: linear-gradient(180deg, #fffaec, #f5ead0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), inset 0 0 0 3px #fffaec, inset 0 0 0 4px rgba(154, 116, 38, 0.35);
+  padding: 12px 14px;
+}
+html.standard .clue strong { font-size: 18px; }
+html.standard .clue .role { font-family: var(--label); font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8a7350; margin-left: 4px; }
+html.standard .clue .txt { font-family: var(--type); font-size: 15.5px; line-height: 1.5; color: #2b2012; margin-top: 6px; }
+html.standard .clue .vic {
+  display: inline-block; margin-left: 8px; padding: 0 6px; transform: rotate(-4deg);
+  font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.2em;
+  color: #9b1c1c; border: 2px solid #9b1c1c; border-radius: 3px; opacity: 0.85;
+}
+html.standard #clues li.focus .clue { border-color: var(--lacquer); box-shadow: 0 0 0 3px var(--brass-hi), 0 8px 16px rgba(0, 0, 0, 0.2); transform: translateX(6px) rotate(-0.3deg); }
+html.standard .done-li .clue { opacity: 0.62; }
+@media (prefers-color-scheme: dark) {
+  html.standard .clue { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45), inset 0 0 0 3px #fffaec, inset 0 0 0 4px rgba(154, 116, 38, 0.35); }
+}
+html.standard .clue-head, html.standard .legend-title { color: var(--ink); }
+html.standard .box, html.standard #accuse { background: var(--card); border: 1px solid var(--brass-lo); border-radius: 2px; box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 4px var(--brass-hi); }
+
+/* Ending: a gilt-edged card. */
+html.standard #solved.modal .card, html.standard #solved .card {
+  background: linear-gradient(180deg, #fffaec, #f1e3c0); color: #2b2012; border: 0; border-radius: 4px;
+  box-shadow: inset 0 0 0 3px #fffaec, inset 0 0 0 5px var(--brass-lo), inset 0 0 0 8px #fffaec, inset 0 0 0 9px var(--brass-lo), 0 24px 60px rgba(0, 0, 0, 0.5);
+  padding: 26px 24px;
+}
+html.standard #solved:not(.modal) { border: 0; padding: 0; background: none; }
+html.standard .stamp { font-family: var(--display); font-weight: normal; letter-spacing: 0.18em; font-size: 24px; border-width: 4px; border-style: double; color: #9b1c1c; border-color: #9b1c1c; }
+html.standard #outro { font-family: var(--type); font-size: 16px; line-height: 1.55; }
+html.standard #culprit strong { font-family: var(--display); font-weight: normal; font-size: 20px; letter-spacing: 0.04em; }
+
+/* Case list: chapters are ticket headers, cases are tickets with a stub. */
+html.standard .ticket {
+  border: 0; border-radius: 4px; padding: 12px 16px; color: #2b2012;
+  background: linear-gradient(90deg, rgba(122, 31, 36, 0.08), transparent 30%), linear-gradient(180deg, #fffaec, #f1e3c0);
+  box-shadow: inset 0 0 0 3px #fffaec, inset 0 0 0 4px var(--brass-lo), 0 4px 10px rgba(0, 0, 0, 0.14);
+}
+html.standard .ticket .tk-ch { font-family: var(--label); font-weight: 700; letter-spacing: 0.24em; color: var(--burgundy); }
+html.standard .ticket strong { font-family: var(--display); font-weight: normal; font-size: 26px; letter-spacing: 0.04em; }
+html.standard .ticket .tk-prog { font-family: var(--label); letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px; color: #6b5a44; }
+html.standard .pbar { height: 7px; border: 0; border-radius: 4px; background: rgba(0, 0, 0, 0.1); }
+html.standard .pbar i { border-radius: 4px; background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi)); }
+html.standard .levels li { padding: 5px; }
+html.standard .level {
+  position: relative; display: table; table-layout: fixed; width: 100%; min-height: 66px; padding: 0; overflow: hidden;
+  border: 0; border-radius: 6px; color: #2b2012;
+  background: linear-gradient(180deg, #fffaec, #f3e6c6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(154, 116, 38, 0.5);
+}
+html.standard .level .stub, html.standard .level .tk-body { display: table-cell; vertical-align: middle; }
+html.standard .level .stub {
+  width: 64px; text-align: center; border-right: 2px dashed rgba(122, 31, 36, 0.4);
+  background: linear-gradient(180deg, #1d3d2e, var(--lacquer)); color: var(--brass-hi);
+}
+html.standard .level .num { margin: 0; font-family: var(--display); font-weight: normal; font-size: 26px; }
+html.standard .level .num:after { content: ""; }
+html.standard .level .tk-body { padding: 8px 12px; }
+html.standard .level .tt { display: block; font-size: 17px; }
+html.standard .level .state { font-family: var(--label); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a7350; }
+html.standard .level.solved { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(154, 116, 38, 0.5); }
+html.standard .level.solved .stub { background: linear-gradient(180deg, #7a1f24, #4a1014); }
+html.standard .punch {
+  display: block; position: absolute; right: 10px; top: 50%; margin-top: -14px; padding: 2px 8px; transform: rotate(-8deg);
+  font: 700 13px/1.4 var(--label); letter-spacing: 0.22em; text-transform: uppercase;
+  color: #9b1c1c; border: 3px double #9b1c1c; border-radius: 4px; opacity: 0.75;
+}
+html.standard .level[disabled] { opacity: 0.55; }
+html.standard .level.solved .state { display: none; }
+@media (hover: hover) {
+  html.standard .level:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), inset 0 0 0 1px var(--brass-lo); }
+}
+html.standard .level { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+
+/* Route map as an old railway poster: aged paper, engraved sea, gilt frame. */
+html.standard #route svg { padding: 0; background: none; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28); border-radius: 2px; }
+html.standard #route .sea { fill: #b9cdcf; }
+html.standard #route .hatch { stroke: #8fb0b4; stroke-width: 0.7; }
+html.standard #route .ripple { stroke: #44707a; }
+html.standard #route .ripple.r2 { opacity: 0.16; }
+html.standard #route .ripple.r1 { opacity: 0.3; }
+html.standard #route .land { fill: #f1e4c3; stroke: #4f3a22; }
+html.standard #route .river { stroke: #4b7d8a; opacity: 0.95; }
+html.standard #route .peak { stroke: #7a5a34; }
+html.standard #route .peak-shade { fill: #b89466; }
+html.standard #route .country { font-family: var(--label); font-weight: 600; fill: #a28a64; }
+html.standard #route .sea-name { fill: #33606b; }
+html.standard #route .sleepers { stroke: #5a3a1e; }
+html.standard #route .rail { stroke: #2b1d10; }
+html.standard #route .done { stroke: #b0812a; }
+html.standard #route .minor { fill: #fbf3dc; stroke: #2b1d10; }
+html.standard #route .minor-t { fill: #4f3a22; }
+html.standard #route .stop { fill: #fbf3dc; stroke: #2b1d10; }
+html.standard #route .stop.reached { fill: #7a1f24; }
+html.standard #route .stop.reached + .stop-dot { fill: #f3dc9b; }
+html.standard #route .city { font-family: var(--display); font-weight: normal; font-size: 14px; letter-spacing: 0.03em; fill: #2b1d10; stroke: #f1e4c3; }
+html.standard #route .chip { fill: #13291f; stroke: #e2c27a; }
+html.standard #route .chip-t { font-family: var(--display); font-weight: normal; fill: #f3dc9b; }
+html.standard #route .loco { fill: #2b1d10; }
+html.standard #route .cart-box { fill: #13291f; stroke: #e2c27a; stroke-width: 2; }
+html.standard #route .cart-line { stroke: #e2c27a; }
+html.standard #route .cart-t { font-family: var(--display); font-weight: normal; fill: #f3dc9b; letter-spacing: 0.04em; }
+html.standard #route .cart-s { font-family: var(--label); fill: #e2c27a; }
+html.standard #route .cart-s2 { fill: #cdb98a; }
+html.standard #route .cmp-ring { stroke: #7a5a34; }
+html.standard #route .cmp-star { fill: #f1e4c3; stroke: #7a5a34; }
+html.standard #route .cmp-star2 { fill: #7a1f24; }
+html.standard #route .cmp-n { font-family: var(--display); font-weight: normal; fill: #7a1f24; }
+html.standard #route .frame-out { stroke: #8a6524; stroke-width: 6; }
+html.standard #route .frame-in { stroke: #e2c27a; stroke-width: 1.2; }
+html.standard #route .corner { fill: #13291f; stroke: #e2c27a; }
+html.standard #continue { font-size: 15px; padding: 12px 20px; }
+html.standard .help, html.standard .note { font-family: Georgia, serif; }
+html.standard .legend { font-family: var(--label); font-size: 13px; letter-spacing: 0.06em; }
+
+/* Phones: a compact case header so the board shows without scrolling. */
+@media (max-width: 600px) {
+  .bar .wrap { padding-top: 4px; padding-bottom: 4px; }
+  .bar h1 { font-size: 18px; }
+  .bar h1 small { display: none; }
+  .bar .btn.small { min-height: 34px; padding: 3px 9px; }
+  #screen-play .kicker { margin-top: 8px; font-size: 12px; }
+  #screen-play h2 { font-size: 20px; margin: 2px 0; }
+  #case-intro { margin: 4px 0; font-size: 16px; }
+  #case-intro.clamp { max-height: 2.9em; overflow: hidden; }
+  #coach { padding: 6px 10px; font-size: 15px; }
+  .ticket .tk-prog { float: none; display: block; margin: 2px 0 0; }
+  #route .minor-t, #route .country, #route .cartouche { display: none; }
+  html.standard #route .city, #route .city { font-size: 17px; }
+  #case-intro.clamp { max-height: 3.1em; }
+  html.standard .logo { font-size: 22px; }
+  html.standard .bar { margin-bottom: 6px; }
+  html.standard h2 { font-size: 24px; }
+  html.standard .telegram { margin: 4px 0 10px; padding: 6px 10px 4px; transform: none; }
+  html.standard .tg-head { font-size: 10px; margin: 0; }
+  html.standard .telegram .intro { font-size: 14px; }
+  html.standard .carriage { padding: 26px 10px 8px; }
+  html.standard #coach p { font-size: 20px; line-height: 25px; }
+}
+
+/* ---------- E-ink mode: no motion, larger type, crisp edges ---------- */
+html.eink * { transition: none !important; animation: none !important; }
+html.eink body { font-size: 19px; }
+html.eink .levels li { width: 100%; }
+html.eink .tok { box-shadow: none; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <h1><span class="logo">Cellmates</span> <small>The Midnight Express</small></h1>
+    <span class="nav">
+      <button class="btn small" id="nav-cases" type="button">Cases</button>
+      <button class="btn small" id="nav-help" type="button">Help</button>
+    </span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p id="loading">Loading cases…</p>
+
+  <section id="screen-cases" class="hide" aria-labelledby="cases-title">
+    <h2 id="cases-title">The Midnight Express</h2>
+    <p class="intro">A luxury night train crosses Europe in the 1930s, and someone aboard keeps killing. Fifty cases stand between Paris and Istanbul.</p>
+    <div id="route"></div>
+    <p id="continue-wrap"><button class="btn primary" id="continue" type="button"></button></p>
+    <div id="tiers"></div>
+  </section>
+
+  <section id="screen-play" class="hide" aria-labelledby="case-title">
+    <p class="kicker" id="case-kicker"></p>
+    <h2 id="case-title"></h2>
+    <div class="telegram">
+      <p class="tg-head" aria-hidden="true">Telegram</p>
+      <p class="intro" id="case-intro"></p>
+      <button class="linkish hide" id="intro-more" type="button" aria-expanded="false">More</button>
+    </div>
+    <div id="coach" class="hide" role="status" aria-live="polite">
+      <p class="coach-title">Detective's notebook</p>
+      <p id="coach-text"></p>
+    </div>
+    <div class="layout">
+      <div class="board-col" id="board-col">
+        <div class="carriage" id="carriage">
+          <p class="car-plate" id="car-plate" aria-hidden="true"></p>
+          <div id="board-wrap">
+            <table id="grid" role="grid" aria-label="Crime scene"></table>
+            <div id="labels" aria-hidden="true"></div>
+          </div>
+          <svg class="bogies" viewBox="0 0 400 46" aria-hidden="true" focusable="false">
+            <path class="chassis" d="M14 4h372v8H14z"/>
+            <path class="frame" d="M40 12h100v10H40zM260 12h100v10H260z"/>
+            <g class="wheel"><circle cx="66" cy="30" r="14"/><circle class="hub" cx="66" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="114" cy="30" r="14"/><circle class="hub" cx="114" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="286" cy="30" r="14"/><circle class="hub" cx="286" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="334" cy="30" r="14"/><circle class="hub" cx="334" cy="30" r="4"/></g>
+            <path class="rails" d="M0 44h400"/>
+          </svg>
+        </div>
+        <p id="cellinfo" aria-live="polite"></p>
+        <p id="hint"></p>
+        <div id="palette" role="group" aria-label="Tools"></div>
+        <div class="tools">
+          <button class="btn" id="undo" type="button">Undo</button>
+          <button class="btn" id="check" type="button">Check</button>
+          <button class="btn primary" id="accuse-btn" type="button">Accuse</button>
+          <button class="btn" id="rules-btn" type="button" aria-expanded="false" aria-controls="rules">Rules</button>
+        </div>
+        <p id="msg" role="status" aria-live="polite"></p>
+        <div id="accuse" class="hide">
+          <p><strong>Who did it?</strong> The murderer is the only person who was alone with the victim in a room.</p>
+          <div id="suspects"></div>
+          <button class="btn small" id="accuse-cancel" type="button">Not yet</button>
+        </div>
+        <div id="solved" class="hide" role="dialog" aria-labelledby="stamp">
+          <div class="card">
+            <p class="stamp" id="stamp">Case closed</p>
+            <div id="culprit"></div>
+            <p id="outro"></p>
+            <button class="btn primary" id="next" type="button">Next case</button>
+            <button class="btn" id="view-board" type="button">View board</button>
+          </div>
+        </div>
+      </div>
+      <div class="clue-col">
+        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clue-box">Hide clues</button>
+        <div id="clue-box">
+          <h3 class="clue-head">Statements</h3>
+          <p class="note">Tap a statement to pick that person, then tap their cell on the board. Statements cross themselves off once that person is placed.</p>
+          <ol id="clues"></ol>
+        </div>
+        <div id="rules" class="box hide">
+          <ul class="help">
+            <li>Every row and every column holds exactly one person, the victim included.</li>
+            <li>Nobody can be on a hatched cell (table, lamp, piano, stove, trunk…).</li>
+            <li>"In a seat", "on a bench", "on a rug": on that object's own cell.</li>
+            <li><strong>Beside</strong> an object: sharing an edge with it. <strong>Diagonally next to</strong> someone: touching corners.</li>
+            <li><strong>Left of</strong> / <strong>above</strong>: anywhere further left or higher up.</li>
+            <li>The murderer is the only person alone with the victim in a room.</li>
+          </ul>
+        </div>
+        <h3 class="legend-title">Map key</h3>
+        <ul class="legend" id="objkey" aria-label="Objects"></ul>
+        <p><button class="btn small" id="restart" type="button">Restart case</button></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-help" class="hide" aria-labelledby="help-title">
+    <h2 id="help-title">How to play</h2>
+    <ul class="help">
+      <li>Each case is a floor plan of the train. Thick lines separate rooms.</li>
+      <li>Every <strong>row</strong> and every <strong>column</strong> holds exactly one person, victim included.</li>
+      <li>Nobody can be on a <strong>hatched</strong> cell: tables, lamps, pianos, stoves, trunks, crates, desks, washbasins, mail sacks, coal and the firebox fill their cell.</li>
+      <li>People can sit in seats, lie on bunks, stand on rugs and sit on benches, stools and suitcases. "Sitting on a bench" means <strong>on that object's own cell</strong>, never the cell next to it or below it.</li>
+      <li><strong>Beside</strong> an object: in a cell that shares an edge with it.</li>
+      <li><strong>Diagonally next to</strong> someone: the two cells touch at a corner.</li>
+      <li><strong>Left of</strong> / <strong>above</strong>: in any column further left, or any row higher up, not necessarily next to each other.</li>
+      <li>Rows are numbered from the top, columns from the left.</li>
+      <li>The <strong>murderer</strong> is the only person who was alone with the victim in a room.</li>
+    </ul>
+    <h3>Controls</h3>
+    <ul class="help">
+      <li>Tap a person's statement to pick them, then tap their cell. Tap another cell later to move them. Their statement is crossed off while they are on the board.</li>
+      <li><strong>×</strong> and the eraser under the board stay on until you tap them again.</li>
+      <li>Rows and columns that already have someone are shaded, because nobody else can go there.</li>
+      <li><strong>Check</strong> tells you whether your placements fit. <strong>Accuse</strong> names the killer.</li>
+      <li>Keyboard: arrow keys move, a letter places that person, <kbd>X</kbd> marks, <kbd>Backspace</kbd> clears, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes.</li>
+    </ul>
+    <h3>Settings</h3>
+    <div class="opt" role="radiogroup" aria-label="Display">
+      Display:
+      <button class="btn small" type="button" data-mode="auto" aria-pressed="false">Auto</button>
+      <button class="btn small" type="button" data-mode="eink" aria-pressed="false">E-ink</button>
+      <button class="btn small" type="button" data-mode="standard" aria-pressed="false">Colour</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="lock" aria-pressed="false">Lock cases until the previous one is solved</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="shade" aria-pressed="true">Shade taken rows and columns</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="reset-all">Erase all progress</button>
+    </div>
+    <p class="note">Object icons by Delapouite, Lorc and Caro Asercion from <a href="https://game-icons.net">game-icons.net</a>, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, recoloured. The table, stove, desk, bench and rug were drawn for Cellmates. Portraits are busts drawn for Cellmates wearing hats by Lorc and Delapouite from the same site; the locomotive is by Delapouite. Colour mode uses the Limelight, Josefin Sans, Special Elite and Caveat fonts from Google Fonts, under open licences. Coastlines on the route map come from Natural Earth (public domain).</p>
+    <p class="note">Tip: add <code>?mode=eink</code> or <code>?mode=standard</code> to the address to force a display mode.</p>
+    <p><button class="btn primary" type="button" id="help-back">Back</button></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'cellmates:v1';
+  var OBJECT_NAMES = {
+    seat: 'seat', bunk: 'bunk', rug: 'rug', bench: 'bench', stool: 'stool', suitcase: 'suitcase', lamp: 'lamp',
+    table: 'table', piano: 'piano', stove: 'stove', trunk: 'trunk', mailsack: 'mail sack',
+    crate: 'crate', coal: 'coal heap', basin: 'washbasin', desk: 'desk', firebox: 'firebox'
+  };
+  var BLOCKING = { table: 1, piano: 1, stove: 1, trunk: 1, mailsack: 1, crate: 1, coal: 1, basin: 1, desk: 1, firebox: 1, lamp: 1 };
+  var ICONS = {
+    seat: '<path d="m409.296 439.472l-1.109 31.597c-18.425.373-33.223-6.696-39.349-31.525zm-306.592 0l1.109 31.597c18.425.373 33.223-6.696 39.349-31.525zm325.607-21.249H83.69l-3.902-25.05h352.426zM256 303.98c76.92 0 99.528 22.227 99.528 22.227l-4.786 45.443H161.258l-4.786-45.443S179.08 303.98 256 303.98m118.19 67.67s11.777-82.262 15.23-109.121c7.474-58.138 96.66-36.047 89.912 11.16c-4.33 30.29-39.08 25.984-39.08 25.984l-9.454 71.977zm-236.38 0s-11.777-82.262-15.23-109.121c-7.474-58.138-96.66-36.047-89.912 11.16c4.33 30.29 39.08 25.984 39.08 25.984l9.454 71.977zM256 40.917c88.106 0 185.768 20.55 174.504 169.052c-30.952-4.267-59.122 3.8-62.996 31.9c-1.49 10.811-7.78 57.679-7.78 57.679S322.777 282.119 256 282.119s-103.729 17.429-103.729 17.429s-6.29-46.868-7.78-57.679c-3.873-28.1-32.043-36.167-62.995-31.9C70.232 61.467 167.894 40.917 256 40.917"/>',
+    bunk: '<path d="M25 41v446h30V41zm56.8 40.15c-.1 14.49 1.03 25.35 3.31 32.75c2.77 8.9 6.33 12.9 12.45 16c11.34 5.7 35.34 5.3 70.54 5.1c.8-8.5-.5-15.1-3.2-20.4c-3.5-6.8-9.4-12.2-18.1-16.86c-15.4-8.19-39.1-12.83-65-16.59M457 105v382h30V105zM73 153v46h238v-46zm256 0v46h110v-46zm-18 64v158h18v-46h110v-18H329v-46h110v-18H329v-30zM81.79 321.3c-.1 14.4 1.03 25.3 3.3 32.6c2.78 9 6.33 13 12.46 16c11.35 5.7 35.35 5.3 70.55 5.1c.8-8.5-.5-15-3.2-20.3c-3.4-6.8-9.4-12.2-18.1-16.8c-15.4-8.2-39.1-12.8-65.01-16.6M73 393v46h238v-46zm256 0v46h110v-46z"/>',
+    rug: '<path fill-rule="evenodd" d="M72 112h368v288H72zM104 144h304v224H104zM256 176l104 80-104 80-104-80zM256 216l52 40-52 40-52-40z"/><path d="M40 128h32v16h-32zM40 168h32v16h-32zM40 208h32v16h-32zM40 248h32v16h-32zM40 288h32v16h-32zM40 328h32v16h-32zM40 368h32v16h-32zM440 128h32v16h-32zM440 168h32v16h-32zM440 208h32v16h-32zM440 248h32v16h-32zM440 288h32v16h-32zM440 328h32v16h-32zM440 368h32v16h-32z"/>',
+    bench: '<path d="M56 160h400v28H56zM56 210h400v28H56zM72 160h24v128H72zM416 160h24v128h-24zM40 288h432v36H40zM72 324h28v124H72zM412 324h28v124h-28z"/>',
+    stool: '<path d="M116 41c-12.3 13.94-19.27 34.56-21.03 55.75C93.3 116.8 96.31 137 101.9 151h308.2c5.6-14 8.6-34.2 6.9-54.25c-1.7-21.19-8.7-41.81-21-55.75zm13.9 128L90.2 487h29.9l39.7-318zm222.3 0l39.7 318h29.9l-39.7-318zM149.9 393l-2 16h216.2l-2-16z"/>',
+    suitcase: '<path d="M208 95c-3.583 0-7.736 1.925-9.977 4.613c-2.24 2.69-2.99 5.447-3.4 7.907c-.82 4.92-.247 9.48.5 13.96c.316 1.897.698 3.748 1.096 5.52h18.534c-.67-2.54-1.387-5.542-1.877-8.48a41 41 0 0 1-.53-5.52h87.305a41 41 0 0 1-.53 5.52c-.49 2.938-1.205 5.94-1.876 8.48h18.535c.4-1.772.78-3.623 1.097-5.52c.747-4.48 1.32-9.04.5-13.96c-.41-2.46-1.16-5.218-3.4-7.907S307.583 95 304 95zm-105 16v18h50v-18zm256 0v18h50v-18zM96 145c-5 0-11.05 2.777-15.637 7.363S73 163 73 168v208c0 5 2.777 11.05 7.363 15.637S91 399 96 399h23V145zm41 0v254h238V145zm256 0v254h23c5 0 11.05-2.777 15.637-7.363S439 381 439 376V168c0-5-2.777-11.05-7.363-15.637S421 145 416 145z"/>',
+    lamp: '<path d="M256 24c-10.1 0-19.2 1.92-26.7 5.64C221.9 33.35 215 39.72 215 49s6.9 15.65 14.3 19.36c5.2 2.58 11.2 4.27 17.7 5.08v11.28h18V73.44c6.5-.81 12.5-2.5 17.7-5.08C290.1 64.65 297 58.28 297 49s-6.9-15.65-14.3-19.36C275.2 25.92 266.1 24 256 24m0 18c7.6 0 14.4 1.66 18.6 3.74c3.3 1.63 4.1 2.97 4.3 3.26c.1-.1.1-.1.1 0s0 .1-.1 0c-.2.29-1 1.63-4.3 3.26c-4.2 2.08-11 3.74-18.6 3.74s-14.4-1.66-18.6-3.74c-3.3-1.63-4.1-2.97-4.3-3.26c-.1.1-.1.1-.1 0s0-.1.1 0c.2-.29 1-1.63 4.3-3.26c4.2-2.08 11-3.74 18.6-3.74m-40.9 60.7L203.4 152h105.2l-11.7-49.3zm-18.9 1.7c-6.7.3-13.2.8-19.5 1.7c-14.9 2.1-28.9 6.4-39.1 16.5c-3.1 3.2-3.9 5.8-5.2 9.3s-2.5 7.7-3.8 12.6c-2.4 9.8-4.9 22.6-7.5 37.5c-5 29.8-10 67.9-14.1 106.1c-4 38.1-7 76.2-7.99 106.1c-.51 14.9-.53 27.7.13 37.7c.33 5 .82 9.2 1.56 12.9c.8 3.7 1.3 6.9 4.9 10.6c7.1 7 15.4 11 24 13.3l6.8-16.9c-6.9-1.5-12.5-4-17.3-8.5c-.1-.4-.5-1.1-.8-2.2c-.4-2.3-.9-5.9-1.2-10.4c-.6-8.9-.6-21.3-.1-35.9c1-29.1 4-67 8-104.9c3.9-37.8 8.9-75.7 13.9-104.9c2.4-14.6 4.9-27.1 7.2-36.1c1.1-4.5 2.2-8.2 3.2-10.7c.6-1.8 1.4-3 1.5-3.1c5.9-5.7 15.7-9.4 28.5-11.2c3.9-.6 8.2-1 12.5-1.2zm119.6 0l4.3 18.3q6.6.3 12.6 1.2c12.8 1.8 22.6 5.5 28.5 11.2c.1.1.9 1.3 1.5 3.1c1 2.5 2.1 6.2 3.2 10.7c2.3 9 4.8 21.5 7.2 36.1c5 29.2 10 67.1 13.9 104.9c4 37.9 7 75.8 8 104.9c.5 14.6.5 27-.1 35.9c-.3 4.5-.8 8.1-1.2 10.4c-.3 1.1-.7 1.8-.8 2.2c-4.8 4.5-10.4 7-17.3 8.5l6.8 16.9c8.6-2.3 16.9-6.3 24-13.3c3.6-3.7 4.1-6.9 4.9-10.6c.7-3.7 1.2-7.9 1.6-12.9c.6-10 .6-22.8.1-37.7c-1-29.9-4-68-8-106.1c-4.1-38.2-9.1-76.3-14.1-106.1c-2.6-14.9-5.1-27.7-7.5-37.5c-1.3-4.9-2.5-9.1-3.8-12.6s-2.1-6.1-5.2-9.3c-10.2-10.1-24.2-14.4-39.1-16.5c-6.3-.9-12.9-1.4-19.5-1.7M213.2 170c-2.9 4.9-11.6 19.8-21.6 41.1c21.9 10.3 43.8 25.6 64.4 42.7c20.7-17.1 42.5-32.4 64.4-42.7c-10-21.3-18.7-36.2-21.6-41.1zm-28.8 57.7c-10 24.5-17.6 51.3-15.5 68.2c1 7.7 7.3 19.6 15.1 31c15.6-19.6 35.7-41.2 58.1-61.2c-18.9-15.4-38.9-28.9-57.7-38m143.2 0c-18.8 9.2-38.8 22.6-57.7 38c22.4 20.1 42.5 41.7 58.1 61.2c7.8-11.4 14.1-23.3 15.1-31c2.1-16.9-5.5-43.7-15.5-68.2M256 277.5c-23.7 21-45.2 44.2-60.7 64.2c7.8 9.4 13.9 15.6 16.5 18.3h88.4c2.6-2.7 8.7-8.9 16.5-18.3c-15.5-19.9-37-43.3-60.7-64.2M225.4 378c2.3 4.8 3.6 9.8 3.6 15s-1.3 10.2-3.6 15h61.2c-2.3-4.8-3.6-9.8-3.6-15s1.3-10.2 3.6-15zm-59.3 48l-24.8 62h229.4l-24.8-62z"/>',
+    table: '<path d="M244 76h24v84h-24zM256 20c16 20 22 34 12 50h-24c-10-16-4-30 12-50zM40 160h432v40H40zM56 200h400l-22 92-43-24-43 24-43-24-43 24-43-24-43 24-43-24-43 24zM96 296h32v168H96zM384 296h32v168h-32z"/>',
+    piano: '<path d="m376.3 30.6l-63.3 3L61.43 230.9l261.47-51.5c5.8-4.6 10.9-9 15.4-13.1L302 75.6l15.5-6.2l33.7 84.2c55.1-60.2-20.4-71.1 25.1-123M357 168l-13.2 11.9l9.6 24.1c-9.1-.4-19.2-.6-30.5-.7L61.43 254.9s.34 2.2.84 5.5c2.36 15.5-7.73 30.2-23.07 33.6c-8.93 2-16.61 3.7-16.61 3.7l3.95 21.2l334.16 30.5l126-53.9l-.9-43.4c-81.1-8.7-11.4-39.4-114-47zm-16.2 51.3c7.1.1 13.4.4 19 .7l21.5 53.8l-273.6-14.5l209.9-39.9c8.5-.1 16.2-.2 23.2-.1m37.6 2.4c56.8 7.8 14.9 32.1 65 36.5l-44.9 13.5zM83.78 284.8L358.4 307l-18.1 16.1l-280.68-25.9zm-1.35 53.6l13.65 97.1l-3.47 6.2l.36 15.8l17.13 1.6l17.1-6.2v-13.2l-4.8-3.9l9.1-93zM184 350.5V426l105.2 9v-75.2l-16.7-1.5V417l-71.8-6v-59zm209.8 2.7l-29.4 10.9l-24.8-2l15.6 99.4l-3.9 5.1l.8 18l17.1 1.7l15.9-7.4l.3-13.2l-3.9-3.9zm-208.7 89.6l-28.4 9.5l3.1 14.4l102.3 10.1l21-7.4l1.1-18.3z"/>',
+    stove: '<path fill-rule="evenodd" d="M352 32h48v128h-48zM104 132c0-10 26-18 56-18s56 8 56 18-26 18-56 18-56-8-56-18zM232 132c0-10 26-18 56-18s56 8 56 18-26 18-56 18-56-8-56-18zM72 160h368v304H72zM120 200a16 16 0 1 0 32 0a16 16 0 1 0-32 0zM184 200a16 16 0 1 0 32 0a16 16 0 1 0-32 0zM296 200a16 16 0 1 0 32 0a16 16 0 1 0-32 0zM360 200a16 16 0 1 0 32 0a16 16 0 1 0-32 0zM120 248h272v24H120zM120 296h272v128H120z"/><path d="M152 328h208v64H152z"/>',
+    trunk: '<path d="M58.553 89L42.27 211.8H79V89zM97 89v122.8h38V89zm56 0v122.8h56.666v-17.6h92.668v17.6H359V89zm224 0v122.8h38V89zm56 0v122.8h36.73L453.446 89zM227.666 212.2v105.2h56.668V212.2zM256 223.794a18.667 16.103 0 0 1 18.666 16.1a18.667 16.103 0 0 1-9.666 14.09v37.214h-18V254a18.667 16.103 0 0 1-9.666-14.106a18.667 16.103 0 0 1 18.666-16.1M41 229.8v127.915l19.334 18.23V229.8zm37.334 0v158h355.332v-158H302.334v105.6h-92.668V229.8zm373.332 0v146.145L471 357.715V229.8zM41 382.456V423h43.002L41 382.455zm430 0L427.998 423H471v-40.545zM92 405.8l18.24 17.2h291.52L420 405.8z"/>',
+    mailsack: '<path d="M363.783 23.545c-9.782.057-16.583 3.047-20.744 10.22c-17.51 30.18-38.432 61.645-48.552 97.245c2.836.83 5.635 1.787 8.373 2.853c7.353 2.863 14.38 6.482 20.542 10.858c27.534-25.542 58.165-45.21 87.45-65.462c11.356-7.854 12.273-13.584 10.183-20.83s-9.868-16.365-20.525-23.176c-10.658-6.81-23.87-11.33-34.73-11.68q-1.02-.032-1.997-.027zm-68.998.746c-10.02-.182-17.792 6.393-23.924 20.24c-8.94 20.194-10.212 53.436-1.446 83.185c.156-.008.31-.023.467-.03c1.99-.087 3.99-.072 6 .03c9.436-34.822 27.966-64.72 44.013-91.528c-10.31-8.496-18.874-11.782-25.108-11.896zM197.5 82.5L187 97.97c14.82 10.04 29.056 19.725 39.813 31.374c3.916 4.24 7.37 8.722 10.31 13.607a38.1 38.1 0 0 1 13.69-10.792c.407-.188.82-.355 1.228-.53c-3.423-5.44-7.304-10.418-11.51-14.972C227.765 102.83 212.29 92.52 197.5 82.5m223.77 12.27c-29.255 20.228-58.575 39.152-84.348 62.78c.438.576.848 1.168 1.258 1.76c20.68-6.75 49.486-15.333 73.916-19.41c11.484-1.916 15.66-6.552 17.574-13.228s.447-16.71-5.316-26.983a63 63 0 0 0-3.083-4.92zm-223.938 47.87c-14.95.2-29.732 4.3-43.957 12.766l9.563 16.03c21.657-12.89 42.626-14.133 65.232-4.563q.782-8.387 3.728-15.21c.35-.806.73-1.586 1.123-2.354c-11.87-4.52-23.83-6.827-35.688-6.67zm75.8 3.934c-5.578-.083-10.597.742-14.427 2.526c-4.377 2.038-7.466 4.914-9.648 9.97c-.884 2.047-1.572 4.54-1.985 7.494c.456-.007.91-.03 1.365-.033c16.053-.084 32.587 2.77 49.313 9.19c7.714 2.96 15.062 7.453 22.047 13.184c3.217-2.445 4.99-4.72 5.773-6.535c1.21-2.798 1.095-5.184-.634-8.82c-3.46-7.275-15.207-16.955-28.856-22.27c-6.824-2.658-13.98-4.224-20.523-4.614q-1.228-.075-2.424-.092zm-24.757 38.457c-22.982.075-44.722 7.386-65 19.782c-32.445 19.835-60.565 53.124-80.344 90.032c-19.777 36.908-31.133 77.41-31.186 110.53c-.053 33.06 10.26 57.27 32.812 67.782c.043.02.082.043.125.063h.032c24.872 11.51 65.616 19.337 108.407 20.092c42.79.756 87.79-5.457 121.874-20.187c21.96-9.49 34.545-28.452 40.5-54.156c5.954-25.705 4.518-57.657-2.375-89.314c-6.894-31.657-19.2-63.06-34.095-87.875s-32.614-42.664-48.063-48.593c-14.664-5.627-28.898-8.2-42.687-8.156"/>',
+    crate: '<path d="m37.727 25l78 78h280.546l78-78zM25 37.727v436.546l78-78V115.727zm462 0l-78 78v280.546l78 78zM79.957 40a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M432 40.793a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M112 72a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m287.45 0a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m63.42 0a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M48 73.047a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M79.395 104a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m352.605.2a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M121 121v193.273l53.7-53.7L174.065 121zm71.064 0l.555 121.654l54.38-54.38V121h-54.936zM265 121v49.273L314.273 121zm74.727 0L121 339.727V391h51.273L391 172.273V121zM391 197.727l-53.023 53.023V391H391zm-71.023 71.023L265 323.727V391h54.977zM247 341.727L197.727 391H247zM77.97 392a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m354.03.658a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M115.727 409l-78 78h436.546l-78-78zM48 423.752a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m64 .8a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m288 .712a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m64 4.74a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8M432 456a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8m-352 2.56a8 8 0 0 1 8 8a8 8 0 0 1-8 8a8 8 0 0 1-8-8a8 8 0 0 1 8-8"/>',
+    coal: '<path d="m367.5 18l-45.2 135.5c6 1.5 11.8 3.4 17.1 5.7L386.5 18zm-73.1 150.5c-12.3 0-26.2 1.8-28.5 9L247.6 232l-1.1.2l-38.9-25.9l-47.9 44.4l-53.3 19.3l6.8 41.3L62 334.9l4.02 74.1l-55.45 34.2l78.9 33.1l83.23-10.5l67.1 31.5l76-10.6l26.7-24.3L424 492l69.2-28.7l-34.4-56.1l-31.1-15.8l21.1-19.3l-40.4-82.5l-62.5-4.5l24.3-72.8c-1-15.5-20.3-27.8-32.4-34L309.3 223c-1.1 1.5-.9.5-1.2-.9l4.1-52.3c-3.5-.6-10.3-1.3-17.8-1.3m-85 60.6l33.1 22.1l53.9-8.8l14.4 47.7l-35.6 23.1l-43.2-16.6l40.6 48.7l60.6-43.1l63.6 4.6l13.4 27.2l-58.9 14.6l67.6 3.1l7.9 16.2l-30.3 27.9l49.7 25.2l20.6 33.7l-43.2 17.9l-85.1-30.8l-30.7 27.9l-65.2 9l-66.9-31.5l-83.71 10.7l-42.16-17.7l34.75-21.4l-3.94-72.7L119 328.4l33.6 39.5l35.7-31.1l-39 2.7l-16.3-18.6l-6.4-39.1l22.9-8.3l45.6 1.7l-20-14.3zm138.2 162l-66.2 20.2l-36.5-14.4l50.4 43zm-230.3 17.6l40.2 24.7l56.5-2.8z"/>',
+    basin: '<path d="M435.679 347.497a26.78 26.78 0 0 0-22.175-11.773H98.496a26.78 26.78 0 0 0-22.175 11.773l-53.565 79.149a26.83 26.83 0 0 0-1.485 27.599a26.78 26.78 0 0 0 23.66 14.239h422.138a26.78 26.78 0 0 0 23.66-14.24a26.83 26.83 0 0 0-1.485-27.598zm31.39 94.181H44.931l53.565-79.149h315.008zm-247.19-120.554v-39.297a13.4 13.4 0 0 0-11.304-13.239l-41.428-6.544c-14.61-2.307-28.324 7.676-30.63 22.3l56.579 8.936l-10.713 27.844zM195.947 79.305a513 513 0 0 1-11.016 56.85l-4.103 16.208l36.758 4.997l.365-16.717a513 513 0 0 1 4.534-57.73l.55-4.046a9.867 9.867 0 0 1 10.426-8.523c5.147.34 9.148 4.619 9.148 9.78v241h26.782v-241c0-19.279-14.94-35.254-34.163-36.527c-19.218-1.272-36.14 12.561-38.733 31.662zm133.67 241.819l-10.713-27.844l56.579-8.937c-2.306-14.623-16.02-24.606-30.63-22.299l-41.428 6.544c-6.51 1.028-11.304 6.644-11.304 13.239v39.297zm-152.67-140.155l36.757 4.996l2.403-17.707l-36.758-4.997z"/>',
+    desk: '<path fill-rule="evenodd" d="M40 200h432v32H40zM56 232h152v232H56zM64 320h136v8H64zM64 392h136v8H64zM108 272h48v14h-48zM108 352h48v14h-48zM108 424h48v14h-48z"/><path d="M424 232h32v232h-32zM300 184h80v16h-80zM332 124h16v60h-16zM284 92h112l-14 32h-84z"/>',
+    firebox: '<path d="m183.8 25l-13.4 94h171.2l-13.4-94zm-79.5 112L73.82 487H438.2l-30.5-350zm30.7 62h242v48h32v114h-32v48H135zm18 18v174h206v-30h-16V247h16v-30zm30 16h146v112H183zm74.2 10.7c-6.5 22-24.5 43.6-13.6 66.1c-17.8-9.5-20.2-25.1-23.4-40.6c-2.2 15.5-9.3 30.8-6.8 45.4c-6.3-4.6-11.6-10.9-18.2-18c7 28.2 7.9 35.8 31.8 37.4h51.5c32.1-3.6 26.8-21.3 41-38.2c-12.7.4-18.9 4.5-25.8 12.3c10.3-18.7-1.5-18.9-2.7-34.3c-5.1 9.8-16.9 20.7-23.3 18.6c-8.5-2.6-9.3-30.7-10.5-48.7M361 265v78h30v-78zM183 432h18v32h-18zm64 0h18v32h-18zm64 0h18v32h-18z"/>'
+  };
+  // Portraits drawn for Cellmates; hats from game-icons.net (see the help page).
+  var PORTRAITS = {
+    'man': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/></g>',
+    'man-glasses': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM188 222a30 30 0 1 0 60 0a30 30 0 1 0-60 0zM264 222a30 30 0 1 0 60 0a30 30 0 1 0-60 0zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><path class="bg" d="M244 216h24v10h-24z"/></g>',
+    'man-collar': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM232 350h48v26h-48z"/></g>',
+    'woman': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'woman-bun': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM256 64a46 46 0 1 0 0.1 0zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'woman-veil': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 92c80 0 128 56 128 140v150H128V232c0-84 48-140 128-140zM256 158c-44 0-74 34-74 80s30 92 74 92 74-46 74-92-30-80-74-80zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'man-top': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(120.1 -69.4) scale(0.5294)"><g class="halo" stroke-width="37.8"><path d="M203.594 58.188c-1.933-.01-3.824-.006-5.688.03c-22.398.437-39.932 4.19-51.812 9.688c-15.84 7.33-20.987 15.728-19.78 25.625c1.434 11.79 13.465 23.993 37.405 33.532c23.94 9.54 58.333 15.71 98.78 16.813c39.643 1.082 78.206-.902 103.563-7.625c12.678-3.362 21.815-8.05 26.062-12.5s5.273-7.606 2.47-15.22c-2.138-5.8-9.053-12.543-20.626-18.56c-11.575-6.02-27.22-11.233-44.564-15.47c-34.675-8.47-76.14-13.155-107.5-15.563h-.03a261 261 0 0 0-18.282-.75zm-72.313 72.718c5.676 41.283 10.312 83.897 5.94 129.03c.064 6.285 2.516 11.206 7.81 16.345c5.873 5.7 15.5 10.996 27.72 15.158c24.44 8.323 58.864 12.14 92.938 11.75c34.073-.39 67.996-4.942 91.406-12.22c11.704-3.638 20.75-8.09 25.47-12.03c2.653-2.217 3.885-3.58 4.31-4.813c-6.956-41.256-4.108-83.612 2.407-126.22c-5.526 2.566-11.706 4.63-18.405 6.407c-28.88 7.658-68.327 9.357-108.875 8.25c-42.035-1.147-78.177-7.392-105.188-18.156c-9.615-3.83-18.264-8.317-25.53-13.5zM117.657 266.78c-10.383 3.2-20.108 6.752-29.062 10.658c-42.218 18.415-66.15 43.515-67.938 68.812c-1.084 15.323 3.8 28.18 14.344 40.125c10.543 11.944 27.054 22.592 48.406 31.094c42.706 17.003 104.308 25.326 172.97 23.03c67.127-2.244 127.832-10.5 170.718-25.28c21.443-7.392 38.36-16.458 49.375-26.5c11.014-10.045 16.25-20.462 16.25-32.94c0-12.476-5.55-24.876-16.845-37.155c-11.296-12.28-28.275-24.05-49.688-34.156a280 280 0 0 0-19.968-8.47c2.088 11.05 4.905 21.955 8.655 32.688c4.382 12.54.81 25.65-7.438 35.03c-8.248 9.383-20.406 16.283-35.03 21.938c-29.25 11.31-68.99 17.358-108.97 18.22c-39.978.86-79.94-3.45-109.718-14.376c-14.89-5.463-27.414-12.538-35.907-22.563c-8.494-10.024-12.13-23.69-8.407-37.593c3.867-14.44 6.522-28.603 8.25-42.563zm15.22 23.69a329 329 0 0 1-5.407 23.717c-2.33 8.702-.7 14.412 4.593 20.657c5.29 6.245 15.052 12.34 28.093 17.125c26.083 9.57 64.56 14.043 102.875 13.217s76.716-6.937 102.658-16.968c12.97-5.017 22.683-11.086 27.718-16.814s6.182-9.87 3.844-16.562a242 242 0 0 1-5.813-19.188c-7.61 5.452-17.37 9.6-28.812 13.156c-26.114 8.118-61.16 12.657-96.72 13.063c-35.557.406-71.418-3.262-99.186-12.72c-13.456-4.58-25.092-10.516-33.845-18.686z"/></g><path d="M203.594 58.188c-1.933-.01-3.824-.006-5.688.03c-22.398.437-39.932 4.19-51.812 9.688c-15.84 7.33-20.987 15.728-19.78 25.625c1.434 11.79 13.465 23.993 37.405 33.532c23.94 9.54 58.333 15.71 98.78 16.813c39.643 1.082 78.206-.902 103.563-7.625c12.678-3.362 21.815-8.05 26.062-12.5s5.273-7.606 2.47-15.22c-2.138-5.8-9.053-12.543-20.626-18.56c-11.575-6.02-27.22-11.233-44.564-15.47c-34.675-8.47-76.14-13.155-107.5-15.563h-.03a261 261 0 0 0-18.282-.75zm-72.313 72.718c5.676 41.283 10.312 83.897 5.94 129.03c.064 6.285 2.516 11.206 7.81 16.345c5.873 5.7 15.5 10.996 27.72 15.158c24.44 8.323 58.864 12.14 92.938 11.75c34.073-.39 67.996-4.942 91.406-12.22c11.704-3.638 20.75-8.09 25.47-12.03c2.653-2.217 3.885-3.58 4.31-4.813c-6.956-41.256-4.108-83.612 2.407-126.22c-5.526 2.566-11.706 4.63-18.405 6.407c-28.88 7.658-68.327 9.357-108.875 8.25c-42.035-1.147-78.177-7.392-105.188-18.156c-9.615-3.83-18.264-8.317-25.53-13.5zM117.657 266.78c-10.383 3.2-20.108 6.752-29.062 10.658c-42.218 18.415-66.15 43.515-67.938 68.812c-1.084 15.323 3.8 28.18 14.344 40.125c10.543 11.944 27.054 22.592 48.406 31.094c42.706 17.003 104.308 25.326 172.97 23.03c67.127-2.244 127.832-10.5 170.718-25.28c21.443-7.392 38.36-16.458 49.375-26.5c11.014-10.045 16.25-20.462 16.25-32.94c0-12.476-5.55-24.876-16.845-37.155c-11.296-12.28-28.275-24.05-49.688-34.156a280 280 0 0 0-19.968-8.47c2.088 11.05 4.905 21.955 8.655 32.688c4.382 12.54.81 25.65-7.438 35.03c-8.248 9.383-20.406 16.283-35.03 21.938c-29.25 11.31-68.99 17.358-108.97 18.22c-39.978.86-79.94-3.45-109.718-14.376c-14.89-5.463-27.414-12.538-35.907-22.563c-8.494-10.024-12.13-23.69-8.407-37.593c3.867-14.44 6.522-28.603 8.25-42.563zm15.22 23.69a329 329 0 0 1-5.407 23.717c-2.33 8.702-.7 14.412 4.593 20.657c5.29 6.245 15.052 12.34 28.093 17.125c26.083 9.57 64.56 14.043 102.875 13.217s76.716-6.937 102.658-16.968c12.97-5.017 22.683-11.086 27.718-16.814s6.182-9.87 3.844-16.562a242 242 0 0 1-5.813-19.188c-7.61 5.452-17.37 9.6-28.812 13.156c-26.114 8.118-61.16 12.657-96.72 13.063c-35.557.406-71.418-3.262-99.186-12.72c-13.456-4.58-25.092-10.516-33.845-18.686z"/></g></g>',
+    'man-fedora': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(93.9 -86.4) scale(0.6318)"><g class="halo" stroke-width="31.7"><path d="M239.125 97.438c-8.085.263-14.998 3.486-22.125 9.062c-10.136 7.93-19.822 21.153-28.906 36.47c-12.06 20.333-22.702 43.987-35.188 63.686l1.156.72c-.418.68-.383.62-.25 1.374c.134.754.767 2.354 2.407 4.5c3.277 4.293 10.342 10.21 19.936 16.156c19.188 11.89 48.29 24.49 78.813 34.906c30.52 10.418 62.6 18.744 87.874 22.625c12.637 1.94 23.6 2.753 31.406 2.313c6.83-.385 10.57-2.374 11.094-2.47c2.313-12.74 5.12-26.273 7.437-40.03c5.32-31.57 7.318-63.1-.686-79.188c-7.48-15.038-17.617-20.69-29.03-22.375c-7.012-1.034-14.537-.068-21.627 1.97c8.783 5.46 18.177 9.676 28.594 11.624l-3.436 18.376c-29.7-5.554-51.25-24.54-69.344-42s-33.43-33.012-47.156-36.437c-3.314-.828-6.41-1.236-9.344-1.282a31 31 0 0 0-1.625 0M51.72 172.156c-3.565.077-6.743.487-9.532 1.22c-11.158 2.926-17.707 9.42-21.282 27.343c-5.598 28.066 2.315 52.298 19.938 74.874s45.243 42.83 77.625 59.937c62.247 32.887 141.57 54.053 199.155 63.19l7.594-18.064l4.342-10.28l9.344 6.062l54.25 35.062c32.376 2.315 60.15-1.828 77.78-10.563c9.02-4.468 15.296-9.976 18.94-16.062c3.642-6.086 5.003-12.87 3.437-21.72c-4.446-25.12-12.418-39.6-23.375-49.31c-10.958-9.712-25.828-15.125-45.313-19.22c-6.452-1.356-13.402-2.563-20.75-3.75c-2.82 16.205-4.812 30.047-4.188 38.344c.416 5.53-2.52 11.542-6.625 14.717c-4.104 3.176-8.748 4.535-13.843 5.407c-10.19 1.743-22.893 1.178-37.908-.75c-30.03-3.857-68.82-13.617-106.125-26.375c-37.304-12.76-72.902-28.365-96.687-44.908c-11.892-8.27-21.073-16.588-25.813-26.78c-2.37-5.097-3.465-10.944-2.28-16.688c1.183-5.744 4.534-10.91 9.156-15.094c5.593-5.063 11.163-12.628 16.78-21.625c-15.758-6.912-30.355-12.82-43.468-17.125c-16.417-5.39-30.464-8.075-41.156-7.844zm88.968 51.47c-2.743 3.246-5.603 6.26-8.594 8.968c-2.423 2.193-3.146 3.77-3.406 5.03c-.26 1.262-.158 2.677.937 5.032c2.19 4.71 9.037 11.992 19.563 19.313c21.05 14.64 55.74 30.15 92.03 42.56c36.292 12.413 74.398 21.896 102.47 25.5c14.035 1.804 25.686 2.02 32.375.876c2.73-.467 4.262-1.1 4.968-1.47c-.39-6.627.103-14.072 1.095-22.123c-2.2.287-4.467.46-6.813.593c-9.955.562-21.878-.436-35.312-2.5c-26.868-4.126-59.644-12.682-91.063-23.406c-31.418-10.724-61.326-23.52-82.625-36.72c-10.65-6.598-19.196-13.17-24.937-20.686c-.24-.316-.456-.648-.688-.97z"/></g><path d="M239.125 97.438c-8.085.263-14.998 3.486-22.125 9.062c-10.136 7.93-19.822 21.153-28.906 36.47c-12.06 20.333-22.702 43.987-35.188 63.686l1.156.72c-.418.68-.383.62-.25 1.374c.134.754.767 2.354 2.407 4.5c3.277 4.293 10.342 10.21 19.936 16.156c19.188 11.89 48.29 24.49 78.813 34.906c30.52 10.418 62.6 18.744 87.874 22.625c12.637 1.94 23.6 2.753 31.406 2.313c6.83-.385 10.57-2.374 11.094-2.47c2.313-12.74 5.12-26.273 7.437-40.03c5.32-31.57 7.318-63.1-.686-79.188c-7.48-15.038-17.617-20.69-29.03-22.375c-7.012-1.034-14.537-.068-21.627 1.97c8.783 5.46 18.177 9.676 28.594 11.624l-3.436 18.376c-29.7-5.554-51.25-24.54-69.344-42s-33.43-33.012-47.156-36.437c-3.314-.828-6.41-1.236-9.344-1.282a31 31 0 0 0-1.625 0M51.72 172.156c-3.565.077-6.743.487-9.532 1.22c-11.158 2.926-17.707 9.42-21.282 27.343c-5.598 28.066 2.315 52.298 19.938 74.874s45.243 42.83 77.625 59.937c62.247 32.887 141.57 54.053 199.155 63.19l7.594-18.064l4.342-10.28l9.344 6.062l54.25 35.062c32.376 2.315 60.15-1.828 77.78-10.563c9.02-4.468 15.296-9.976 18.94-16.062c3.642-6.086 5.003-12.87 3.437-21.72c-4.446-25.12-12.418-39.6-23.375-49.31c-10.958-9.712-25.828-15.125-45.313-19.22c-6.452-1.356-13.402-2.563-20.75-3.75c-2.82 16.205-4.812 30.047-4.188 38.344c.416 5.53-2.52 11.542-6.625 14.717c-4.104 3.176-8.748 4.535-13.843 5.407c-10.19 1.743-22.893 1.178-37.908-.75c-30.03-3.857-68.82-13.617-106.125-26.375c-37.304-12.76-72.902-28.365-96.687-44.908c-11.892-8.27-21.073-16.588-25.813-26.78c-2.37-5.097-3.465-10.944-2.28-16.688c1.183-5.744 4.534-10.91 9.156-15.094c5.593-5.063 11.163-12.628 16.78-21.625c-15.758-6.912-30.355-12.82-43.468-17.125c-16.417-5.39-30.464-8.075-41.156-7.844zm88.968 51.47c-2.743 3.246-5.603 6.26-8.594 8.968c-2.423 2.193-3.146 3.77-3.406 5.03c-.26 1.262-.158 2.677.937 5.032c2.19 4.71 9.037 11.992 19.563 19.313c21.05 14.64 55.74 30.15 92.03 42.56c36.292 12.413 74.398 21.896 102.47 25.5c14.035 1.804 25.686 2.02 32.375.876c2.73-.467 4.262-1.1 4.968-1.47c-.39-6.627.103-14.072 1.095-22.123c-2.2.287-4.467.46-6.813.593c-9.955.562-21.878-.436-35.312-2.5c-26.868-4.126-59.644-12.682-91.063-23.406c-31.418-10.724-61.326-23.52-82.625-36.72c-10.65-6.598-19.196-13.17-24.937-20.686c-.24-.316-.456-.648-.688-.97z"/></g></g>',
+    'man-boater': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(100.2 -101.3) scale(0.6085)"><g class="halo" stroke-width="32.9"><path d="M189 80.54c-3.2 5.57-3.7 12.82-.8 22.46c2.9 9.6 9.4 21.3 19 33.4c19.4 24.3 51.3 50.8 90.7 73c39.4 22.1 78.6 35.6 109.5 39.5c15.3 1.9 28.6 1.5 38.3-1.1c9.8-2.5 15.7-6.7 18.9-12.3c3.1-5.6 3.6-12.8.7-22.5c-2.9-9.6-9.4-21.2-19-33.3c-19.4-24.3-51.3-50.9-90.7-73c-39.4-22.18-78.6-35.61-109.4-39.54c-17.2-1.94-47.6-3.07-57.2 13.38m-18.3 26.56l-25.6 36.5c-2.6 17.2 8.7 39.9 30.8 63.2c22.6 23.9 55.3 47.7 90.2 67.2c34.8 19.5 71.9 34.6 102.6 41.5c18.8 3.1 46.2 9.2 61.6-3.7l21.4-47c-15.4 4.3-33.3 3.6-46.7 1.9c-33.9-4.3-74.9-18.5-115.9-41.6c-41.1-23.1-74.6-50.7-95.9-77.5c-9.1-13.2-18.7-26.7-22.5-40.5m-59.8 8.3c-42.85-.1-73.64 12.4-86.43 35.1c-14.594 25.9-5.48 65 25.56 108c31 43 82.97 88.4 148.07 125s131 57.5 183.8 61.6c52.8 4.2 91-8.3 105.6-34.3s5.5-65-25.6-108c-1.5-2.2-3.2-4.3-4.8-6.4l-30.5 67.1c-7.7 12.9-19.4 22.3-32.1 25.8c-14.4 3.8-31.3 3.4-50 .4c-37.3-6.2-81.6-23.4-122.8-46.1c-41.3-22.8-79.4-51-103.8-80.1c-12.3-14.6-21.14-29.4-24.8-44.6c-3.67-15.1-1.52-30.9 8-44.1l40.4-57.4c-10.2-1.3-21-2-30.6-2m18.2 50.9c-11.2 15-22.3 30.6-18.5 48.4c2.7 11.2 10 24 21 37.2c12.6 15 29.9 30.2 49.7 44.7c4.8-11.2 12.3-24.1 25.3-39.4c-16.5-12-31.4-24.9-43.8-38c-16.2-17.1-28.6-35-33.7-52.9m92.2 101.3c-14.1 16.3-20.7 28.6-24.9 39.5c10.2 6.8 20.9 13.4 31.9 19.5c3.9-9.7 9.6-20.7 23.9-39.8q-15.9-9.15-30.9-19.2m46.9 28c-15.9 20.8-20.3 29.7-23.9 39.6c35.7 18.3 72.9 31.7 103.1 36.7c20.6 2.7 53.9 5.2 62.7-15.7l9.2-20.2c-18.3 3.2-39.2.5-54.6-2.9c-29.8-6.8-63.7-20.2-96.5-37.5"/></g><path d="M189 80.54c-3.2 5.57-3.7 12.82-.8 22.46c2.9 9.6 9.4 21.3 19 33.4c19.4 24.3 51.3 50.8 90.7 73c39.4 22.1 78.6 35.6 109.5 39.5c15.3 1.9 28.6 1.5 38.3-1.1c9.8-2.5 15.7-6.7 18.9-12.3c3.1-5.6 3.6-12.8.7-22.5c-2.9-9.6-9.4-21.2-19-33.3c-19.4-24.3-51.3-50.9-90.7-73c-39.4-22.18-78.6-35.61-109.4-39.54c-17.2-1.94-47.6-3.07-57.2 13.38m-18.3 26.56l-25.6 36.5c-2.6 17.2 8.7 39.9 30.8 63.2c22.6 23.9 55.3 47.7 90.2 67.2c34.8 19.5 71.9 34.6 102.6 41.5c18.8 3.1 46.2 9.2 61.6-3.7l21.4-47c-15.4 4.3-33.3 3.6-46.7 1.9c-33.9-4.3-74.9-18.5-115.9-41.6c-41.1-23.1-74.6-50.7-95.9-77.5c-9.1-13.2-18.7-26.7-22.5-40.5m-59.8 8.3c-42.85-.1-73.64 12.4-86.43 35.1c-14.594 25.9-5.48 65 25.56 108c31 43 82.97 88.4 148.07 125s131 57.5 183.8 61.6c52.8 4.2 91-8.3 105.6-34.3s5.5-65-25.6-108c-1.5-2.2-3.2-4.3-4.8-6.4l-30.5 67.1c-7.7 12.9-19.4 22.3-32.1 25.8c-14.4 3.8-31.3 3.4-50 .4c-37.3-6.2-81.6-23.4-122.8-46.1c-41.3-22.8-79.4-51-103.8-80.1c-12.3-14.6-21.14-29.4-24.8-44.6c-3.67-15.1-1.52-30.9 8-44.1l40.4-57.4c-10.2-1.3-21-2-30.6-2m18.2 50.9c-11.2 15-22.3 30.6-18.5 48.4c2.7 11.2 10 24 21 37.2c12.6 15 29.9 30.2 49.7 44.7c4.8-11.2 12.3-24.1 25.3-39.4c-16.5-12-31.4-24.9-43.8-38c-16.2-17.1-28.6-35-33.7-52.9m92.2 101.3c-14.1 16.3-20.7 28.6-24.9 39.5c10.2 6.8 20.9 13.4 31.9 19.5c3.9-9.7 9.6-20.7 23.9-39.8q-15.9-9.15-30.9-19.2m46.9 28c-15.9 20.8-20.3 29.7-23.9 39.6c35.7 18.3 72.9 31.7 103.1 36.7c20.6 2.7 53.9 5.2 62.7-15.7l9.2-20.2c-18.3 3.2-39.2.5-54.6-2.9c-29.8-6.8-63.7-20.2-96.5-37.5"/></g></g>',
+    'man-cap': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(111.0 -49.2) scale(0.5665)"><g class="halo" stroke-width="35.3"><path d="M404.7 79.78h-2.8c-7.5.26-15.8 1.73-24.8 4.3c-18 5.16-38.4 14.56-59.3 25.78c-41.9 22.4-85.8 52-121.5 68.6c-26.4 12.4-59.3 20.4-89.8 27.5s-58.95 13.4-74.36 20.6c-7.13 3.4-10.9 6.9-12.71 9.9c-1.8 2.9-2.1 5.2-1.44 8.4c1.32 6.4 8.57 15.4 18.49 21.9l3.29 2.1c162.63-2.3 289.43-13.7 387.73-52.6c2.1-17.6 6.7-34.7 16.5-48.5v-.1l.1-.1c24.5-32.2 8.9-72.58-22.4-84.89c-5-1.95-10.7-2.91-17-2.93zm21.9 185.12c-44.2 25.1-103.8 37-169.2 41.2c-68.7 4.4-143.7.1-213.52-7.8l1.89 14c31.19 3.2 98.53 11.8 172.83 11.5c77.2-.3 159.6-11.3 208.6-46.2c-.2-4.1-.4-8.3-.6-12.7m7.1 30.2c-46.9 31.5-113.8 42.9-179.9 45.8c44.7 39 89.3 55.1 127.3 59.1c45.2 4.8 81.5-8.7 94.8-19.8c13-10.8 17.5-19.5 18.3-26.2c.7-6.8-2-13.3-8.2-20.5c-11.3-13.4-33.5-26.4-52.3-38.4"/></g><path d="M404.7 79.78h-2.8c-7.5.26-15.8 1.73-24.8 4.3c-18 5.16-38.4 14.56-59.3 25.78c-41.9 22.4-85.8 52-121.5 68.6c-26.4 12.4-59.3 20.4-89.8 27.5s-58.95 13.4-74.36 20.6c-7.13 3.4-10.9 6.9-12.71 9.9c-1.8 2.9-2.1 5.2-1.44 8.4c1.32 6.4 8.57 15.4 18.49 21.9l3.29 2.1c162.63-2.3 289.43-13.7 387.73-52.6c2.1-17.6 6.7-34.7 16.5-48.5v-.1l.1-.1c24.5-32.2 8.9-72.58-22.4-84.89c-5-1.95-10.7-2.91-17-2.93zm21.9 185.12c-44.2 25.1-103.8 37-169.2 41.2c-68.7 4.4-143.7.1-213.52-7.8l1.89 14c31.19 3.2 98.53 11.8 172.83 11.5c77.2-.3 159.6-11.3 208.6-46.2c-.2-4.1-.4-8.3-.6-12.7m7.1 30.2c-46.9 31.5-113.8 42.9-179.9 45.8c44.7 39 89.3 55.1 127.3 59.1c45.2 4.8 81.5-8.7 94.8-19.8c13-10.8 17.5-19.5 18.3-26.2c.7-6.8-2-13.3-8.2-20.5c-11.3-13.4-33.5-26.4-52.3-38.4"/></g></g>',
+    'man-chef': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(104.2 -118.5) scale(0.5929)"><g class="halo" stroke-width="33.7"><path d="M268.608 25.48c-26.47.197-43.568 5.534-55.357 13.75c-13.473 9.39-21.036 23.152-27.08 40.974c2.562 20.932 23.94 48.19 19.657 70.38c-16.48-28.212-33.466-67.988-63.31-76.116c-17.075-4.62-36.54-5.802-43.54-1.436c-8.273 5.16-13.81 14.76-16.943 26.854c-3.132 12.095-3.66 26.237-2.69 38.285c2.432 30.134 24.784 74.997 46.92 111.093c16.58 27.035 32.78 49.416 39.87 58.953a264 264 0 0 1 22.85-5.62c-1.538-18.02 1.384-34.673.828-53.947c4.206 18.19 7.84 34.576 14.275 51.36c12.383-1.772 25.42-2.8 38.85-2.82a262 262 0 0 1 28.256 1.463l14.22-41.562l-2.373 43.103c17.118 2.644 34.412 7.158 51.38 13.978c12.21-12.758 16.877-27.402 24.99-41.186c.398 16.003-4.507 31.896-15.052 45.464c8.902 4.1 17.684 8.87 26.268 14.38c41.514-67.15 66.69-133.49 61.885-198.7c-1.497-20.33-6.088-38.187-12.69-51.105c-6.6-12.92-14.827-20.444-23.493-22.704c-6.985-1.822-24.825 2.828-39.44 9.496c-26.947 10.81-48.5 45.717-55.894 69.53c-.253-11.64 3.003-44.39 15.947-60.698c-3.98-12.57-6.914-26.394-12.085-36.362c-10.442-16.115-20.236-16.91-36.247-16.806zm-26.836 289.85c-25.985.123-50.39 4.192-70.77 10.214l-11.626 98.96c10.16-5.65 22.32-9.144 35.318-11.17c9.958-1.553 20.53-2.233 31.362-2.17q2.32.015 4.658.073c12.457.313 25.19 1.57 37.674 3.582c24.965 4.023 48.854 11.044 67.463 20.175c7.344 3.604 14.094 7.5 19.717 11.9l8.33-96.945c-38.464-25.67-82.153-34.81-122.125-34.62zm-15.84 113.86c-10.017-.06-19.652.554-28.464 1.928c-16.116 2.513-29.044 7.62-37.168 14.707c50.417 46.585 123.38 52.03 190.373 22.225c-3.786-4.99-11.387-11.32-22.752-16.897c-16.367-8.032-38.93-14.78-62.398-18.562c-13.2-2.127-26.71-3.32-39.59-3.4z"/></g><path d="M268.608 25.48c-26.47.197-43.568 5.534-55.357 13.75c-13.473 9.39-21.036 23.152-27.08 40.974c2.562 20.932 23.94 48.19 19.657 70.38c-16.48-28.212-33.466-67.988-63.31-76.116c-17.075-4.62-36.54-5.802-43.54-1.436c-8.273 5.16-13.81 14.76-16.943 26.854c-3.132 12.095-3.66 26.237-2.69 38.285c2.432 30.134 24.784 74.997 46.92 111.093c16.58 27.035 32.78 49.416 39.87 58.953a264 264 0 0 1 22.85-5.62c-1.538-18.02 1.384-34.673.828-53.947c4.206 18.19 7.84 34.576 14.275 51.36c12.383-1.772 25.42-2.8 38.85-2.82a262 262 0 0 1 28.256 1.463l14.22-41.562l-2.373 43.103c17.118 2.644 34.412 7.158 51.38 13.978c12.21-12.758 16.877-27.402 24.99-41.186c.398 16.003-4.507 31.896-15.052 45.464c8.902 4.1 17.684 8.87 26.268 14.38c41.514-67.15 66.69-133.49 61.885-198.7c-1.497-20.33-6.088-38.187-12.69-51.105c-6.6-12.92-14.827-20.444-23.493-22.704c-6.985-1.822-24.825 2.828-39.44 9.496c-26.947 10.81-48.5 45.717-55.894 69.53c-.253-11.64 3.003-44.39 15.947-60.698c-3.98-12.57-6.914-26.394-12.085-36.362c-10.442-16.115-20.236-16.91-36.247-16.806zm-26.836 289.85c-25.985.123-50.39 4.192-70.77 10.214l-11.626 98.96c10.16-5.65 22.32-9.144 35.318-11.17c9.958-1.553 20.53-2.233 31.362-2.17q2.32.015 4.658.073c12.457.313 25.19 1.57 37.674 3.582c24.965 4.023 48.854 11.044 67.463 20.175c7.344 3.604 14.094 7.5 19.717 11.9l8.33-96.945c-38.464-25.67-82.153-34.81-122.125-34.62zm-15.84 113.86c-10.017-.06-19.652.554-28.464 1.928c-16.116 2.513-29.044 7.62-37.168 14.707c50.417 46.585 123.38 52.03 190.373 22.225c-3.786-4.99-11.387-11.32-22.752-16.897c-16.367-8.032-38.93-14.78-62.398-18.562c-13.2-2.127-26.71-3.32-39.59-3.4z"/></g></g>',
+    'man-western': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(70.9 -115.2) scale(0.7229)"><g class="halo" stroke-width="27.7"><path d="M199.117 111.268c-2.435.007-4.816.524-7.117 1.675c-18.365 9.194-38.59 129.65-50.16 164.987c45.64 13.262 87.106 16.556 115.314 16.425c28.21-.13 68.652-3.635 112.97-16.49C358.53 242.48 338.34 122.123 320 112.943c-21.065-10.53-48.73 31.998-64 32c-13.6.002-37.05-33.734-56.883-33.675M224 160c11.53 40.5 9.107 74.724 0 96s-32 11.235-32 0c25.333-6.927 26.21-35.5 32-96m64 0c5.79 60.5 6.667 89.073 32 96c0 11.235-22.893 21.276-32 0s-11.53-55.5 0-96M46.79 263.127c-17.5.4-24.138 17.83-14.79 40.873c11.088 30.345 58.972 96.774 112 96c24.103-.352 31.438-15.483 112-16s87.88 15.648 112 16c53.017.774 100.907-65.655 112-96c13.006-32.066-4.934-53.25-40.016-32.84c-21.85 11.926-44.06 17.898-65.984 24.48c-.02 0-.044.024-.064.024v-.006c-45.8 13.756-87.924 17.486-116.754 17.615c-28.83.13-72.027-3.357-119.145-17.548c-21.897-6.618-44.09-12.59-66.027-24.565c-9.866-5.74-18.374-8.19-25.22-8.033"/></g><path d="M199.117 111.268c-2.435.007-4.816.524-7.117 1.675c-18.365 9.194-38.59 129.65-50.16 164.987c45.64 13.262 87.106 16.556 115.314 16.425c28.21-.13 68.652-3.635 112.97-16.49C358.53 242.48 338.34 122.123 320 112.943c-21.065-10.53-48.73 31.998-64 32c-13.6.002-37.05-33.734-56.883-33.675M224 160c11.53 40.5 9.107 74.724 0 96s-32 11.235-32 0c25.333-6.927 26.21-35.5 32-96m64 0c5.79 60.5 6.667 89.073 32 96c0 11.235-22.893 21.276-32 0s-11.53-55.5 0-96M46.79 263.127c-17.5.4-24.138 17.83-14.79 40.873c11.088 30.345 58.972 96.774 112 96c24.103-.352 31.438-15.483 112-16s87.88 15.648 112 16c53.017.774 100.907-65.655 112-96c13.006-32.066-4.934-53.25-40.016-32.84c-21.85 11.926-44.06 17.898-65.984 24.48c-.02 0-.044.024-.064.024v-.006c-45.8 13.756-87.924 17.486-116.754 17.615c-28.83.13-72.027-3.357-119.145-17.548c-21.897-6.618-44.09-12.59-66.027-24.565c-9.866-5.74-18.374-8.19-25.22-8.033"/></g></g>',
+    'man-fez': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(134.6 -25.5) scale(0.4669)"><g class="halo" stroke-width="42.8"><path d="M258.75 101.906c-31.427 0-62.877 6.504-84.156 16.875c-10.67 5.202-18.88 11.344-24 17.376c-5.122 6.033-7.26 11.777-7.25 17.188v.03c-.01 5.412 2.128 11.156 7.25 17.19c5.12 6.03 13.33 12.173 24 17.374c21.28 10.37 52.73 16.875 84.156 16.875c15.063 0 30.11-1.52 44.063-4.22l-43.97-41.53a9.345 9.345 0 0 1 .72-14.344a9.35 9.35 0 0 1 7.312-3.782a9.35 9.35 0 0 1 5.313 1.53l71.093 45.282c10.485-5.16 18.566-11.228 23.626-17.188c5.122-6.032 7.26-11.776 7.25-17.187v-.03c.01-5.412-2.128-11.156-7.25-17.19c-5.12-6.03-13.33-12.173-24-17.374c-21.28-10.37-52.73-16.874-84.156-16.874zm120.813 82.563c-6.293 6.876-14.454 12.902-24.094 18.06l27.78 131.282a9.36 9.36 0 1 1-18.313 3.875L338 210.313c-2.143.8-4.305 1.583-6.53 2.313L347 351.5a9.356 9.356 0 1 1-18.594 2.094l-15.156-136c-17.117 3.857-35.744 5.906-54.5 5.906c-33.927 0-67.43-6.608-92.344-18.75c-11.15-5.434-20.55-11.927-27.687-19.47l-28.19 159.75c-1.38 8.68.893 16.09 6.876 23.814c5.983 7.722 15.94 15.275 28.875 21.75c25.87 12.95 63.244 21.503 101.595 23.406s77.75-2.813 107.844-15c29.562-11.972 49.355-30.17 54.25-56.375L379.56 184.47z"/></g><path d="M258.75 101.906c-31.427 0-62.877 6.504-84.156 16.875c-10.67 5.202-18.88 11.344-24 17.376c-5.122 6.033-7.26 11.777-7.25 17.188v.03c-.01 5.412 2.128 11.156 7.25 17.19c5.12 6.03 13.33 12.173 24 17.374c21.28 10.37 52.73 16.875 84.156 16.875c15.063 0 30.11-1.52 44.063-4.22l-43.97-41.53a9.345 9.345 0 0 1 .72-14.344a9.35 9.35 0 0 1 7.312-3.782a9.35 9.35 0 0 1 5.313 1.53l71.093 45.282c10.485-5.16 18.566-11.228 23.626-17.188c5.122-6.032 7.26-11.776 7.25-17.187v-.03c.01-5.412-2.128-11.156-7.25-17.19c-5.12-6.03-13.33-12.173-24-17.374c-21.28-10.37-52.73-16.874-84.156-16.874zm120.813 82.563c-6.293 6.876-14.454 12.902-24.094 18.06l27.78 131.282a9.36 9.36 0 1 1-18.313 3.875L338 210.313c-2.143.8-4.305 1.583-6.53 2.313L347 351.5a9.356 9.356 0 1 1-18.594 2.094l-15.156-136c-17.117 3.857-35.744 5.906-54.5 5.906c-33.927 0-67.43-6.608-92.344-18.75c-11.15-5.434-20.55-11.927-27.687-19.47l-28.19 159.75c-1.38 8.68.893 16.09 6.876 23.814c5.983 7.722 15.94 15.275 28.875 21.75c25.87 12.95 63.244 21.503 101.595 23.406s77.75-2.813 107.844-15c29.562-11.972 49.355-30.17 54.25-56.375L379.56 184.47z"/></g></g>',
+    'woman-cloche': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(106.3 -80.1) scale(0.5848)"><g class="halo" stroke-width="34.2"><path d="M256 29.59c-45.5 0-91.7 19.17-126.2 47.91c-32.32 26.9-53.88 61.9-56.52 96.1c2.48.6 4.98 1.2 7.48 1.8c61.74 14.2 123.34 20.9 185.04 20.1c-1.8-4.2-2.6-8.9-1.8-13.8c1.6-8.9 8.2-15.4 15.8-18.9c7.6-3.6 16.8-4.7 26.1-3c.4.1.8.2 1.3.3c-.3-1.1-.4-2.3-.6-3.4c-1.4-9.7 0-18.9 3.9-26.6c3.9-7.6 10.9-14.1 19.9-15.3c9-1.3 17.5 3 23.3 9.2c5.4 6 9.2 13.7 10.8 22.6c.2-.3.5-.6.7-.9c6.2-7.6 13.9-12.8 22.2-15.2c8.2-2.4 17.6-1.7 24.7 4.1c7.1 5.7 9.8 14.8 9.2 23.3c-.6 7.3-3.2 14.6-7.8 21.3c2.2-.5 4.5-.9 6.7-1.4c1.7-.3 3.4-.7 5.1-1.1c1.1-.2 2.3-.5 3.4-.7c3.3-.8 6.7-1.6 10-2.4c-2.6-34.2-24.2-69.2-56.5-96.1c-34.5-28.74-80.7-47.91-126.2-47.91m77.7 102.91c-.2 0-.5.1-.8.1c-2.2.3-4.4 1.8-6.4 5.6c-1.9 3.9-3 9.6-2.1 16c.7 5.1 2.6 9.6 4.9 12.8c5.1-3.1 10.9-4.9 17.2-5c.7-3.2 1-7.1.5-11c-.9-6.3-3.6-11.5-6.4-14.7c-2.6-2.8-4.9-3.8-6.9-3.8m62.7 14.6c-1.2 0-2.5.2-4.1.6c-4.1 1.3-9.1 4.4-13.1 9.4c-4 4.9-6 10.4-6.4 14.7v1.3c2.3 2.4 4.3 5.2 5.9 8.2c1.4.2 3.1 0 5.2-.6c4-1.2 9.1-4.4 13-9.3c4.1-5 6-10.4 6.4-14.7c.3-4.3-.8-6.8-2.5-8.2c-1.1-.8-2.5-1.4-4.4-1.4m-98 30c-4.3-.1-8.2.7-11 1.9c-3.8 1.8-5.3 3.9-5.6 5.9c-.4 1.9.3 4.4 3.2 7.3s7.9 5.7 13.9 6.8c4.4.8 8.7.5 12.1-.4c.2-5.6 1.6-11 3.9-15.8c-3-2.3-7.2-4.4-12.1-5.3c-1.5-.2-3-.4-4.4-.4m48.8 2.9c-9.8 0-18.2 8.5-18.2 19.8s8.4 19.8 18.2 19.8s18.2-8.5 18.2-19.8S357 180 347.2 180M68.76 191c-6.58 12.8-27.22 51.2-52.15 80.6c164.29 42.5 314.49 42.5 478.79 0c-24.9-29.4-45.6-67.8-52.2-80.6c-4.9 1.2-9.8 2.3-14.6 3.4c4.4 5.3 7.1 12 6.2 19.3c-1 9-7.2 16.2-14.7 20.2c-7.6 4.1-16.7 5.8-26.5 4.7c-2.9-.3-5.6-.8-8.3-1.6c.8 2.8 1.5 5.7 1.8 8.8c1.1 9.8-.6 18.9-4.7 26.5c-4.1 7.5-11.3 13.7-20.3 14.7c-9.1 1-17.4-3.5-23.1-9.9c-4.8-5.6-8.2-12.6-9.8-20.6c-7 6.8-15.4 11-23.9 12.4c-8.4 1.3-17.7-.6-24-7.1c-6.3-6.6-7.9-15.9-6.2-24.3c1.7-8.2 6.1-16.2 12.8-22.9c-1.4-.5-2.7-1-4-1.6c-71.7 2.5-143.5-4.8-215.14-22m325.04 6.9c-4 .1-7.6 1-10.4 2.2c-.1 5.1-1.1 10-2.9 14.5l.2.2c3.3 2.7 8.7 5.3 14.9 6c6.4.7 12.1-.6 15.9-2.6c3.8-2.1 5.2-4.4 5.5-6.5c.2-2.2-.7-4.7-3.9-7.6c-3.3-2.8-8.6-5.3-15-6c-.8-.1-1.5-.1-2.3-.2zm-77.5 21.5c-.4 0-.9 0-1.3.1c-4.2.7-9.5 3.2-14.1 7.6s-7.3 9.6-8.2 13.8c-.8 4.3.1 6.8 1.6 8.4s4 2.5 8.3 1.8c4.2-.7 9.5-3.2 14.1-7.6s7.3-9.6 8.2-13.8v-.2c-3.4-2.8-6.4-6.2-8.6-10.1m47.3 14.1c-4.7 2.5-10.1 4-15.8 4.1c-1.2 3.5-1.8 8-1.3 12.7c.7 6.4 3.2 11.7 6 15c2.9 3.2 5.4 4.1 7.6 3.9c2.2-.3 4.4-1.7 6.5-5.5c2-3.8 3.3-9.5 2.6-15.9c-.7-5.9-2.9-11-5.6-14.3M148 315c7.4 52.7 17.9 91.2 30.6 118.1c9.2 19.7 19.6 33.4 31.6 41.5c12.1 8.1 26.1 9.8 38.8 5.6c25.4-8.4 46-36.2 62.4-74.3c10.9-25.1 19.6-55.1 25.2-88c-6.2.6-12.3 1-18.5 1.5c-5.4 29.8-13.5 56.9-23.2 79.4c-15.4 35.8-35.4 59-51.5 64.3c-8.1 2.7-15 2-23.1-3.4c-8.1-5.5-17.1-16.4-25.4-34.2c-11.2-23.6-21.1-59.2-28.4-108.4c-6.1-.7-12.3-1.3-18.5-2.1"/></g><path d="M256 29.59c-45.5 0-91.7 19.17-126.2 47.91c-32.32 26.9-53.88 61.9-56.52 96.1c2.48.6 4.98 1.2 7.48 1.8c61.74 14.2 123.34 20.9 185.04 20.1c-1.8-4.2-2.6-8.9-1.8-13.8c1.6-8.9 8.2-15.4 15.8-18.9c7.6-3.6 16.8-4.7 26.1-3c.4.1.8.2 1.3.3c-.3-1.1-.4-2.3-.6-3.4c-1.4-9.7 0-18.9 3.9-26.6c3.9-7.6 10.9-14.1 19.9-15.3c9-1.3 17.5 3 23.3 9.2c5.4 6 9.2 13.7 10.8 22.6c.2-.3.5-.6.7-.9c6.2-7.6 13.9-12.8 22.2-15.2c8.2-2.4 17.6-1.7 24.7 4.1c7.1 5.7 9.8 14.8 9.2 23.3c-.6 7.3-3.2 14.6-7.8 21.3c2.2-.5 4.5-.9 6.7-1.4c1.7-.3 3.4-.7 5.1-1.1c1.1-.2 2.3-.5 3.4-.7c3.3-.8 6.7-1.6 10-2.4c-2.6-34.2-24.2-69.2-56.5-96.1c-34.5-28.74-80.7-47.91-126.2-47.91m77.7 102.91c-.2 0-.5.1-.8.1c-2.2.3-4.4 1.8-6.4 5.6c-1.9 3.9-3 9.6-2.1 16c.7 5.1 2.6 9.6 4.9 12.8c5.1-3.1 10.9-4.9 17.2-5c.7-3.2 1-7.1.5-11c-.9-6.3-3.6-11.5-6.4-14.7c-2.6-2.8-4.9-3.8-6.9-3.8m62.7 14.6c-1.2 0-2.5.2-4.1.6c-4.1 1.3-9.1 4.4-13.1 9.4c-4 4.9-6 10.4-6.4 14.7v1.3c2.3 2.4 4.3 5.2 5.9 8.2c1.4.2 3.1 0 5.2-.6c4-1.2 9.1-4.4 13-9.3c4.1-5 6-10.4 6.4-14.7c.3-4.3-.8-6.8-2.5-8.2c-1.1-.8-2.5-1.4-4.4-1.4m-98 30c-4.3-.1-8.2.7-11 1.9c-3.8 1.8-5.3 3.9-5.6 5.9c-.4 1.9.3 4.4 3.2 7.3s7.9 5.7 13.9 6.8c4.4.8 8.7.5 12.1-.4c.2-5.6 1.6-11 3.9-15.8c-3-2.3-7.2-4.4-12.1-5.3c-1.5-.2-3-.4-4.4-.4m48.8 2.9c-9.8 0-18.2 8.5-18.2 19.8s8.4 19.8 18.2 19.8s18.2-8.5 18.2-19.8S357 180 347.2 180M68.76 191c-6.58 12.8-27.22 51.2-52.15 80.6c164.29 42.5 314.49 42.5 478.79 0c-24.9-29.4-45.6-67.8-52.2-80.6c-4.9 1.2-9.8 2.3-14.6 3.4c4.4 5.3 7.1 12 6.2 19.3c-1 9-7.2 16.2-14.7 20.2c-7.6 4.1-16.7 5.8-26.5 4.7c-2.9-.3-5.6-.8-8.3-1.6c.8 2.8 1.5 5.7 1.8 8.8c1.1 9.8-.6 18.9-4.7 26.5c-4.1 7.5-11.3 13.7-20.3 14.7c-9.1 1-17.4-3.5-23.1-9.9c-4.8-5.6-8.2-12.6-9.8-20.6c-7 6.8-15.4 11-23.9 12.4c-8.4 1.3-17.7-.6-24-7.1c-6.3-6.6-7.9-15.9-6.2-24.3c1.7-8.2 6.1-16.2 12.8-22.9c-1.4-.5-2.7-1-4-1.6c-71.7 2.5-143.5-4.8-215.14-22m325.04 6.9c-4 .1-7.6 1-10.4 2.2c-.1 5.1-1.1 10-2.9 14.5l.2.2c3.3 2.7 8.7 5.3 14.9 6c6.4.7 12.1-.6 15.9-2.6c3.8-2.1 5.2-4.4 5.5-6.5c.2-2.2-.7-4.7-3.9-7.6c-3.3-2.8-8.6-5.3-15-6c-.8-.1-1.5-.1-2.3-.2zm-77.5 21.5c-.4 0-.9 0-1.3.1c-4.2.7-9.5 3.2-14.1 7.6s-7.3 9.6-8.2 13.8c-.8 4.3.1 6.8 1.6 8.4s4 2.5 8.3 1.8c4.2-.7 9.5-3.2 14.1-7.6s7.3-9.6 8.2-13.8v-.2c-3.4-2.8-6.4-6.2-8.6-10.1m47.3 14.1c-4.7 2.5-10.1 4-15.8 4.1c-1.2 3.5-1.8 8-1.3 12.7c.7 6.4 3.2 11.7 6 15c2.9 3.2 5.4 4.1 7.6 3.9c2.2-.3 4.4-1.7 6.5-5.5c2-3.8 3.3-9.5 2.6-15.9c-.7-5.9-2.9-11-5.6-14.3M148 315c7.4 52.7 17.9 91.2 30.6 118.1c9.2 19.7 19.6 33.4 31.6 41.5c12.1 8.1 26.1 9.8 38.8 5.6c25.4-8.4 46-36.2 62.4-74.3c10.9-25.1 19.6-55.1 25.2-88c-6.2.6-12.3 1-18.5 1.5c-5.4 29.8-13.5 56.9-23.2 79.4c-15.4 35.8-35.4 59-51.5 64.3c-8.1 2.7-15 2-23.1-3.4c-8.1-5.5-17.1-16.4-25.4-34.2c-11.2-23.6-21.1-59.2-28.4-108.4c-6.1-.7-12.3-1.3-18.5-2.1"/></g></g>',
+    'woman-tiara': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(142.6 -31.7) scale(0.4432)"><g class="halo" stroke-width="45.1"><path d="m256 27.88l-8.1 16.09c-8.2 16.54-20.2 44.64-30.4 73.03c-10.1 28.3-18.5 56-18.5 75c0 22 6.1 43.4 14.4 61.2c-1.5.1-2.9.2-4.3.3c-15-6.8-29.5-15-41.5-24.5c-18.7-15-30.6-32.5-30.6-53c0-14.5 3.7-21.8 7-25s6.9-3.7 11.5-2.3c4.6 1.3 9.5 5 12 9.3s3.1 8.7.4 14l16.2 8c5.3-10.7 3.9-22.3-1.1-31s-13.1-15-22.5-17.7c-2.4-.6-4.8-1-7.4-1.1c-7.5-.4-15.4 1.9-21.6 7.8c-8.2 7.8-12.5 20.5-12.5 38c0 27.5 16.1 50 37.4 67c6 4.8 12.4 9.2 19.1 13.2c-14.3 1.6-28 3.6-40.8 5.9c-9.9-1.3-21-3.9-30.4-7.6c-7.17-2.8-13.37-6.4-17.17-10c-3.9-3.6-5.4-6.6-5.5-9.9v-.1c-.2-9.9 7.2-15.3 13.4-16c3.1-.4 5.37.4 7.17 2.2c1.7 1.8 3.6 5.4 3.2 12.9l18 1c.6-11.1-2.4-20.4-8.3-26.5c-4.5-4.6-10.3-7-16.17-7.5c-2-.2-3.9-.2-5.9 0c-15.2 1.6-29.7 15.1-29.4 34.3c.2 9.1 5 17 11.2 22.8c6.1 5.7 13.6 9.7 21.8 13.1l-1.2.3c-15.8 4.5-29.4 9.6-40.5 15.5c-3.1.2-6 .4-8.3.1c-2.8-.3-4.6-1-5.9-2c-1.3-.9-2.4-2.3-3.5-5.7c-.6-2 1.7-6.1 4.8-7.6c1.6-.8 2.7-.8 3.3-.5c.7.2 1.8.7 3.2 4.3l16.8-6.4c-2.7-7.1-7.6-12.6-13.7-14.8c-3.1-1.2-6.2-1.5-9.2-1.2c-2.9.3-5.8 1.2-8.3 2.4c-10.1 5-17.9 16.4-14.1 29c1.9 6.4 5.4 11.6 10 15c1.8 1.4 3.7 2.4 5.7 3.2c-7.2 10.4-11.7 24.5-11.7 33.6c0 12.6 8.7 23.1 21.1 31.5c12.5 8.5 29.5 15.5 50.3 21.4c26.77 7.7 59.77 13.4 96.57 16.5c16-5.4 16-5.4 0-16.1c-35.4-3.1-67.1-8.6-92.17-15.7c-19.7-5.7-35.5-12.4-45.7-19.3s-14.1-13.2-14.1-18.3s3.9-11.4 14.1-18.3s26-13.6 45.7-19.3c33.57-9.5 78.77-16.2 129.27-18c0 .1.1.1.1.1v-.1h1.1c1.6 2.1 3.4 4 5.1 5.7c6 6.1 12.1 10.9 20.6 10.9s14.6-4.8 20.6-10.9c1.7-1.7 3.5-3.6 5.1-5.7h1.1v.1s.1 0 .1-.1c50.5 1.8 95.7 8.5 129.3 18c19.7 5.7 35.5 12.4 45.7 19.3S472 330.9 472 336s-3.9 11.4-14.1 18.3s-26 13.6-45.7 19.3c-25.1 7.1-56.8 12.6-92.2 15.7c-16 10.7-16 10.7 0 16.1c36.8-3.1 69.8-8.8 96.6-16.5c20.8-5.9 37.8-12.9 50.3-21.4c12.4-8.4 21.1-18.9 21.1-31.5c0-9.1-4.5-23.3-11.7-33.6c1.9-.8 3.8-1.9 5.6-3.2c4.6-3.4 8.1-8.6 10-15c3.8-12.6-4-24-14.1-29c-2.5-1.2-5.3-2.1-8.3-2.4s-6.1 0-9.2 1.2c-6.1 2.2-11 7.7-13.7 14.8l16.8 6.4c1.4-3.6 2.5-4.1 3.2-4.3c.6-.3 1.7-.3 3.3.5c3.1 1.5 5.4 5.6 4.8 7.6c-1.1 3.4-2.2 4.8-3.5 5.7c-1.3 1-3.1 1.7-5.9 2c-2.3.2-5.1.1-8.2-.1c-11.1-5.9-24.7-11-40.5-15.5l-1.2-.3c8.2-3.4 15.7-7.4 21.7-13.1c6.3-5.8 11.1-13.7 11.2-22.9c.3-19.1-14.1-32.6-29.4-34.2c-1.9-.2-3.9-.2-5.8 0c-5.9.5-11.7 2.9-16.2 7.5c-5.9 6.1-8.9 15.4-8.3 26.5l18-1c-.4-7.5 1.5-11.1 3.2-12.9c1.8-1.8 4.1-2.6 7.2-2.2c6.1.7 13.5 6.1 13.3 16v.1c-.1 3.3-1.6 6.3-5.4 9.9c-3.9 3.6-10.1 7.2-17.2 10c-9.4 3.7-20.5 6.3-30.4 7.6c-12.8-2.3-26.5-4.3-40.8-5.9c6.7-4 13.1-8.4 19.1-13.2c21.3-17 37.4-39.5 37.4-67c0-17.5-4.3-30.2-12.5-38c-6.2-5.9-14.1-8.2-21.6-7.8c-2.6.1-5 .5-7.4 1.1c-9.4 2.7-17.5 9-22.5 17.7s-6.4 20.3-1.1 31l16.2-8c-2.7-5.3-2.1-9.7.4-14s7.4-8 12-9.3c4.6-1.4 8.2-.9 11.5 2.3s7 10.5 7 25c0 20.5-11.9 38-30.6 53c-12 9.5-26.5 17.7-41.5 24.5c-1.4-.1-2.8-.2-4.3-.3C306.9 235.4 313 214 313 192c0-19-8.4-46.7-18.5-75c-10.2-28.39-22.2-56.49-30.4-73.03zm0 41.45c6.8 15.23 14.6 34.37 21.5 53.67c9.9 27.7 17.5 56 17.5 69c0 22-7.5 44.8-16.9 61.6c-4.6 8.4-9.8 15.3-14.2 19.8c-4 3.9-7.5 5.3-7.9 5.5c0 .1.1.1 0 .1s0 0 0-.1c-.4-.2-3.9-1.6-7.9-5.5c-4.4-4.5-9.6-11.4-14.2-19.8C224.5 236.8 217 214 217 192c0-13 7.6-41.3 17.5-69c6.9-19.3 14.7-38.44 21.5-53.67"/></g><path d="m256 27.88l-8.1 16.09c-8.2 16.54-20.2 44.64-30.4 73.03c-10.1 28.3-18.5 56-18.5 75c0 22 6.1 43.4 14.4 61.2c-1.5.1-2.9.2-4.3.3c-15-6.8-29.5-15-41.5-24.5c-18.7-15-30.6-32.5-30.6-53c0-14.5 3.7-21.8 7-25s6.9-3.7 11.5-2.3c4.6 1.3 9.5 5 12 9.3s3.1 8.7.4 14l16.2 8c5.3-10.7 3.9-22.3-1.1-31s-13.1-15-22.5-17.7c-2.4-.6-4.8-1-7.4-1.1c-7.5-.4-15.4 1.9-21.6 7.8c-8.2 7.8-12.5 20.5-12.5 38c0 27.5 16.1 50 37.4 67c6 4.8 12.4 9.2 19.1 13.2c-14.3 1.6-28 3.6-40.8 5.9c-9.9-1.3-21-3.9-30.4-7.6c-7.17-2.8-13.37-6.4-17.17-10c-3.9-3.6-5.4-6.6-5.5-9.9v-.1c-.2-9.9 7.2-15.3 13.4-16c3.1-.4 5.37.4 7.17 2.2c1.7 1.8 3.6 5.4 3.2 12.9l18 1c.6-11.1-2.4-20.4-8.3-26.5c-4.5-4.6-10.3-7-16.17-7.5c-2-.2-3.9-.2-5.9 0c-15.2 1.6-29.7 15.1-29.4 34.3c.2 9.1 5 17 11.2 22.8c6.1 5.7 13.6 9.7 21.8 13.1l-1.2.3c-15.8 4.5-29.4 9.6-40.5 15.5c-3.1.2-6 .4-8.3.1c-2.8-.3-4.6-1-5.9-2c-1.3-.9-2.4-2.3-3.5-5.7c-.6-2 1.7-6.1 4.8-7.6c1.6-.8 2.7-.8 3.3-.5c.7.2 1.8.7 3.2 4.3l16.8-6.4c-2.7-7.1-7.6-12.6-13.7-14.8c-3.1-1.2-6.2-1.5-9.2-1.2c-2.9.3-5.8 1.2-8.3 2.4c-10.1 5-17.9 16.4-14.1 29c1.9 6.4 5.4 11.6 10 15c1.8 1.4 3.7 2.4 5.7 3.2c-7.2 10.4-11.7 24.5-11.7 33.6c0 12.6 8.7 23.1 21.1 31.5c12.5 8.5 29.5 15.5 50.3 21.4c26.77 7.7 59.77 13.4 96.57 16.5c16-5.4 16-5.4 0-16.1c-35.4-3.1-67.1-8.6-92.17-15.7c-19.7-5.7-35.5-12.4-45.7-19.3s-14.1-13.2-14.1-18.3s3.9-11.4 14.1-18.3s26-13.6 45.7-19.3c33.57-9.5 78.77-16.2 129.27-18c0 .1.1.1.1.1v-.1h1.1c1.6 2.1 3.4 4 5.1 5.7c6 6.1 12.1 10.9 20.6 10.9s14.6-4.8 20.6-10.9c1.7-1.7 3.5-3.6 5.1-5.7h1.1v.1s.1 0 .1-.1c50.5 1.8 95.7 8.5 129.3 18c19.7 5.7 35.5 12.4 45.7 19.3S472 330.9 472 336s-3.9 11.4-14.1 18.3s-26 13.6-45.7 19.3c-25.1 7.1-56.8 12.6-92.2 15.7c-16 10.7-16 10.7 0 16.1c36.8-3.1 69.8-8.8 96.6-16.5c20.8-5.9 37.8-12.9 50.3-21.4c12.4-8.4 21.1-18.9 21.1-31.5c0-9.1-4.5-23.3-11.7-33.6c1.9-.8 3.8-1.9 5.6-3.2c4.6-3.4 8.1-8.6 10-15c3.8-12.6-4-24-14.1-29c-2.5-1.2-5.3-2.1-8.3-2.4s-6.1 0-9.2 1.2c-6.1 2.2-11 7.7-13.7 14.8l16.8 6.4c1.4-3.6 2.5-4.1 3.2-4.3c.6-.3 1.7-.3 3.3.5c3.1 1.5 5.4 5.6 4.8 7.6c-1.1 3.4-2.2 4.8-3.5 5.7c-1.3 1-3.1 1.7-5.9 2c-2.3.2-5.1.1-8.2-.1c-11.1-5.9-24.7-11-40.5-15.5l-1.2-.3c8.2-3.4 15.7-7.4 21.7-13.1c6.3-5.8 11.1-13.7 11.2-22.9c.3-19.1-14.1-32.6-29.4-34.2c-1.9-.2-3.9-.2-5.8 0c-5.9.5-11.7 2.9-16.2 7.5c-5.9 6.1-8.9 15.4-8.3 26.5l18-1c-.4-7.5 1.5-11.1 3.2-12.9c1.8-1.8 4.1-2.6 7.2-2.2c6.1.7 13.5 6.1 13.3 16v.1c-.1 3.3-1.6 6.3-5.4 9.9c-3.9 3.6-10.1 7.2-17.2 10c-9.4 3.7-20.5 6.3-30.4 7.6c-12.8-2.3-26.5-4.3-40.8-5.9c6.7-4 13.1-8.4 19.1-13.2c21.3-17 37.4-39.5 37.4-67c0-17.5-4.3-30.2-12.5-38c-6.2-5.9-14.1-8.2-21.6-7.8c-2.6.1-5 .5-7.4 1.1c-9.4 2.7-17.5 9-22.5 17.7s-6.4 20.3-1.1 31l16.2-8c-2.7-5.3-2.1-9.7.4-14s7.4-8 12-9.3c4.6-1.4 8.2-.9 11.5 2.3s7 10.5 7 25c0 20.5-11.9 38-30.6 53c-12 9.5-26.5 17.7-41.5 24.5c-1.4-.1-2.8-.2-4.3-.3C306.9 235.4 313 214 313 192c0-19-8.4-46.7-18.5-75c-10.2-28.39-22.2-56.49-30.4-73.03zm0 41.45c6.8 15.23 14.6 34.37 21.5 53.67c9.9 27.7 17.5 56 17.5 69c0 22-7.5 44.8-16.9 61.6c-4.6 8.4-9.8 15.3-14.2 19.8c-4 3.9-7.5 5.3-7.9 5.5c0 .1.1.1 0 .1s0 0 0-.1c-.4-.2-3.9-1.6-7.9-5.5c-4.4-4.5-9.6-11.4-14.2-19.8C224.5 236.8 217 214 217 192c0-13 7.6-41.3 17.5-69c6.9-19.3 14.7-38.44 21.5-53.67"/></g></g>',
+    'woman-turban': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(114.1 -84.4) scale(0.5662)"><g class="halo" stroke-width="35.3"><path d="M254.654 15.072c-12.396 26.293-18.327 55.655-26.254 84.526c5.225 5.148 11.26 10.11 18.594 14.771c-8.382 1.204-15.876.926-22.765-.357c-3.005 9.729-6.406 19.333-10.538 28.67c7.056 8.499 15.448 16.69 27.137 24.12c-10.826 1.555-20.17.639-28.642-1.728c8.837 17.645 23.203 36.3 36.605 49.24c2.385-13.769 4.764-33.947 5.723-55.628c1.477-33.415.1-71.578-6.604-100.088l17.524-4.12c7.38 31.392 8.587 70.53 7.062 105.002c-.938 21.206-2.718 40.143-5.162 54.862c16.875-14.522 32.157-38.713 40.344-56.26a261 261 0 0 0-.875-17.64c-6.972 1.33-14.562 1.63-23.065.41c8.527-5.42 15.285-11.25 21.067-17.303a229 229 0 0 0-5.45-25.653c-5.573.631-11.538.61-18.05-.326a111.7 111.7 0 0 0 14.619-11.045c-6.447-19.354-15.052-36.003-24.565-50.086c-3.554 3.028-7.617 5.847-12.316 8.405c2.423-6.369 4.098-12.409 5.242-18.215a191 191 0 0 0-9.63-11.557zm-56.94 161.881c-40.373 27.332-80.198 59.974-123.161 101.248c-.003.003-2.21 3.686-3.38 9.656c-1.168 5.971-1.849 14.058-1.923 23.178c-.128 15.76 1.604 34.596 4.768 52.383c76.585-11.245 132.73-24.958 166.714-46.209c-20.028-30.571-28.038-62.978-24.783-94.922a143 143 0 0 1 2.201-14.3c-7.724-9.618-14.802-20.207-20.435-31.034zm119.083 3.19c-5.477 10.117-12.258 20.951-20.342 30.873c1.767 9.172 2.867 17.895 3.258 26.195c1.026 21.788-2.996 40.877-11.856 57.098c47.332 23.797 95.577 45.482 149.383 58.296c4.716-12.839 5.421-24.583 2.762-36.6c-3.076-13.898-10.654-28.339-21.723-43.901c-8.591-12.08-33.38-36.278-63.834-61.83c-11.833-9.93-24.56-20.12-37.648-30.131m-83.045 45.101c-2.518 27.175 4.04 54.397 21.477 81.268a85 85 0 0 0 6.042-5.875c14.875-16.051 21.739-35.454 20.461-62.58c-.163-3.464-.487-7.066-.941-10.78c-6.397 5.504-13.349 10.17-20.857 13.48l-4.643 2.048l-4.154-2.912c-5.662-3.967-11.553-8.945-17.385-14.649m43.76 84.18a96 96 0 0 1-3.037 3.447c-13.118 14.156-30.662 25.324-52.467 34.502a2666 2666 0 0 0 61.008 42.272c41.574 27.949 84.45 54.98 118.697 73.6c17.123 9.309 32.136 16.512 43.371 20.612c5.617 2.05 10.31 3.301 13.494 3.739c.225.03.267-.009.473.011c5.211-31.844 8.244-73.704-18.738-115.89c-59.73-13.242-112.193-36.793-162.801-62.293m-75.778 45.547c-35.398 11.779-79.823 19.924-132.88 27.455l-1.668.76c-26.963 27.842-32.639 70.496-25.948 104.939c87.895-12.79 155.857-51.688 217.87-92.938a2655 2655 0 0 1-57.374-40.216"/></g><path d="M254.654 15.072c-12.396 26.293-18.327 55.655-26.254 84.526c5.225 5.148 11.26 10.11 18.594 14.771c-8.382 1.204-15.876.926-22.765-.357c-3.005 9.729-6.406 19.333-10.538 28.67c7.056 8.499 15.448 16.69 27.137 24.12c-10.826 1.555-20.17.639-28.642-1.728c8.837 17.645 23.203 36.3 36.605 49.24c2.385-13.769 4.764-33.947 5.723-55.628c1.477-33.415.1-71.578-6.604-100.088l17.524-4.12c7.38 31.392 8.587 70.53 7.062 105.002c-.938 21.206-2.718 40.143-5.162 54.862c16.875-14.522 32.157-38.713 40.344-56.26a261 261 0 0 0-.875-17.64c-6.972 1.33-14.562 1.63-23.065.41c8.527-5.42 15.285-11.25 21.067-17.303a229 229 0 0 0-5.45-25.653c-5.573.631-11.538.61-18.05-.326a111.7 111.7 0 0 0 14.619-11.045c-6.447-19.354-15.052-36.003-24.565-50.086c-3.554 3.028-7.617 5.847-12.316 8.405c2.423-6.369 4.098-12.409 5.242-18.215a191 191 0 0 0-9.63-11.557zm-56.94 161.881c-40.373 27.332-80.198 59.974-123.161 101.248c-.003.003-2.21 3.686-3.38 9.656c-1.168 5.971-1.849 14.058-1.923 23.178c-.128 15.76 1.604 34.596 4.768 52.383c76.585-11.245 132.73-24.958 166.714-46.209c-20.028-30.571-28.038-62.978-24.783-94.922a143 143 0 0 1 2.201-14.3c-7.724-9.618-14.802-20.207-20.435-31.034zm119.083 3.19c-5.477 10.117-12.258 20.951-20.342 30.873c1.767 9.172 2.867 17.895 3.258 26.195c1.026 21.788-2.996 40.877-11.856 57.098c47.332 23.797 95.577 45.482 149.383 58.296c4.716-12.839 5.421-24.583 2.762-36.6c-3.076-13.898-10.654-28.339-21.723-43.901c-8.591-12.08-33.38-36.278-63.834-61.83c-11.833-9.93-24.56-20.12-37.648-30.131m-83.045 45.101c-2.518 27.175 4.04 54.397 21.477 81.268a85 85 0 0 0 6.042-5.875c14.875-16.051 21.739-35.454 20.461-62.58c-.163-3.464-.487-7.066-.941-10.78c-6.397 5.504-13.349 10.17-20.857 13.48l-4.643 2.048l-4.154-2.912c-5.662-3.967-11.553-8.945-17.385-14.649m43.76 84.18a96 96 0 0 1-3.037 3.447c-13.118 14.156-30.662 25.324-52.467 34.502a2666 2666 0 0 0 61.008 42.272c41.574 27.949 84.45 54.98 118.697 73.6c17.123 9.309 32.136 16.512 43.371 20.612c5.617 2.05 10.31 3.301 13.494 3.739c.225.03.267-.009.473.011c5.211-31.844 8.244-73.704-18.738-115.89c-59.73-13.242-112.193-36.793-162.801-62.293m-75.778 45.547c-35.398 11.779-79.823 19.924-132.88 27.455l-1.668.76c-26.963 27.842-32.639 70.496-25.948 104.939c87.895-12.79 155.857-51.688 217.87-92.938a2655 2655 0 0 1-57.374-40.216"/></g></g>',
+    'woman-nurse': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(-21.7 -4.7) scale(1.0849)"><g class="halo" stroke-width="18.4"><path fill-rule="evenodd" d="M150 150l26-70h160l26 70zM244 92h24v16h16v22h-16v16h-24v-16h-16v-22h16z"/></g><path fill-rule="evenodd" d="M150 150l26-70h160l26 70zM244 92h24v16h16v22h-16v16h-24v-16h-16v-22h16z"/></g></g>'
+  };
+  var LOCOMOTIVE = '<path d="M18 18v31.758C38.244 53.855 59.076 55.953 80 56a318 318 0 0 0 50.658-4.27C143.375 100.622 200.964 135.96 268 136c15.1-.044 30.093-1.903 44.395-5.504c3.702 25.632 27.322 44.78 55.275 44.813q.713-.016 1.424-.048c4.215 14.473 20.33 24.72 38.906 24.738c22.09 0 40-14.327 40-32c-.022-13.555-10.718-25.63-26.697-30.137a48 48 0 0 0 2.203-14.21c-.02-19.245-11.602-36.886-30.057-45.772C402.962 63.617 407.94 47.92 408 32c-.033-7.4-1.128-6.774-3.268-14zm-2 205v18h23v48H25v94h142v-94h-14v-48h23v-18zm360 0v18h17v46h46v-46h17v-18zM57 241h14v48H57zm32 0h46v48H89zm231 20c-7.25 0-14.577 1.013-19.154 2.54c-2.077.69-3.287 1.444-3.846 1.855V287h46v-21.605c-.56-.41-1.77-1.164-3.846-1.856C334.577 262.012 327.25 261 320 261m-135 44v30h247v18H185v30h279c36 0 36-78 0-78zM25 401v37.22L75.67 401zm416 0v78h53.906c-4.965-9.187-9.113-19.953-12.734-31.557c-4.94-15.833-8.498-32.39-10.227-46.443zm-289 1.49c-10.72 0-20.57 3.55-28.455 9.533L164.325 463h32.714a47.4 47.4 0 0 0 1.96-13.51c0-26.064-20.936-47-47-47zm112 0c-8.46 0-16.374 2.217-23.213 6.088L284.327 463h24.712a47.4 47.4 0 0 0 1.96-13.51c0-26.064-20.936-47-47-47zm112 0c-8.46 0-16.374 2.217-23.213 6.088L396.327 463c1.68 2.254 1.69 1.93 1.673 4.2V481h-56.945c8.586 9.524 21.034 15.49 34.945 15.49c26.064 0 47-20.936 47-47s-20.936-47-47-47m-278.994 5.174L43.456 447H87.06c.512-13.423 5.137-25.816 12.633-35.975zm130.105 12.633C220.78 428.302 217 438.43 217 449.49c0 4.703.69 9.234 1.96 13.51h42.313zm112 0C332.78 428.302 329 438.43 329 449.49c0 4.703.69 9.234 1.96 13.51h42.313zm-227.684 5.392c-4.08 6.97-6.426 15.096-6.426 23.8c0 26.064 20.936 47 47 47c13.91 0 26.36-5.966 34.945-15.49h-31.27zM25.023 465c.522 16.756 14.085 30 30.977 30s30.455-13.244 30.977-30zm204.032 16c8.586 9.524 21.034 15.49 34.945 15.49c13.91 0 26.36-5.966 34.945-15.49z"/>';
+
+  // ---------- small DOM helpers (ES5, no classList) ----------
+  function $(id) { return document.getElementById(id); }
+  function hasClass(el, c) { return (' ' + el.className + ' ').indexOf(' ' + c + ' ') >= 0; }
+  function addClass(el, c) { if (!hasClass(el, c)) el.className = (el.className ? el.className + ' ' : '') + c; }
+  function removeClass(el, c) { el.className = (' ' + el.className + ' ').replace(' ' + c + ' ', ' ').replace(/^\s+|\s+$/g, ''); }
+  function toggleClass(el, c, on) { if (on) addClass(el, c); else removeClass(el, c); }
+  function show(el, on) { toggleClass(el, 'hide', !on); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function closest(el, attr) { while (el && el.getAttribute) { if (el.getAttribute(attr) !== null) return el; el = el.parentNode; } return null; }
+  function on(el, ev, fn) { el.addEventListener(ev, fn, false); }
+
+  // ---------- storage (optional: the game works without it) ----------
+  var store = { settings: { mode: 'auto', lock: false }, progress: {}, last: null };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.progress) store = parsed;
+      if (!store.settings) store.settings = { mode: 'auto', lock: false };
+    }
+  } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+  // ---------- state ----------
+  if (store.settings.shade === undefined) store.settings.shade = true;
+  var data = null, current = null, n = 0;
+  var cells = [];          // '' | initial | 'x', one per cell
+  var board = null;        // { room: [], obj: [], roomIndex: {} }
+  var sel = -1;            // selected cell index (keyboard and info line)
+  var tool = '';           // '' | an initial | 'x' | 'erase'
+  var history = [];        // undo stack: arrays of [index, previous value]
+  var colorOf = {};        // initial -> palette index
+  var cellEls = [];        // button per cell
+  var painted = {};        // last class state per cell, to touch the DOM only on change
+  var wrongCells = {};     // cells flagged by Check until the next move
+
+  function caseState(id) {
+    var s = savedState(caseById(id));
+    if (!s) { s = store.progress[id] = { cells: null, solved: false, sig: signature(caseById(id)) }; }
+    return s;
+  }
+
+  function caseById(id) {
+    for (var k = 0; k < data.cases.length; k++) if (data.cases[k].id === id) return data.cases[k];
+    return null;
+  }
+
+  // Identifies a puzzle's layout and cast, so progress saved for an older
+  // version of a case is not applied to a different puzzle.
+  function signature(c) {
+    var who = [];
+    for (var k = 0; k < c.characters.length; k++) who.push(c.characters[k].initial);
+    return c.rooms.join('/') + '|' + who.join('');
+  }
+
+  // Saved progress for a case, or null if none was saved for this version of it.
+  function savedState(c) {
+    var s = store.progress[c.id];
+    return s && s.sig === signature(c) ? s : null;
+  }
+
+  // ---------- loading ----------
+  function load() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'cases.json', true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+        try { data = JSON.parse(xhr.responseText); } catch (e) { data = null; }
+      }
+      if (!data) { $('loading').innerHTML = 'Could not load the cases. Check your connection and reload.'; return; }
+      show($('loading'), false);
+      var start = /[?&]case=(\d+)/.exec(location.search);
+      if (start && data.cases[+start[1] - 1]) openCase(+start[1] - 1);
+      else showCases();
+    };
+    xhr.send(null);
+  }
+
+  // ---------- screens ----------
+  function screen(name) {
+    show($('screen-cases'), name === 'cases');
+    show($('screen-play'), name === 'play');
+    show($('screen-help'), name === 'help');
+    window.scrollTo(0, 0);
+  }
+
+  function isLocked(i) {
+    if (!store.settings.lock || i === 0) return false;
+    var prev = savedState(data.cases[i - 1]);
+    return !(prev && prev.solved);
+  }
+
+  // Coastlines from Natural Earth (public domain) via world-atlas, projected and simplified for this map.
+  var MAP = {"w":632,"h":364,"land":"M450 349.5L451 352.3L452 353.2L454 354.4L458.3 356.6L462.4 356.9L463.3 359.1L464.2 360.3L463.9 362.3L464.5 365.6L465.3 368L463.1 368L462.4 366.1L461.3 364.7L458.5 364L456.2 364L454.2 362.9L453.7 360L452.5 359.3L450.9 357.3L449 355.3L447 353.5L445.1 352.4L443 351.7L441.3 352.6L440.1 351.8L442.3 350.6L445.1 348.3L447.2 347.6L450 349.5zM83.9 327.9L85.6 328.7L87.5 328L89.4 328.6L89.6 330.3L88.8 332.1L87.6 334L86.6 336L85.7 338.3L84.1 339.7L82.6 340.5L79.5 338.8L77.6 338.4L76.7 335.1L74.7 334L72.2 336L71.5 334.6L69.9 333.5L77.4 326.2L79.5 324.8L84.1 323.2L84.3 324.8L84.7 326L83.9 327.9zM201.1 299.5L202 301.1L204 308L204.2 309.4L203.8 310.9L201.2 315.4L201.6 318.3L202.3 320L202.4 322L202 324.4L200.8 339.2L200.2 341.8L199.8 344.1L198.5 344.8L196.6 344L194.4 342.8L192.3 343.3L190.7 342.2L190.1 347.3L189 349.3L187.5 350.7L186 350.7L184.5 350.3L182.3 349.3L181.5 347.6L180.4 345.5L179.1 343L179 340.8L178.8 335.9L179.7 333.8L179.9 331.6L179.7 329.6L181.4 329.4L181.5 326.6L180.5 325.1L178.9 324.6L178.8 323L178.9 321.4L179.8 320.4L180.1 319L180.1 314.8L178.9 313.2L178.6 310.9L178 309.4L176.9 307.9L175.8 306.7L175 305.5L174.9 302.4L175.2 299.7L177.2 300.1L180.1 300.7L181.9 300.3L184.2 299.1L186.4 297.7L189.6 293.5L191.6 292.7L192.6 291.6L192.9 290.1L194.7 291.2L197.9 292.5L198.6 293.7L199.4 295L200.7 296L199.6 298.2L201.1 299.5zM198.3 249.5L197.9 253.3L198.8 255.2L199.7 266.2L197.3 271.1L196.8 277.4L196.4 278.8L195.6 280.1L194.2 284.4L193 286.4L189.7 284L187.7 283L186.8 281.9L186.6 280.1L187.5 279L185.5 277.2L184.5 275.5L185.3 273.8L184.9 272.3L182.8 272.2L183.4 270.5L184.3 269.3L184.2 267.9L182.2 266.2L181.8 264.7L183.8 263L182.9 261.5L183.1 259.3L184.5 256.1L186.3 254.6L189.5 253.6L191.2 252.1L193.2 251.4L194.8 252.4L195.7 250.5L195.6 245.9L196.2 244L198 244.9L198.3 248L198.3 249.5zM305.3 368L307 366.8L309.4 367.4zM-4 -4L58.6 -4L58.7 -1.8L57.8 0.8L56.8 3.2L56.3 6.2L55.3 8.1L52.6 10.6L50.9 11.5L49.4 11.1L50.1 13L50.1 14.4L48.6 15.5L47 16L44.4 15.4L40.6 17.4L43.3 18.5L43.2 21.5L41.6 22.4L39.7 22.8L37.8 22.9L36.2 23.4L34.7 24.3L36.6 23.8L37.9 24.2L38.8 25.9L43.2 27L45.4 27L49.8 26.6L51.9 26.7L52.7 28.3L52.4 31.7L46 35.2L44.7 37.1L41 38.1L39.5 39.4L36.7 40.2L34.6 41.1L32.5 42.2L30.8 42.6L23.4 41.2L18.9 41.3L12.9 42.5L11.3 42.3L9 41.2L6.6 40.4L3.9 40.1L1.5 39.1L3 41.1L-0.3 43L-1.8 43.3L-3.4 43.3zM636 -4L636 368L502.6 368L502.9 364.8L504.2 364.8L504.4 362.9L503.4 359.8L503.5 358.2L505.9 358L507.3 359.9L507.7 361.8L507.4 363.5L508.3 365.2L509.3 363.8L510.6 364.3L512.2 364.7L516.5 363.6L514.2 362.8L513.1 361.9L511.8 359.9L511.1 358.1L510.5 355.9L513.1 354.2L515 351.3L513.3 350.1L511.4 349.4L511.3 348L512 346.9L512.1 345.4L509.6 341.6L509.5 339.6L511.4 337.5L513.2 335L511.6 333.8L505.4 334.9L503 335.8L498.7 336.3L498.4 334.9L499.5 331.3L499.4 325.7L500 322.7L502.4 321.8L505.3 317.3L510 312L515 312.1L516.9 310.6L519.9 310.5L520.8 312.6L523.4 314.1L527.9 313.9L530.1 312.5L528 309.9L530.5 309L532.6 309.7L532.1 311.1L531.5 312.5L538 311.9L544.2 312.6L546.1 312.2L551 312.2L550.4 310.3L549 309.9L547 308.5L550.1 306L551.8 305.5L560 304L566.1 303.2L557.4 301.4L555.5 300.4L552.9 298L551.7 296.2L552.1 293.7L552.6 291.8L553.5 290.7L556.7 290.5L567.4 292.5L575.2 291.3L583.6 294.2L591.6 293.6L593.3 292.3L595.3 288.1L606.6 281.1L610.6 277.4L614.8 275.4L622.1 273.2L628.2 270.3L630 270L636 270.5L636 207.7L631.2 204L632 202.3L632.7 200.7L634.2 194.8L634 192.9L633.1 189.9L630.2 187.5L627.9 187.9L626.5 187.4L621.6 183.3L619 183.1L616.1 183.9L614.2 181.9L620 177L625.7 172.9L628.2 172.5L631.6 170.6L635.1 167.8L634.6 165.6L633.8 163.9L632.1 164.3L630.8 164.9L627.9 163.1L626.7 161.8L622.1 163.2L619.5 163L613.7 164.2L611 163L605.7 159.6L603.7 158.9L602 159.1L601.1 158L602.2 157.4L603.5 157.3L604.9 156.9L605.2 155.2L602.4 154.4L599.9 154.1L598.3 153.1L597 152L599.9 152L602.8 152.8L607.4 153.1L611.6 154L612.6 152.9L615 151L611.5 151.7L607.4 150.9L605.9 149.7L604.6 148L604.1 146L604.4 144.2L604 140.9L602.6 137.9L602.1 136.3L600.7 134.9L602.1 138.2L602.6 140.3L603.5 142.3L603.3 147.6L602.8 149.5L601.1 150L598.9 149.7L596.6 149.1L597.2 146.2L596 147.2L594.2 150.1L592.7 150.5L589.5 150.2L583.3 152.1L582.9 154.1L581.9 156.9L581 158.5L578.2 163.7L572.9 169.8L569.1 171.6L567.1 172.8L565.7 173.4L563.2 172.8L561.7 174.7L561.7 176.8L563 178.3L564 183.5L563.6 185.6L563.3 187.4L562.3 192.9L561.8 194.6L560.9 196.5L551.7 198.7L552.1 195.8L551.7 194.4L552.6 193L550.5 192.6L548.9 194.5L549.5 197.3L548.5 198.9L548.1 201.8L547.4 203.7L548.9 203.5L548.2 205.2L545.4 208.7L544.4 210.7L544.7 218.8L543.5 223.6L543.4 225.1L542.9 231.4L541.2 234.3L538.6 233.3L535.2 234.1L533.4 237.4L532.4 238.4L531.5 239.6L530.9 243.9L530.8 250.9L529.5 251.8L523.5 258.2L526.3 260L527.5 261.3L529.6 265L532.5 269.2L533.1 271.2L532.6 274.2L533.7 277.4L536.4 282L539 284.3L549.9 290L551.9 290.4L551.5 292.7L550.8 294.8L550.1 296.2L546.9 297.1L538.1 294.6L535.9 294.3L534.4 294.8L531.4 296.6L528.2 296L523.8 297.1L522.5 300.6L519.4 304.5L514.3 307.7L510.6 309.4L505.2 315.6L502.6 319.2L500.3 320.5L500.7 318.7L501.4 317.1L501.3 314.2L503.1 312.2L504.8 310.8L509.7 308.2L511 306.1L507.1 306.2L503.2 306.7L500.7 306.3L498.6 306.5L497.9 304.6L496.9 302.4L494.1 300.5L487.6 299.3L484.5 297.9L483.1 298.2L480.5 296.5L478.7 297.3L474.9 300.1L472.8 299.8L470.6 298.1L469.2 297.8L467.5 298.7L464.8 302L462 303.6L459.6 302.9L456.3 302.9L455.9 304.8L456.6 306.1L458.3 308.2L457.5 309.9L458.1 311.5L461.1 311.8L464.4 313.9L465.8 316.1L466.7 318.6L464.8 316.8L463.4 315.1L461.6 314.5L459 313.1L457.4 312.8L455.7 313.8L457.4 317.1L459.1 318.4L460 319.4L460.6 321.8L459.6 323.3L457.6 321.8L454.5 316.6L450.2 315.5L450.3 319.4L454.7 323.5L449.6 322.7L448.4 320.1L448.1 316.8L444.3 314.5L440.7 312L439.8 309.6L441.1 307.1L439.1 307.4L437.9 308.5L435.8 309.5L435.7 311.3L436 312.9L435.4 315.2L434.7 319.3L435.1 321.5L439.6 327.6L441 332.1L442.1 333.7L444.4 335.6L446.7 339.1L447.7 340.9L448.4 343.8L446.4 345.7L444.7 344.9L445.5 342.9L442.3 339.8L441 340.5L439.6 341.7L440.5 344L441.4 345.5L441.9 347.6L443.7 347.4L441.2 349.8L439 351L436.7 351L435.2 351.2L436.9 352.3L438.4 353.6L442.9 355.1L445 357L447.1 357.2L449.2 360.7L452.8 361.7L454.8 365.2L457.6 366L460 367.3L419.5 368L421.3 365.9L423.6 366L426.6 368L439.1 368L438.1 366.9L435 365.4L432.1 363L431.4 364.4L430.2 365.1L428.6 365.2L423.8 363.7L420.9 364.9L419.3 365.1L416.6 365.7L414.9 366L413.4 363.8L412.8 362L412.3 363.4L411.9 364.7L409.7 365.4L408.4 364.4L407.4 361.3L406.3 357.4L404.1 354.2L402.4 353.4L402.2 351.7L402.4 350.3L404.4 349.9L407.7 351.4L409.1 350.4L409 348.9L408.5 347.6L407 347.7L405 347.5L402.4 348.2L401.2 347.5L398.7 344.6L396.8 341.8L393.8 339.9L391.8 334.2L390.1 331.7L388.3 329.9L388.2 327.6L387.7 325.7L385.6 321.3L379 316.9L377.5 315L376.7 313.4L376.1 311.8L377.4 312.2L378.2 310.2L376.5 306.2L377.2 301.8L378.6 298.1L378.5 293.7L379 290.3L378.4 288.1L378.2 285.3L379.2 281.8L380.6 279.7L380.7 275.9L378.7 274.2L376.4 273.8L373.6 271.7L372.4 268.8L368.4 263.9L363.6 260.6L363.9 258.9L362.2 259.3L358.2 256.7L355.1 253.9L349 249.7L344.7 248.7L338.8 245.2L334.9 244L336.4 243.7L338.1 243.7L347.2 248.3L346.2 247.1L344.7 246L340.1 241.4L336.5 238.9L332.4 234.2L326.9 232.4L323.2 230.3L321 230.6L318.4 231.2L316.9 231.3L315 229.6L315 227.3L312.8 225.3L309.8 223.3L307 220.8L301.4 213.9L300.2 211.7L302.2 211.3L304.7 210.9L306.5 211.3L304.9 209.9L302.9 208.4L297.7 202.7L296.1 200L295.9 197.1L296.3 193.1L295.4 190.3L291.4 186.6L289.9 184.6L286.9 183.5L285.6 183.6L284.8 185.1L284.2 188.3L281.6 192.5L280.7 194.3L279.3 196.7L277.5 196.6L275.3 192.6L273.2 189.6L273 188.2L272.8 186.4L271.2 179.9L272.3 179L274.9 177.1L276 176.1L273.2 172.4L270.3 174L265.6 172.3L264.1 174.3L262.4 175.8L260.2 176.5L257.6 178.2L254.9 179.5L252.8 180.4L253.5 178.2L250.2 179.6L248.8 180.8L248.3 182.8L247.9 186.1L249 187L250.9 191.4L253.3 193.2L252.8 195L252.2 196.4L250.8 197.6L249.6 196.7L248.3 199.6L249.4 207.2L251 212.6L252.6 214.9L256.3 218.5L260.2 220.4L267.2 226.6L271.1 228.5L272.1 229.6L274.4 234.3L276.4 239.7L278.6 248.2L280.1 252.5L283.2 257.2L289.7 264L295.6 269.1L301.1 272.1L305.3 272.7L315.4 272L317.2 272.3L319.1 273.1L319.5 275.2L318.8 276.7L316.7 278.2L314.5 280.2L314.3 283.1L316.3 285.1L326 290.4L336 294.8L339.1 297L342.7 300.6L351.4 305.4L352.8 307.7L358.1 312.7L360.5 316.7L360.9 319.7L359.8 322.7L359.3 324.9L358.4 327.1L356.1 326.2L353.6 324L349.8 315.1L342.7 314.2L341.3 313.6L338.8 312L338 309.8L334.7 309L332.9 310.5L330.6 313.9L328.2 318.8L325.6 326.1L325.5 328.9L326.9 331.8L331 333.4L334.1 335.9L336.2 338.5L336.4 344.8L337.3 348.4L335.9 350.5L333.2 350L329.7 351.3L327.2 353.6L326.2 355.8L326.4 361.6L325.9 363.7L321.1 367.9L310.5 368L312.9 366.5L314.3 361.8L313.9 358.4L314.8 356.9L317.2 355.3L319.7 354.7L319.8 349.9L318 347.8L317.4 344.8L316.5 339.2L313.4 332.1L311.8 325.8L310.5 322.7L308.6 321L305.1 321L303.3 320.6L297.1 316.2L296.7 314.4L297.7 312.6L297.1 310.2L296.3 308L295.1 306L293.8 305L291 305.7L288.2 305.9L286.9 306.8L288.2 303.4L285.5 301.3L282.6 301.1L281.3 301.8L280.8 299.8L277.4 293L275.1 290.3L271.9 290.4L268.4 289.1L266.3 288.9L263.5 290L262.3 288.6L259.2 285.8L255.2 284.2L247.5 275.3L245.2 271.9L240.3 268.3L237.3 262.9L234.7 261L231.1 259.4L229.1 260.2L227.6 259.6L229.1 258.5L228.8 256.5L224.7 251.2L222.2 249.5L221 247L219.3 245.5L217 245.3L217 242.7L217.3 240.8L217.1 239.1L215.8 234.7L213.5 231L212.2 222.2L211.1 219.8L208.5 217.9L202.8 215.8L194.9 210.1L193.2 210L188.4 207.8L185.4 207.4L181.5 209.4L176.9 214.8L173 220.5L171.7 221.6L166.8 223.6L162.4 224.5L158.3 226.3L156.8 227.3L151.1 233L148.4 234.7L147.3 237.6L145.8 239.2L144.4 240L141 240.8L137.5 242.5L136 241.8L132 241.8L129.5 239.8L124.7 238.4L123.2 235.4L121 235.2L119.6 235.3L118.5 233.8L117 233.3L115.1 233.7L113.5 234L112.2 234.7L110.7 234.3L106.7 232.8L103.4 232L101.4 229.7L100.3 229L97.7 229.7L96.8 231L95.5 232.4L86 239.4L84.2 242.3L82.2 246.6L82.1 248.6L82.9 255L84.9 258.4L85.6 260.8L86.8 262.9L85.3 263.6L84 266.2L85.3 267.5L85.8 271.9L84 274L81.4 276.5L68.8 284.3L65.8 288.1L64.7 288.9L55.4 291.3L48.8 293.9L45.7 294.8L41.8 299.2L40 301L41.5 301.5L43.2 303.6L40.1 306L38.4 306.2L33.7 314.1L29.9 319.6L27.8 322L25.8 325.6L21.2 334.9L21.1 337.6L23.4 346.8L24.7 349.2L26.5 351.2L29.9 353L30.7 354.7L29.5 356.3L26.1 359.2L20.2 363.1L17.7 366.1L17.4 368L-4 368L-4 233.5L-2.4 233L0.3 229.7L2.8 217.9L4.6 203.8L5.9 201.2L7.6 200.4L6.3 198.5L5.1 200.5L5.6 188.2L6.3 183.5L7.6 178.6L10.1 180.5L12.2 182.5L13.3 184.2L14.6 190L15.6 191.2L17.2 192.4L16.6 191.1L15.5 190.1L13.9 182.4L12.8 180.2L11.2 178.4L6 174.6L5.2 172.4L7 172.4L8.5 173.1L7.8 171.5L7.2 168.4L6.6 161.1L6.4 158.3L4.7 158L3.4 157.9L2 157.3L-4 153.7L-4 97.9L1.1 97.7L0.3 96.3L-1.2 93.5L-1.5 83.1L-3.4 80.2L-4 79.1L-4 70.7L-1.6 71L2.4 70L4.4 70.7L4.2 72.8L4.8 75.6L5.5 76.8L6.5 78.3L9.8 78.2L13.3 79L17.7 79.2L24.1 80.7L26.9 79.8L29.5 77.9L34.6 76.7L32.1 76.4L29.4 75.2L29.1 73.9L30.4 70.1L38.2 66L43.8 64.7L49.6 62.5L52.5 60.1L54.4 57L55.9 55.8L55.1 54.7L55.6 43.2L56.2 41.1L57.3 39.4L59 38.1L61.7 36.6L71.3 34.7L72.7 33.9L80.6 29.5L85.3 27.3L87.6 26.6L89 26.2L91.9 26L94.2 26.8L97.2 27.2L99.6 26.1L101.4 27L103.4 26.4L101.8 25.9L99.4 24.9L96.1 25.8L93.8 24.7L91.9 24.6L90.6 23.7L89.4 22.3L90.3 21.4L94.7 20.9L97.3 21.5L101.9 24.5L104.3 24.1L102.5 22.9L100.8 22.1L99.4 20.9L102.6 20.5L101.8 18.9L98.4 15.3L99.8 12.3L100.9 10.6L103.1 8.9L106.1 5.3L108.1 2.3L109.5 -1.1L110.1 -4zM327.8 244.5L331.2 245.2L333.6 244.9L335.8 245.3L337.2 246.2L335.7 246.6L333.7 246.3L331.4 247.1L329.4 246.7L328.1 245.4zM337.7 241.1L336.4 241.4L328.4 241.2L326 240.7L323.4 239.3L325.5 238.4L327.9 238.9L335.3 240.7L337.7 241.1zM330.3 237.4L327.4 237.4L324.9 237L323.7 236.1L324.2 234.3L326.9 234.5L331.2 235.3L332.1 236.2L330.3 237.4zM605.3 161.1L607.8 162.4L605.2 162L599.6 160.8L597.2 159.7L596.5 158.4L596.2 156.7L597.6 158.5L605.3 161.1zM494.7 368L495.8 366.5L496.5 365.2L496 363.6L494 361.2L493.9 359.5L496.9 358.7L498.7 360.2L499.2 361.8L499.5 366.5L498.6 368zM504.1 339.8L503.8 341.4L506.3 343.9L507.1 345.6L507.4 347.1L505.5 346.5L506.6 348.5L505.2 349.1L503.7 349.1L499.6 347.7L498.7 346.3L501.1 344.1L499.9 343.3L498 345.9L495 344.8L494.1 343.8L495.1 340.9L497.2 341L499.6 339.8L502.9 338.4L504.1 339.8zM456.6 345.4L454.5 345.9L453.2 343L456.6 345.4zM472.8 353.4L470.8 354L468.9 351.3L469.1 349.4L470.8 349.9L471.1 351.6L472.8 353.4zM491 311.3L489 312L486.7 309.9L488.9 309L490.6 310.4zM486.5 322.9L485.3 325.2L485.1 327.4L483.4 327L483.1 325.2L482.3 326.3L480.9 326.9L479.7 326.2L479.8 324.8L479.5 323L482.9 322.3L483.8 323.5L484.9 322.8L486.8 321.5L486.5 322.9zM474.5 306.4L472.3 307.3L469.8 305.6L471.2 302.4L473.6 302L474.5 303.4L474.5 305.3zM496.1 318.8L492 319.6L490.7 318.9L492 317.3L494.4 316.3L496.2 317.8zM5.8 168.9L5.1 171.2L4 169.1L2.4 167.2L2 165.6L3.9 166.3L5.8 168.9zM7.9 44.5L6.3 45.4L5.5 46.8L3.5 47.1L-0.2 45L2.1 43.3L3.4 42.3L6.4 43.3L7.9 44.5zM214.8 248.1L215.5 249.7L215.3 251.9L213.7 250.6L211.5 251.2L210.1 251.1L210 249.3L212.2 249.2L214.2 249zM180.2 346.6L179.2 349.2L178.1 347.4L178 345.8L179.5 346.1zM104.6 326.5L98.8 323.8L97 323.5L96.6 321.5L100.4 320.5L103.4 321.5L105 324.6L104.6 326.5zM55.9 356.9L54.3 356.9L52.5 356.9L52.7 355.2L54.1 355.9L55.9 356.2zM53.2 350.5L52.5 352.1L49.8 351.6L49.8 349.1L50.6 347.6L51.4 346.3L55.3 345.2L56.4 347.4L54.1 350.2zM294.6 193L292.3 193.5L291.3 192.5L289.2 191.5L288.1 190.3L289.4 188.6L290.3 186.5L291.3 187.8L292.6 190.1L294.6 193zM301.4 209.7L299.8 209.1L298.7 208.2L296.4 205.8L295.9 204.2L293.7 201.1L295.4 202.3L298.1 204.5L300.1 207.1L302.4 209.3zM301.4 220.4L296 215.1L301.4 220.4zM304.7 219.1L305.9 221L303.6 219.4L302.9 218.1L304.7 219.1zM288.8 201.3L286.9 198.7L285.6 195L286.1 192.9L285.1 188.6L286.4 188L286.6 190.3L287.1 191.6L288.4 193.2L288.1 195.8L288.4 199.5L288.8 201.3zM345.1 250.4L347.5 252.2L340.3 249.9L342 249.6L345.1 250.4zM399.4 364.4L399.6 367.4L400.9 368L394.9 368L395.7 365.6L397 366.1L398.2 364.2L398.3 362.5L399.4 364.4zM400.7 358.6L399.4 358.6L398.4 357.2L399 354.6L399.8 353.1L401.3 353.6L401.3 357.8zM402 365.8L400 363.6L399.6 361.9L401 362.7L401.2 364L402 365.8zM389.7 337.2L390.1 338.6L387.9 337.7L386.2 336.4L384.9 333.2L381.9 329.5L383 327.6L385.4 327.1L386.9 328.3L385.8 330.4L386.6 332.3L387 335.3L388.8 336.9zM98.4 17.2L100.2 18.6L98.5 20.1L96 18.4L94.5 18.8L93.9 17.4L95.5 17L98.4 17.2z","danube":"M180.6 115.7L207.7 102.7L233 94.9L245.6 88.4L270.9 98.8L285.4 106.6L308.8 105.3L323.3 108.7L335.9 111.8L350.4 120.9L367.5 119.6L371.2 127.4L369.3 150.8L367.5 169L375.7 187.2L396.4 197.1L413.6 198.9L431.7 201.5L436.2 211.9L447.9 222.3L471.4 226.2L494.9 221.5L507.5 217.1L520.2 215.3L531.9 210.6L532.8 195L535.5 183.3L546.3 185.9L562.6 187.2","peaks":[[151.7,169],[164.4,163.8],[178.8,153.4],[195.1,153.4],[211.3,150.8],[227.6,143],[243.8,140.4],[260.1,137.8],[276.3,135.2],[294.4,130],[379.3,83.2],[397.3,80.6],[417.2,83.2],[438.9,91],[460.6,109.2],[476.8,124.8],[489.5,145.6],[494.9,169],[478.6,179.4],[460.6,179.4],[442.5,182],[429.9,187.2],[438.9,247],[456.9,248.3],[475,250.9],[493.1,250.9],[509.3,252.2],[345,210.6],[363,228.8],[381.1,241.8],[326.9,195],[397.3,254.8],[460.6,275.6],[478.6,279.5]],"cities":{"Paris":[69.5,92],"Strasbourg":[167.1,99.3],"Munich":[236.2,110.8],"Salzburg":[262.6,119.6],"Vienna":[322.8,108.9],"Gyor":[345.5,122.7],"Budapest":[371,127.4],"Szolnok":[391.9,135.7],"Arad":[412,161.7],"Brasov":[489.5,175.5],"Bucharest":[498.5,207.2],"Ruse":[495.8,222.3],"Varna":[531.2,238.9],"Burgas":[523.2,257.4],"Edirne":[506.6,278.7],"Istanbul":[550.5,296.1]},"countries":{"FRANCE":[88.5,150.8],"GERMANY":[211.3,46.8],"CZECHOSLOVAKIA":[319.7,72.8],"AUSTRIA":[308.8,146.9],"HUNGARY":[354,152.1],"ROMANIA":[471.4,150.8],"YUGOSLAVIA":[370.3,208],"BULGARIA":[484,265.2],"ITALY":[240.2,210.6],"POLAND":[399.2,26],"GREECE":[419,318.5],"TURKEY":[596,325],"SWITZERLAND":[171.6,146.9]},"seas":{"BLACK SEA":[585.2,261.3,0],"ADRIATIC SEA":[314.3,243.1,34],"AEGEAN SEA":[449.7,341.9,0]}};
+
+  function tierProgress(tier) {
+    var solved = 0;
+    for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) { var st = savedState(data.cases[i]); if (st && st.solved) solved++; }
+    return solved;
+  }
+
+  // ---------- route map: an old railway poster ----------
+  // The line, chapter by chapter, through the stops named in the story.
+  var LEGS = [
+    ['Paris', 'Strasbourg', 'Munich', 'Salzburg', 'Vienna'],
+    ['Vienna', 'Gyor', 'Budapest'],
+    ['Budapest', 'Szolnok', 'Arad', 'Brasov', 'Bucharest'],
+    ['Bucharest', 'Ruse', 'Varna'],
+    ['Varna', 'Burgas', 'Edirne', 'Istanbul']
+  ];
+  var MAJOR = { Paris: [0, -14, 'middle'], Vienna: [-6, -12, 'end'], Budapest: [10, 4, 'start'], Bucharest: [10, 4, 'start'], Varna: [10, 4, 'start'], Istanbul: [0, 22, 'middle'] };
+  // Minor stop names default to below the dot.
+  var MINOR_AT = { Szolnok: [0, -6, 'middle'], Brasov: [-6, 3, 'end'], Ruse: [-6, 3, 'end'], Burgas: [6, 3, 'start'], Edirne: [-6, 3, 'end'] };
+  // Where along each leg its chapter medal sits, clear of the minor stops.
+  var CHIP_AT = [0.56, 0.5, 0.42, 0.74, 0.78];
+  // Stops too close to others to name on the map.
+  var UNNAMED = { Gyor: 1 };
+  var STOP_NAME = { Gyor: 'Győr', Brasov: 'Brașov' };
+
+  function legPoints(t) {
+    var pts = [];
+    for (var k = 0; k < LEGS[t].length; k++) pts.push(MAP.cities[LEGS[t][k]]);
+    return pts;
+  }
+  function polyline(pts) {
+    var d = '';
+    for (var k = 0; k < pts.length; k++) d += (k ? 'L' : 'M') + pts[k][0] + ' ' + pts[k][1];
+    return d;
+  }
+  // The part of a polyline covering fraction f of its length, and the point where it ends.
+  function partOf(pts, f) {
+    var total = 0, k, seg = [];
+    for (k = 1; k < pts.length; k++) seg.push(Math.sqrt(Math.pow(pts[k][0] - pts[k - 1][0], 2) + Math.pow(pts[k][1] - pts[k - 1][1], 2)));
+    for (k = 0; k < seg.length; k++) total += seg[k];
+    var left = total * f, out = [pts[0]];
+    for (k = 1; k < pts.length; k++) {
+      if (left >= seg[k - 1]) { out.push(pts[k]); left -= seg[k - 1]; continue; }
+      var r = left / seg[k - 1];
+      out.push([pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * r, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * r]);
+      break;
+    }
+    return out;
+  }
+
+  function renderRoute() {
+    var w = MAP.w, h = MAP.h, k, t;
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Map of the Midnight Express line from Paris to Istanbul, with your progress">' +
+      '<defs><pattern id="hatch" width="6" height="4" patternUnits="userSpaceOnUse"><path class="hatch" d="M0 3.5h6"/></pattern>' +
+      '<clipPath id="mapclip"><rect x="10" y="10" width="' + (w - 20) + '" height="' + (h - 20) + '"/></clipPath></defs>' +
+      '<g clip-path="url(#mapclip)">' +
+      '<rect class="sea" width="' + w + '" height="' + h + '"/><rect fill="url(#hatch)" width="' + w + '" height="' + h + '"/>' +
+      // Coastal ripples, then the land itself.
+      '<path class="ripple r2" d="' + MAP.land + '"/><path class="ripple r1" d="' + MAP.land + '"/><path class="land" d="' + MAP.land + '"/>' +
+      '<path class="river" d="' + MAP.danube + '"/>';
+    for (k = 0; k < MAP.peaks.length; k++) {
+      var p = MAP.peaks[k];
+      svg += '<path class="peak" d="M' + (p[0] - 6) + ' ' + (p[1] + 3) + 'L' + p[0] + ' ' + (p[1] - 5) + 'L' + (p[0] + 6) + ' ' + (p[1] + 3) + '"/>' +
+        '<path class="peak-shade" d="M' + p[0] + ' ' + (p[1] - 5) + 'L' + (p[0] + 6) + ' ' + (p[1] + 3) + 'L' + (p[0] + 1) + ' ' + (p[1] + 3) + 'z"/>';
+    }
+    for (var name in MAP.countries) if (MAP.countries.hasOwnProperty(name)) {
+      svg += '<text class="country" x="' + MAP.countries[name][0] + '" y="' + MAP.countries[name][1] + '" text-anchor="middle">' + name + '</text>';
+    }
+    for (var sea in MAP.seas) if (MAP.seas.hasOwnProperty(sea)) {
+      var sp = MAP.seas[sea];
+      svg += '<text class="sea-name" x="' + sp[0] + '" y="' + sp[1] + '" text-anchor="middle" transform="rotate(' + sp[2] + ' ' + sp[0] + ' ' + sp[1] + ')">' + sea + '</text>';
+    }
+    // The line, then progress along each chapter's leg.
+    var all = [];
+    for (t = 0; t < LEGS.length; t++) all = all.concat(legPoints(t).slice(t ? 1 : 0));
+    svg += '<path class="sleepers" d="' + polyline(all) + '"/><path class="rail" d="' + polyline(all) + '"/>';
+    var train = null, chips = '';
+    for (t = 0; t < LEGS.length; t++) {
+      var pts = legPoints(t), f = tierProgress(data.tiers[t]) / 10;
+      if (f > 0) svg += '<path class="done" d="' + polyline(partOf(pts, f)) + '"/>';
+      if (!train && f < 1) { var part = partOf(pts, f); train = part[part.length - 1]; }
+      var mid = partOf(pts, CHIP_AT[t]), m = mid[mid.length - 1];
+      chips += '<g class="seg-hit" data-tier="' + t + '"><path d="' + polyline(pts) + '" stroke="transparent" stroke-width="26" fill="none"/>' +
+        '<circle class="chip" cx="' + m[0] + '" cy="' + m[1] + '" r="9"/><text class="chip-t" x="' + m[0] + '" y="' + (m[1] + 3.6) + '" text-anchor="middle">' + ['I', 'II', 'III', 'IV', 'V'][t] + '</text></g>';
+    }
+    if (!train) train = MAP.cities.Istanbul;
+    // Minor stops, then the chapter stations with their names.
+    for (var c in MAP.cities) if (MAP.cities.hasOwnProperty(c) && !MAJOR[c]) {
+      var q = MAP.cities[c], mo = MINOR_AT[c] || [0, 12, 'middle'];
+      svg += '<circle class="minor" cx="' + q[0] + '" cy="' + q[1] + '" r="2.6"/><text class="minor-t" x="' + (q[0] + mo[0]) + '" y="' + (q[1] + mo[1]) + '" text-anchor="' + mo[2] + '">' + (UNNAMED[c] ? '' : STOP_NAME[c] || c) + '</text>';
+    }
+    svg += chips;
+    for (k = 0; k < CITY_ORDER.length; k++) {
+      var cn = CITY_ORDER[k], ct = MAP.cities[cn], lb = MAJOR[cn];
+      var reached = k === 0 || tierProgress(data.tiers[k - 1]) === 10;
+      svg += '<circle class="stop' + (reached ? ' reached' : '') + '" cx="' + ct[0] + '" cy="' + ct[1] + '" r="6"/><circle class="stop-dot" cx="' + ct[0] + '" cy="' + ct[1] + '" r="2"/>' +
+        '<text class="city" x="' + (ct[0] + lb[0]) + '" y="' + (ct[1] + lb[1]) + '" text-anchor="' + lb[2] + '">' + cn + '</text>';
+    }
+    // The train waits just past its position, above the line.
+    svg += '<g class="loco" transform="translate(' + (train[0] + 2) + ' ' + (train[1] - 32) + ') scale(0.062)">' + LOCOMOTIVE + '</g>';
+    // Cartouche over the Mediterranean, and a compass rose.
+    svg += '<g class="cartouche" transform="translate(24 ' + (h - 92) + ')"><rect class="cart-box" width="196" height="70"/><rect class="cart-line" x="4" y="4" width="188" height="62"/>' +
+      '<text class="cart-t" x="98" y="30" text-anchor="middle">Paris – Istanbul</text>' +
+      '<text class="cart-s" x="98" y="47" text-anchor="middle">THE MIDNIGHT EXPRESS</text><text class="cart-s2" x="98" y="59" text-anchor="middle">Wagons de luxe · 1934</text></g>';
+    svg += '<g class="compass" transform="translate(' + (w - 50) + ' 50)"><circle r="22" class="cmp-ring"/><path class="cmp-star" d="M0 -28L5 -5L28 0L5 5L0 28L-5 5L-28 0L-5 -5z"/>' +
+      '<path class="cmp-star2" d="M0 -28L5 -5L0 0zM28 0L5 5L0 0zM0 28L-5 5L0 0zM-28 0L-5 -5L0 0z"/><text class="cmp-n" y="-32" text-anchor="middle">N</text></g>';
+    svg += '</g><rect class="frame-out" x="3" y="3" width="' + (w - 6) + '" height="' + (h - 6) + '"/><rect class="frame-in" x="9" y="9" width="' + (w - 18) + '" height="' + (h - 18) + '"/>';
+    var corners = [[9, 9], [w - 9, 9], [9, h - 9], [w - 9, h - 9]];
+    for (k = 0; k < 4; k++) svg += '<rect class="corner" x="' + (corners[k][0] - 6) + '" y="' + (corners[k][1] - 6) + '" width="12" height="12" transform="rotate(45 ' + corners[k][0] + ' ' + corners[k][1] + ')"/>';
+    $('route').innerHTML = svg + '</svg>';
+  }
+  var CITY_ORDER = ['Paris', 'Vienna', 'Budapest', 'Bucharest', 'Varna', 'Istanbul'];
+
+  function showCases() {
+    renderRoute();
+    var html = '', next = -1;
+    for (var t = 0; t < data.tiers.length; t++) {
+      var tier = data.tiers[t], done = tierProgress(tier);
+      html += '<div class="tier" id="tier-' + t + '"><div class="ticket"><span class="tk-ch">Chapter ' + (t + 1) + ' · ' + esc(tier.name) + '</span>' +
+        '<strong>' + esc(tier.leg) + '</strong><span class="tk-prog">' + done + ' of 10 solved</span>' +
+        '<span class="pbar"><i style="width:' + done * 10 + '%"></i></span></div><ul class="levels">';
+      for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) {
+        var c = data.cases[i], st = savedState(c), locked = isLocked(i);
+        if (next < 0 && !locked && !(st && st.solved)) next = i;
+        var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size + (c.tutorial ? ' · guided' : '');
+        html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
+          '<span class="stub"><span class="num">' + c.level + '</span></span><span class="tk-body"><span class="tt">' + esc(c.title) + '</span>' +
+          '<span class="state">' + state + '</span></span>' + (st && st.solved ? '<span class="punch">Solved</span>' : '') + '</button></li>';
+      }
+      html += '</ul></div>';
+    }
+    $('tiers').innerHTML = html;
+    show($('continue-wrap'), next >= 0);
+    if (next >= 0) {
+      $('continue').innerHTML = (next === 0 ? 'Start: ' : 'Continue: ') + 'Case ' + data.cases[next].level + ', ' + esc(data.cases[next].title);
+      $('continue').setAttribute('data-case', next);
+    }
+    screen('cases');
+  }
+
+  // ---------- board ----------
+  function buildBoard(c) {
+    var b = { room: [], obj: [], roomIndex: {}, first: {} };
+    var keys = [];
+    for (var k in c.roomNames) if (c.roomNames.hasOwnProperty(k)) keys.push(k);
+    keys.sort();
+    for (var j = 0; j < keys.length; j++) b.roomIndex[keys[j]] = j;
+    for (var r = 0; r < n; r++) for (var col = 0; col < n; col++) {
+      var i = r * n + col, room = c.rooms[r].charAt(col);
+      b.room[i] = room;
+      b.obj[i] = null;
+      if (b.first[room] === undefined) b.first[room] = i;
+    }
+    for (var o = 0; o < c.objects.length; o++) b.obj[c.objects[o].row * n + c.objects[o].col] = c.objects[o].type;
+    b.keys = keys;
+    return b;
+  }
+
+  function isBlocked(i) { return !!(board.obj[i] && BLOCKING[board.obj[i]]); }
+  function personByInitial(ini) {
+    for (var k = 0; k < current.characters.length; k++) if (current.characters[k].initial === ini) return current.characters[k];
+    return null;
+  }
+  // Headwear by title or role, a few named exceptions, and a stable pick for the rest.
+  var FEMALE = /^(Mrs\.|Miss|Madame|Frau|Signora|Fraulein|Sister|Lady|Countess|Princess|Nurse|Baroness) /;
+  var PORTRAIT_OF = {
+    'Mr. Hale': 'man-western', 'Yusuf Bey': 'man-fez', 'Madame Zara': 'woman-turban', 'Miss Tasker': 'woman-bun',
+    'Miss Ellery': 'woman-cloche', 'Herr Weiss': 'man-glasses', 'Mr. Orlov': 'man-glasses'
+  };
+  function portraitKey(ch) {
+    var name = ch.name;
+    if (PORTRAIT_OF[name]) return PORTRAIT_OF[name];
+    if (/^Father /.test(name)) return 'man-collar';
+    if (/^Sister /.test(name)) return 'woman-veil';
+    if (/^Nurse /.test(name)) return 'woman-nurse';
+    if (/^Chef /.test(name)) return 'man-chef';
+    if (/^(Conductor|Porter|Captain|Colonel|General) /.test(name)) return 'man-cap';
+    if (/^(Count|Baron|Sir) /.test(name)) return 'man-top';
+    if (/^(Countess|Princess|Lady|Baroness) /.test(name)) return 'woman-tiara';
+    if (/^(Dr\.|Professor) /.test(name)) return 'man-glasses';
+    var h = 0;
+    for (var k = 0; k < name.length; k++) h = (h * 31 + name.charCodeAt(k)) % 997;
+    if (FEMALE.test(name)) return ['woman-cloche', 'woman', 'woman-bun'][h % 3];
+    return ['man-fedora', 'man-boater', 'man', 'man-glasses'][h % 4];
+  }
+  function token(ch, cls) {
+    return '<span class="tok p' + colorOf[ch.initial] + (cls ? ' ' + cls : '') + '" aria-hidden="true">' +
+      '<svg class="pt" viewBox="0 0 512 512" focusable="false">' + PORTRAITS[portraitKey(ch)] + '</svg>' +
+      '<b class="tini">' + ch.initial + '</b></span>';
+  }
+
+  var FLOORS = {
+    'Dining Car': 'carpet', 'Lounge Car': 'carpet', 'Rose Suite': 'carpet', 'Ivory Suite': 'carpet', 'Gold Suite': 'carpet',
+    'Corridor': 'runner', 'Washroom': 'tile', 'Kitchen Car': 'tile', 'Pantry': 'tile', 'Platform': 'stone',
+    'Customs Office': 'stone', 'Waiting Room': 'stone', 'Locomotive': 'metal', 'Coal Tender': 'metal'
+  };
+  var SHORT_ROOM = {
+    "Conductor's Cabin": 'Conductor', 'Observation Car': 'Observation', 'Customs Office': 'Customs', 'Staff Quarters': 'Staff',
+    'Waiting Room': 'Waiting', 'Coal Tender': 'Tender', 'Sleeper No. 1': 'Sleeper 1', 'Sleeper No. 2': 'Sleeper 2',
+    'Sleeper No. 3': 'Sleeper 3', 'Baggage Car': 'Baggage', 'Kitchen Car': 'Kitchen', 'Dining Car': 'Dining',
+    'Lounge Car': 'Lounge', 'Sleeper Car': 'Sleeper', 'Mail Car': 'Mail', 'Locomotive': 'Engine'
+  };
+  // Last resort for rooms one cell wide.
+  var TINY_ROOM = { "Conductor's Cabin": 'Cond.', 'Corridor': 'Corr.', 'Observation Car': 'Obs.', 'Customs Office': 'Cust.', 'Waiting Room': 'Wait.' };
+
+  function icon(type, cls) {
+    return '<svg class="' + cls + '" viewBox="0 0 512 512" aria-hidden="true" focusable="false">' + ICONS[type] + '</svg>';
+  }
+
+  function openCase(idx) {
+    if (isLocked(idx)) return;
+    current = data.cases[idx];
+    current.index = idx;
+    n = current.size;
+    board = buildBoard(current);
+    var st = caseState(current.id);
+    cells = st.cells && st.cells.length === n * n ? st.cells.slice() : emptyCells();
+    // Drop anything that is not a mark or someone in this case.
+    for (var i = 0; i < cells.length; i++) if (cells[i] && cells[i] !== 'x' && !personByInitial(cells[i])) cells[i] = '';
+    history = [];
+    sel = -1;
+    tool = '';
+    wrongCells = {};
+    colorOf = {};
+    for (var k = 0; k < current.characters.length; k++) colorOf[current.characters[k].initial] = k;
+    store.last = current.id;
+    save();
+
+    var tier = data.tiers[0];
+    for (var t = 0; t < data.tiers.length; t++) if (data.tiers[t].id === current.tier) tier = data.tiers[t];
+    $('case-kicker').innerHTML = 'Case ' + current.level + ' · ' + esc(tier.name) + ' · ' + esc(tier.leg);
+    $('case-title').innerHTML = esc(current.title);
+    $('car-plate').innerHTML = 'Car No. ' + current.level + ' · ' + esc(tier.name);
+    $('case-intro').innerHTML = esc(current.intro);
+    addClass($('case-intro'), 'clamp');
+    $('intro-more').innerHTML = 'More';
+    renderGrid();
+    renderPalette();
+    renderClues();
+    renderLegend();
+    setMsg('');
+    $('cellinfo').innerHTML = '';
+    show($('accuse'), false);
+    showSolved(st.solved);
+    // New players see the rules open on the first cases.
+    showRules(current.level <= 3 && !st.solved && !current.tutorial);
+    screen('play');
+    sizeGrid();
+    updateCoach();
+    fitIntro();
+  }
+
+  // On phones the story is cut to two lines with a More button (the clamp only applies there).
+  function fitIntro() {
+    var el = $('case-intro');
+    show($('intro-more'), hasClass(el, 'clamp') ? el.scrollHeight > el.clientHeight + 2 : true);
+  }
+
+  function emptyCells() { var a = []; for (var i = 0; i < n * n; i++) a.push(''); return a; }
+
+  function renderGrid() {
+    var html = '<thead><tr><th scope="col"><span class="hide">Row / column</span></th>';
+    for (var col = 0; col < n; col++) html += '<th scope="col">' + (col + 1) + '</th>';
+    html += '</tr></thead><tbody>';
+    for (var r = 0; r < n; r++) {
+      html += '<tr><th scope="row">' + (r + 1) + '</th>';
+      for (var c = 0; c < n; c++) {
+        var i = r * n + c, room = board.room[i];
+        var cls = 'c r' + board.roomIndex[room] + ' f-' + (FLOORS[current.roomNames[room]] || 'wood');
+        if (r === 0 || board.room[i - n] !== room) cls += ' bt';
+        if (r === n - 1 || board.room[i + n] !== room) cls += ' bb';
+        if (c === 0 || board.room[i - 1] !== room) cls += ' bl';
+        if (c === n - 1 || board.room[i + 1] !== room) cls += ' br';
+        if (isBlocked(i)) cls += ' blocked';
+        var inner = '';
+        if (board.obj[i]) inner += icon(board.obj[i], 'obj');
+        inner += '<span class="who" aria-hidden="true"></span>';
+        html += '<td class="' + cls + '" role="gridcell"><button type="button" class="cell" data-i="' + i + '" tabindex="-1">' + inner + '</button></td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody>';
+    $('grid').innerHTML = html;
+    cellEls = [];
+    painted = {};
+    var btns = $('grid').getElementsByTagName('button');
+    for (var b = 0; b < btns.length; b++) cellEls[+btns[b].getAttribute('data-i')] = btns[b];
+    for (var k = 0; k < n * n; k++) paintCell(k);
+    paintBoard();
+    if (cellEls[0]) cellEls[0].setAttribute('tabindex', '0');
+  }
+
+  // Sizes cells to the available width (CSS min() is not available everywhere).
+  function sizeGrid() {
+    if (!current) return;
+    var col = $('board-col');
+    var w = col.clientWidth || (window.innerWidth - 32);
+    // In colour mode the board sits inside the carriage's panelling.
+    if (hasClass(document.documentElement, 'standard')) w -= window.innerWidth <= 600 ? 26 : 36;
+    var size = Math.floor(Math.min(60, (w - 6) / (n + 0.7)));
+    if (size < 30) size = 30;
+    var css = '#grid td.c{width:' + size + 'px;height:' + size + 'px}' +
+      '#grid th{height:' + Math.round(size * 0.7) + 'px;min-width:' + Math.round(size * 0.7) + 'px}' +
+      '.cell .who{font-size:' + Math.round(size * 0.55) + 'px;line-height:' + size + 'px}' +
+      '.cell .tok{width:' + Math.round(size * 0.8) + 'px;height:' + Math.round(size * 0.8) + 'px}' +
+      '.cell .tini{font-size:' + Math.max(9, Math.round(size * 0.24)) + 'px}' +
+      // Objects fill an empty cell and shrink to a corner when someone stands there.
+      '.cell .obj{width:' + Math.round(size * 0.66) + 'px;height:' + Math.round(size * 0.66) + 'px;margin:-' + Math.round(size * 0.33) + 'px 0 0 -' + Math.round(size * 0.33) + 'px}' +
+      '.cell.occ .obj{width:' + Math.round(size * 0.34) + 'px;height:' + Math.round(size * 0.34) + 'px}' +
+      '.rlabel{font-size:' + Math.max(9, Math.round(size * 0.21)) + 'px}';
+    var el = $('grid-size');
+    if (!el) { el = document.createElement('style'); el.id = 'grid-size'; document.getElementsByTagName('head')[0].appendChild(el); }
+    el.innerHTML = css;
+    placeLabels(size);
+  }
+
+  // Writes each room's name over its longest horizontal run of cells.
+  function placeLabels(size) {
+    var wrap = $('board-wrap').getBoundingClientRect(), html = '';
+    var font = Math.max(9, Math.round(size * 0.21));
+    for (var k = 0; k < board.keys.length; k++) {
+      var room = board.keys[k], best = null;
+      for (var r = 0; r < n; r++) {
+        for (var c = 0; c < n; c++) {
+          if (board.room[r * n + c] !== room || (c > 0 && board.room[r * n + c - 1] === room)) continue;
+          var len = 0;
+          while (c + len < n && board.room[r * n + c + len] === room) len++;
+          if (!best || len > best.len) best = { i: r * n + c, len: len };
+        }
+      }
+      var td = cellEls[best.i].parentNode.getBoundingClientRect();
+      var width = best.len * td.width - 6, name = current.roomNames[room];
+      html += '<span class="rlabel r' + k + '" data-w="' + Math.round(width) + '" style="left:' + Math.round(td.left - wrap.left + 3) + 'px;top:' + Math.round(td.top - wrap.top + 3) +
+        'px">' + esc(name) + '</span>';
+    }
+    $('labels').innerHTML = html;
+    // Fit each name to its run of cells: shrink it, then try shorter forms of the name.
+    var spans = $('labels').getElementsByTagName('span');
+    for (var j = 0; j < spans.length; j++) {
+      var el = spans[j], limit = +el.getAttribute('data-w'), full = el.innerHTML;
+      var forms = [full, SHORT_ROOM[full], TINY_ROOM[full] || full.slice(0, 4) + '.'];
+      for (var fi = 0; fi < forms.length; fi++) {
+        if (!forms[fi]) continue;
+        el.innerHTML = forms[fi];
+        el.style.fontSize = '';
+        el.style.letterSpacing = '';
+        for (var f = font; el.offsetWidth > limit && f > 7; f--) {
+          el.style.fontSize = (f - 1) + 'px';
+          el.style.letterSpacing = '0';
+        }
+        if (el.offsetWidth <= limit) break;
+      }
+      el.style.maxWidth = limit + 'px';
+    }
+  }
+
+  function describe(i) {
+    var r = Math.floor(i / n), c = i % n;
+    var parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]]];
+    if (board.obj[i]) parts.push(OBJECT_NAMES[board.obj[i]] + (isBlocked(i) ? ' (nobody can stand here)' : ''));
+    var v = cells[i];
+    if (v === 'x') parts.push('ruled out');
+    else if (v) parts.push(personByInitial(v).name);
+    else if (!isBlocked(i)) parts.push('empty');
+    return parts.join(', ');
+  }
+
+  function paintCell(i, animate) {
+    var btn = cellEls[i], v = cells[i], who = btn.lastChild;
+    who.className = 'who' + (v === 'x' ? ' x' : '');
+    who.innerHTML = v === 'x' ? '×' : v ? token(personByInitial(v), animate ? 'pop' : '') : '';
+    btn.setAttribute('aria-label', describe(i));
+    toggleClass(btn, 'occ', !!v);
+  }
+
+  // Row/column conflicts, shading of taken lines, Check results and the selection.
+  function paintBoard() {
+    var rows = {}, cols = {}, i;
+    for (i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') {
+      var r = Math.floor(i / n), c = i % n;
+      rows[r] = (rows[r] || 0) + 1; cols[c] = (cols[c] || 0) + 1;
+    }
+    for (i = 0; i < n * n; i++) {
+      var person = cells[i] && cells[i] !== 'x';
+      var line = rows[Math.floor(i / n)] || cols[i % n];
+      var state = {
+        conflict: person && (rows[Math.floor(i / n)] > 1 || cols[i % n] > 1),
+        taken: store.settings.shade && !person && !!line && !isBlocked(i),
+        wrong: !!wrongCells[i],
+        sel: i === sel
+      };
+      var last = painted[i] || {};
+      for (var k in state) if (state.hasOwnProperty(k) && !!last[k] !== !!state[k]) toggleClass(cellEls[i], k, !!state[k]);
+      painted[i] = state;
+    }
+  }
+
+  function select(i, focus) {
+    if (sel >= 0 && cellEls[sel]) cellEls[sel].setAttribute('tabindex', '-1');
+    sel = i;
+    if (i >= 0) {
+      cellEls[i].setAttribute('tabindex', '0');
+      if (focus) cellEls[i].focus();
+      $('cellinfo').innerHTML = esc(describe(i));
+    }
+    paintBoard();
+  }
+
+  // Applies a list of [index, value] changes as one undoable move.
+  function apply(changes) {
+    var undoList = [], touched = [];
+    for (var k = 0; k < changes.length; k++) {
+      var i = changes[k][0];
+      if (cells[i] === changes[k][1]) continue;
+      undoList.push([i, cells[i]]);
+      cells[i] = changes[k][1];
+      touched.push(i);
+    }
+    if (!undoList.length) return false;
+    history.push(undoList);
+    if (history.length > 200) history.shift();
+    afterChange(touched);
+    return true;
+  }
+
+  function afterChange(touched) {
+    wrongCells = {};
+    for (var k = 0; k < touched.length; k++) paintCell(touched[k], true);
+    paintBoard();
+    if (sel >= 0) $('cellinfo').innerHTML = esc(describe(sel));
+    updatePalette();
+    setMsg('');
+    caseState(current.id).cells = cells.slice();
+    save();
+    autoCheck();
+    updateCoach();
+  }
+
+  function undo() {
+    var last = history.pop();
+    if (!last) { setMsg('Nothing to undo.'); return; }
+    var touched = [];
+    for (var k = last.length - 1; k >= 0; k--) { cells[last[k][0]] = last[k][1]; touched.push(last[k][0]); }
+    afterChange(touched);
+  }
+
+  // Puts a person on cell i (moving them if already placed); again on the same cell removes them.
+  function place(ini, i) {
+    if (isBlocked(i)) { setMsg('Nobody can stand on a ' + OBJECT_NAMES[board.obj[i]] + '. Pick another cell.'); return false; }
+    var changes = [];
+    if (cells[i] === ini) changes.push([i, '']);
+    else {
+      for (var j = 0; j < n * n; j++) if (cells[j] === ini) changes.push([j, '']);
+      changes.push([i, ini]);
+    }
+    return apply(changes);
+  }
+
+  function mark(i) {
+    if (isBlocked(i)) return;
+    if (cells[i] && cells[i] !== 'x') { setMsg('Someone is standing there. Use the eraser to remove them first.'); return; }
+    apply([[i, cells[i] === 'x' ? '' : 'x']]);
+  }
+
+  function erase(i) { if (cells[i]) apply([[i, '']]); }
+
+  // A tap on the board uses the current tool.
+  function useTool(i) {
+    select(i, false);
+    if (!tool) { setHint(true); return; }
+    if (tool === 'x') mark(i);
+    else if (tool === 'erase') erase(i);
+    else if (place(tool, i) && cells[i] === tool) setTool(''); // a person is placed once, then the tool lets go
+  }
+
+  // ---------- tools, statements, legend ----------
+  function renderPalette() {
+    var html = '';
+    html += '<button type="button" class="btn" data-tool="x" aria-pressed="false" aria-label="Mark cells with ×"><span class="ini">×</span><span class="nm">mark</span></button>';
+    html += '<button type="button" class="btn" data-tool="erase" aria-pressed="false" aria-label="Eraser"><span class="ini">–</span><span class="nm">erase</span></button>';
+    $('palette').innerHTML = html;
+    updatePalette();
+    setHint(false);
+  }
+
+  function shortName(name) { var p = name.split(' '); return p.length > 1 ? p[p.length - 1] : name; }
+
+  function updatePalette() {
+    var btns = $('palette').getElementsByTagName('button');
+    var placed = {};
+    for (var i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') placed[cells[i]] = 1;
+    for (var k = 0; k < btns.length; k++) btns[k].setAttribute('aria-pressed', btns[k].getAttribute('data-tool') === tool ? 'true' : 'false');
+    // Statements cross themselves off while their person is on the board.
+    var lis = $('clues').getElementsByTagName('li');
+    for (var j = 0; j < lis.length; j++) {
+      var ini = lis[j].getAttribute('data-ini');
+      toggleClass(lis[j], 'focus', ini === tool);
+      toggleClass(lis[j], 'done-li', !!placed[ini]);
+      lis[j].firstChild.setAttribute('aria-pressed', ini === tool ? 'true' : 'false');
+    }
+  }
+
+  function setTool(t) {
+    tool = tool === t ? '' : t;
+    updatePalette();
+    setHint(false);
+  }
+
+  function setHint(nudge) {
+    var text;
+    if (tool === 'x') text = 'Marking: tap cells to add or remove ×. Tap × again to stop.';
+    else if (tool === 'erase') text = 'Erasing: tap cells to clear them. Tap the eraser again to stop.';
+    else if (tool) text = 'Placing ' + personByInitial(tool).name + ': tap a cell.';
+    else text = nudge ? 'Pick someone first: tap their statement, then tap this cell.' : 'Tap a statement to pick that person, then tap their cell. × marks cells, the eraser clears them.';
+    $('hint').innerHTML = esc(text);
+  }
+
+  // Adds an icon after each object named in a statement.
+  function decorate(text) {
+    var html = esc(text);
+    for (var type in OBJECT_NAMES) if (OBJECT_NAMES.hasOwnProperty(type)) {
+      html = html.replace(new RegExp('\\b(a|any) ' + OBJECT_NAMES[type] + '\\b', 'g'), '$1 <span class="nw">' + OBJECT_NAMES[type] + ' ' + icon(type, 'ic') + '</span>');
+    }
+    return html;
+  }
+
+  function renderClues() {
+    var html = '';
+    for (var k = 0; k < current.characters.length; k++) {
+      var ch = current.characters[k];
+      html += '<li data-ini="' + ch.initial + '">' +
+        '<button type="button" class="clue" data-pick="' + ch.initial + '" aria-pressed="false" aria-label="Pick ' + esc(ch.name) + '. ' + esc(ch.clue) + '">' +
+        token(ch) + '<strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
+        (ch.victim ? '<span class="vic">Victim</span>' : '') +
+        '<span class="txt">' + decorate(ch.clue) + '</span></button></li>';
+    }
+    $('clues').innerHTML = html;
+    updatePalette();
+  }
+
+  function renderLegend() {
+    var seen = {}, stand = '', block = '';
+    for (var i = 0; i < n * n; i++) {
+      var t = board.obj[i];
+      if (!t || seen[t]) continue;
+      seen[t] = 1;
+      var item = '<li>' + icon(t, 'ic') + ' ' + esc(OBJECT_NAMES[t]) + '</li>';
+      if (BLOCKING[t]) block += item; else stand += item;
+    }
+    $('objkey').innerHTML = (stand ? '<li><em>Can stand on:</em></li>' + stand : '') + (block ? '<li><em>Nobody stands on:</em></li>' + block : '');
+  }
+
+  function showRules(open) {
+    show($('rules'), open);
+    $('rules-btn').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  // ---------- guided first case ----------
+  function updateCoach() {
+    var tut = current.tutorial;
+    show($('coach'), !!tut);
+    if (!tut) return;
+    var text = '', sol = current.solution, k;
+    if (caseState(current.id).solved) text = 'Case closed! That is the whole method: use the most specific statement, then let taken rows and columns narrow down the rest. From now on you are on your own.';
+    else {
+      for (k = 0; k < tut.steps.length && !text; k++) {
+        var ini = tut.steps[k].initial, at = sol[ini][0] * n + sol[ini][1];
+        var where = -1;
+        for (var i = 0; i < n * n; i++) if (cells[i] === ini) where = i;
+        if (where >= 0 && where !== at) text = 'Not quite: ' + personByInitial(ini).name + ' is in the wrong cell. ' + tut.steps[k].text;
+        else if (where < 0) text = 'Step ' + (k + 1) + ' of ' + tut.steps.length + ': ' + tut.steps[k].text;
+      }
+      if (!text) text = tut.accuse;
+    }
+    $('coach-text').innerHTML = esc(text);
+  }
+
+  // ---------- check & accuse ----------
+  function setMsg(text) { $('msg').innerHTML = esc(text); }
+
+  function evaluate() {
+    var placed = 0, wrong = [], badMarks = [], sol = current.solution;
+    var at = {};
+    for (var ini in sol) if (sol.hasOwnProperty(ini)) at[sol[ini][0] * n + sol[ini][1]] = ini;
+    for (var i = 0; i < n * n; i++) {
+      if (cells[i] === 'x') { if (at[i]) badMarks.push(i); }
+      else if (cells[i]) { placed++; if (at[i] !== cells[i]) wrong.push(i); }
+    }
+    return { placed: placed, wrong: wrong, badMarks: badMarks, complete: placed === n && !wrong.length };
+  }
+
+  function check() {
+    var e = evaluate(), k;
+    wrongCells = {};
+    for (k = 0; k < e.wrong.length; k++) wrongCells[e.wrong[k]] = 1;
+    for (k = 0; k < e.badMarks.length; k++) wrongCells[e.badMarks[k]] = 1;
+    paintBoard();
+    if (e.wrong.length) setMsg((e.wrong.length === 1 ? 'One person is' : e.wrong.length + ' people are') + ' not where the statements put them (outlined and crossed out). Tap Undo or move them.');
+    else if (e.badMarks.length) setMsg('Your placements hold up, but an outlined × rules out a spot where someone really was.');
+    else if (e.complete) setMsg('Everyone is exactly where they were. Time to accuse someone.');
+    else if (!e.placed) setMsg('Nobody placed yet. Start with the most specific statement.');
+    else setMsg('So far so good: ' + e.placed + ' of ' + n + ' placed correctly.');
+  }
+
+  // When the last person goes on the board, say whether the scene holds up.
+  function autoCheck() {
+    if (caseState(current.id).solved) return;
+    var e = evaluate();
+    if (e.placed < n) { show($('accuse'), false); return; }
+    if (e.complete) { setMsg('Everyone is in place and the scene holds up. Who was alone with the victim?'); openAccuse(); }
+    else setMsg('Everyone is placed, but something does not fit. Tap Check to see who is wrong.');
+  }
+
+  function openAccuse() {
+    var html = '';
+    for (var k = 0; k < current.characters.length; k++) {
+      var ch = current.characters[k];
+      if (ch.victim) continue;
+      html += '<button type="button" class="btn" data-accuse="' + ch.initial + '">' + token(ch) + esc(ch.name) + '</button>';
+    }
+    $('suspects').innerHTML = html;
+    show($('accuse'), true);
+  }
+
+  function accuse(ini) {
+    var e = evaluate();
+    if (e.placed < n) { show($('accuse'), false); setMsg('Place everyone first, the victim included. Then you can see who was alone with the victim.'); return; }
+    if (e.wrong.length) { show($('accuse'), false); setMsg('Your reconstruction does not hold up yet. Tap Check to see who is out of place.'); return; }
+    if (ini !== current.murderer) { setMsg(personByInitial(ini).name + ' has an alibi: someone else was alone with the victim. Look at the victim\'s room.'); return; }
+    show($('accuse'), false);
+    caseState(current.id).solved = true;
+    save();
+    showSolved(true, true);
+    setMsg('');
+    updateCoach();
+  }
+
+  // Right after solving, the ending opens over the page (colour mode); later it sits under the board.
+  function showSolved(isSolved, justNow) {
+    show($('solved'), !!isSolved);
+    toggleClass($('solved'), 'modal', !!justNow && hasClass(document.documentElement, 'standard'));
+    if (isSolved) {
+      var m = personByInitial(current.murderer), v;
+      for (var k = 0; k < current.characters.length; k++) if (current.characters[k].victim) v = current.characters[k];
+      $('culprit').innerHTML = token(m, 'huge') + '<p><strong>' + esc(m.name) + '</strong> was alone with ' + esc(v.name) + '.</p>';
+      $('outro').innerHTML = esc(current.outro);
+      if (justNow && !hasClass($('solved'), 'modal')) $('solved').scrollIntoView();
+      var last = current.index >= data.cases.length - 1;
+      $('next').innerHTML = last ? 'Back to all cases' : 'Next case';
+    }
+  }
+
+  // ---------- events ----------
+  on($('grid'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-i');
+    if (btn) useTool(+btn.getAttribute('data-i'));
+  });
+
+  on($('palette'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-tool');
+    if (btn) setTool(btn.getAttribute('data-tool'));
+  });
+
+  on($('clues'), 'click', function (ev) {
+    var pick = closest(ev.target, 'data-pick');
+    if (pick) {
+      setTool(pick.getAttribute('data-pick'));
+      // On a phone the board is above the statements: bring it (and the notebook, if any) back into view.
+      if (tool && $('board-col').getBoundingClientRect().top < 0) (current.tutorial ? $('coach') : $('grid')).scrollIntoView();
+    }
+  });
+
+  on($('continue'), 'click', function () { openCase(+$('continue').getAttribute('data-case')); });
+  on($('route'), 'click', function (ev) {
+    var seg = closest(ev.target, 'data-tier');
+    if (seg) $('tier-' + seg.getAttribute('data-tier')).scrollIntoView();
+  });
+  on($('tiers'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-case');
+    if (btn && !btn.disabled) openCase(+btn.getAttribute('data-case'));
+  });
+
+  on($('suspects'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-accuse');
+    if (btn) accuse(btn.getAttribute('data-accuse'));
+  });
+
+  on($('undo'), 'click', undo);
+  on($('check'), 'click', check);
+  on($('accuse-btn'), 'click', openAccuse);
+  on($('accuse-cancel'), 'click', function () { show($('accuse'), false); });
+  on($('rules-btn'), 'click', function () {
+    var open = hasClass($('rules'), 'hide');
+    showRules(open);
+    if (open) $('rules').scrollIntoView();
+  });
+  on($('view-board'), 'click', function () { removeClass($('solved'), 'modal'); });
+  on($('next'), 'click', function () {
+    if (current.index >= data.cases.length - 1) showCases();
+    else openCase(current.index + 1);
+  });
+  on($('restart'), 'click', function () {
+    if (!window.confirm('Clear the board for this case?')) return;
+    var changes = [];
+    for (var i = 0; i < n * n; i++) if (cells[i]) changes.push([i, '']);
+    apply(changes);
+  });
+  on($('clue-toggle'), 'click', function () {
+    var open = hasClass($('clue-box'), 'hide');
+    show($('clue-box'), open);
+    $('clue-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('clue-toggle').innerHTML = open ? 'Hide clues' : 'Show clues';
+  });
+  on($('nav-cases'), 'click', function () { if (data) showCases(); });
+  on($('nav-help'), 'click', function () { syncSettings(); screen('help'); });
+  on($('help-back'), 'click', function () {
+    if (!data) return;
+    if (current) { screen('play'); sizeGrid(); paintBoard(); } else showCases();
+  });
+
+  // Settings
+  function syncSettings() {
+    var btns = $('screen-help').getElementsByTagName('button');
+    for (var k = 0; k < btns.length; k++) {
+      var m = btns[k].getAttribute('data-mode');
+      if (m) btns[k].setAttribute('aria-pressed', (store.settings.mode || 'auto') === m ? 'true' : 'false');
+    }
+    $('lock').setAttribute('aria-pressed', store.settings.lock ? 'true' : 'false');
+    $('shade').setAttribute('aria-pressed', store.settings.shade ? 'true' : 'false');
+  }
+  on($('screen-help'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-mode');
+    if (!btn) return;
+    store.settings.mode = btn.getAttribute('data-mode');
+    save();
+    // Reload so the mode is decided the same way as on a fresh visit.
+    location.reload();
+  });
+  on($('lock'), 'click', function () { store.settings.lock = !store.settings.lock; save(); syncSettings(); });
+  on($('shade'), 'click', function () { store.settings.shade = !store.settings.shade; save(); syncSettings(); });
+  on($('reset-all'), 'click', function () {
+    if (!window.confirm('Erase progress on all fifty cases?')) return;
+    store.progress = {};
+    save();
+    current = null;
+    showCases();
+  });
+
+  // Keyboard: arrows move, a letter places that person, X marks, Backspace clears, Ctrl+Z undoes.
+  on(document, 'keydown', function (ev) {
+    if (!current || hasClass($('screen-play'), 'hide')) return;
+    var key = ev.key || '', code = ev.keyCode;
+    if ((ev.ctrlKey || ev.metaKey) && (key === 'z' || key === 'Z' || code === 90)) { ev.preventDefault(); undo(); return; }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var t = ev.target && ev.target.tagName;
+    if (t === 'INPUT' || t === 'TEXTAREA') return;
+    var inBoard = false;
+    for (var el = ev.target; el; el = el.parentNode) if (el.id === 'board-col') { inBoard = true; break; }
+    var dir = { ArrowUp: -n, Up: -n, ArrowDown: n, Down: n, ArrowLeft: -1, Left: -1, ArrowRight: 1, Right: 1 }[key];
+    if (dir === undefined) dir = { 38: -n, 40: n, 37: -1, 39: 1 }[code];
+    if (dir !== undefined && inBoard) {
+      ev.preventDefault();
+      var from = sel < 0 ? 0 : sel, to = from + dir;
+      if ((dir === 1 && from % n === n - 1) || (dir === -1 && from % n === 0) || to < 0 || to >= n * n) to = from;
+      select(to, true);
+      return;
+    }
+    if (sel < 0) return;
+    if (key === 'Backspace' || key === 'Delete' || code === 8 || code === 46) { ev.preventDefault(); erase(sel); return; }
+    var letter = key.length === 1 ? key.toUpperCase() : (code >= 65 && code <= 90 ? String.fromCharCode(code) : '');
+    if (letter === 'X') { ev.preventDefault(); mark(sel); return; }
+    if (letter && personByInitial(letter)) { ev.preventDefault(); place(letter, sel); }
+  });
+
+  on($('intro-more'), 'click', function () {
+    var open = hasClass($('case-intro'), 'clamp');
+    toggleClass($('case-intro'), 'clamp', !open);
+    $('intro-more').innerHTML = open ? 'Less' : 'More';
+    $('intro-more').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) fitIntro();
+  });
+
+  var resizeTimer = null;
+  on(window, 'resize', function () {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      if (current && !hasClass($('screen-play'), 'hide')) { sizeGrid(); fitIntro(); }
+    }, 150);
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
