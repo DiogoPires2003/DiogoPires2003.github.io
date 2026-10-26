@@ -22,6 +22,12 @@
     else if (window.matchMedia && (matchMedia('(monochrome)').matches || matchMedia('(update: slow)').matches)) mode = 'eink';
   }
   document.documentElement.className = mode || 'standard';
+  if (document.documentElement.className === 'standard') {
+    var font = document.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:wght@400;600;700&family=Special+Elite&family=Caveat:wght@500;700&display=swap';
+    document.getElementsByTagName('head')[0].appendChild(font);
+  }
 })();
 </script>
 <style>
@@ -69,6 +75,8 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
   border: 2px solid #000; border-radius: 4px; background: #fff;
 }
 .level .num { font-weight: bold; margin-right: 6px; }
+.level .num:after { content: "."; }
+.punch, .car-plate, .bogies, .tg-head { display: none; }
 .level .state { display: block; font-size: 14px; }
 .level.solved { border-width: 4px; }
 .level[disabled] { border-style: dashed; cursor: default; }
@@ -314,6 +322,228 @@ html.standard .btn, html.standard .clue, html.standard .level, html.standard #gr
   html.standard #clue-box { display: block !important; }
 }
 
+/* ---------- Colour mode: Art Deco skin (lacquer, mahogany, brass and paper) ---------- */
+html.standard {
+  --display: Limelight, Georgia, serif;
+  --label: "Josefin Sans", "Trebuchet MS", Arial, sans-serif;
+  --type: "Special Elite", "Courier New", Courier, monospace;
+  --hand: Caveat, "Comic Sans MS", cursive;
+  --paper: #efe4cb; --card: #fbf5e6; --paper2: #f4ead2;
+  --mahogany: #4a2614; --mahogany2: #2e160b; --lacquer: #13291f;
+  --brass-hi: #f3dc9b; --brass-lo: #8a6524; --burgundy: #7a1f24;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard {
+    --paper: #1a110b; --card: #2a1f16; --paper2: #241a12;
+    --mahogany: #3a1d0f; --mahogany2: #1d0e06; --lacquer: #0b1a13;
+    --brass-hi: #f6e2a6; --brass-lo: #9c7630; --burgundy: #e06a62;
+  }
+}
+/* Walls: a quiet Art Deco fan pattern on ivory, or dark panelling at night. */
+html.standard body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 26px, rgba(154, 116, 38, 0.10) 27px, rgba(154, 116, 38, 0.10) 28px, transparent 29px),
+    radial-gradient(circle at 50% 100%, transparent 16px, rgba(154, 116, 38, 0.08) 17px, rgba(154, 116, 38, 0.08) 18px, transparent 19px);
+  background-size: 60px 30px;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard body {
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 120px),
+      repeating-linear-gradient(90deg, rgba(255, 210, 160, 0.025) 0, rgba(255, 210, 160, 0.025) 2px, transparent 2px, transparent 7px),
+      linear-gradient(180deg, var(--mahogany), var(--mahogany2));
+    background-size: auto;
+  }
+}
+
+/* Header: green lacquer, a brass double rule and a gilded name. */
+html.standard .bar {
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 2px, transparent 2px, transparent 9px), linear-gradient(180deg, #1d3d2e, var(--lacquer));
+  border-bottom: 0; box-shadow: 0 3px 0 var(--brass-lo), 0 6px 0 var(--lacquer), 0 8px 0 var(--brass-hi), 0 12px 18px rgba(0, 0, 0, 0.25);
+  margin-bottom: 12px;
+}
+html.standard .bar h1 { font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; }
+html.standard .logo {
+  font-size: 30px; text-transform: uppercase; color: var(--brass-hi);
+  background: linear-gradient(180deg, #fff3c8 10%, #e6c36a 45%, #9c7630 55%, #f0d58a 90%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+html.standard .bar h1 small { font-family: var(--label); font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: #cdb98a; margin-left: 10px; }
+
+/* Brass buttons with a bevel; the primary one is lacquer with gold lettering. */
+html.standard .btn {
+  font-family: var(--label); font-weight: 600; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #2b1a06; border: 1px solid var(--brass-lo); border-radius: 3px;
+  background: linear-gradient(180deg, #fbefc4 0%, #e3c57c 48%, #c9a253 52%, #e8cf8c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+html.standard .btn.small { font-size: 13px; }
+html.standard .btn.primary, html.standard .btn[aria-pressed="true"] {
+  color: var(--brass-hi); border-color: var(--brass-hi);
+  background: linear-gradient(180deg, #24493a, var(--lacquer));
+  box-shadow: inset 0 0 0 2px var(--lacquer), inset 0 0 0 3px rgba(243, 220, 155, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+html.standard .bar .btn { background: transparent; color: var(--brass-hi); border-color: rgba(243, 220, 155, 0.7); box-shadow: none; }
+@media (hover: hover) {
+  html.standard .btn:hover { filter: brightness(1.06); border-color: var(--brass-lo); }
+}
+html.standard #palette .btn { min-width: 64px; }
+html.standard #palette .ini { font-family: Georgia, serif; font-size: 22px; letter-spacing: 0; }
+html.standard .linkish { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: var(--burgundy); }
+
+/* Case header: deco title, and the story as a typed telegram. */
+html.standard h2, html.standard #cases-title { font-family: var(--display); font-weight: normal; font-size: 32px; letter-spacing: 0.04em; color: var(--ink); }
+html.standard h3 { font-family: var(--label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; font-size: 15px; }
+html.standard .kicker { font-family: var(--label); font-weight: 600; letter-spacing: 0.24em; font-size: 12px; color: var(--brass-lo); }
+html.standard .telegram {
+  position: relative; margin: 8px 0 14px; padding: 12px 16px 10px; max-width: 760px;
+  background: linear-gradient(180deg, #f6edd2, #efe2bf); color: #2b2012;
+  border: 1px solid #cbb683; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14), inset 0 0 0 4px #f6edd2, inset 0 0 0 5px rgba(122, 31, 36, 0.35);
+  transform: rotate(-0.4deg);
+}
+html.standard .tg-head { display: block; margin: 0 0 4px; font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--burgundy); }
+html.standard .telegram .intro { font-family: var(--type); font-size: 16px; line-height: 1.55; margin: 0; color: #2b2012; }
+html.standard .telegram .linkish { color: #7a1f24; }
+
+/* The detective's notebook: lined paper and handwriting. */
+html.standard #coach {
+  background: repeating-linear-gradient(180deg, transparent 0, transparent 27px, rgba(29, 74, 122, 0.22) 27px, rgba(29, 74, 122, 0.22) 28px), #fffdf4;
+  border: 0; border-left: 3px double #c0504d; border-radius: 2px; color: #1d2a4a;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16); padding: 6px 16px 8px 22px;
+}
+html.standard #coach p { font-family: var(--hand); font-size: 23px; line-height: 28px; margin: 0; }
+html.standard #coach .coach-title { font-family: var(--label); font-size: 11px; letter-spacing: 0.3em; color: #c0504d; line-height: 28px; }
+
+/* The board travels in a carriage: mahogany body, curved roof, brass trim and bogies. */
+html.standard .carriage {
+  position: relative; display: inline-block; padding: 30px 16px 12px; margin: 4px 0 0;
+  border-radius: 26px 26px 8px 8px;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0, rgba(0, 0, 0, 0.12) 1px, transparent 1px, transparent 6px), linear-gradient(180deg, #6a3a1f, var(--mahogany) 40%, var(--mahogany2));
+  box-shadow: inset 0 0 0 2px var(--brass-hi), inset 0 0 0 5px var(--mahogany), inset 0 0 0 6px var(--brass-lo), 0 14px 26px rgba(0, 0, 0, 0.3);
+}
+html.standard .carriage:before {
+  content: ""; position: absolute; left: 8px; right: 8px; top: -10px; height: 22px;
+  border-radius: 40px 40px 0 0; background: linear-gradient(180deg, #2b2b2b, #111);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18);
+}
+html.standard .car-plate {
+  display: block; position: absolute; left: 50%; top: 5px; margin: 0; padding: 1px 12px; white-space: nowrap;
+  transform: translateX(-50%); border-radius: 2px;
+  background: linear-gradient(180deg, #fbefc4, #c9a253); color: #2b1a06; border: 1px solid #6b4a14;
+  font: 700 10px/1.5 var(--label); letter-spacing: 0.24em; text-transform: uppercase;
+}
+html.standard #grid { box-shadow: 0 0 0 3px var(--mahogany2), 0 0 0 4px var(--brass-lo); margin: 0; }
+html.standard #grid th { color: #f0dfb4; font-family: var(--label); font-weight: 600; font-size: 12px; }
+html.standard .bogies { display: block; width: 100%; height: 34px; margin-top: 4px; overflow: visible; }
+html.standard .bogies .chassis { fill: #1a1a1a; }
+html.standard .bogies .frame { fill: #2b2b2b; }
+html.standard .bogies .wheel circle { fill: #222; stroke: var(--brass-lo); stroke-width: 3; }
+html.standard .bogies .wheel .hub { fill: var(--brass-hi); stroke: none; }
+html.standard .bogies .rails { stroke: #6b5a44; stroke-width: 3; }
+html.standard .rlabel { font-family: var(--label); font-weight: 700; letter-spacing: 0.12em; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
+html.standard #cellinfo, html.standard #hint { font-family: var(--label); font-size: 14px; letter-spacing: 0.04em; font-style: normal; }
+
+/* Portraits as cameos in gilt frames. */
+html.standard .tok { border: 2px solid var(--brass-hi); box-shadow: 0 0 0 1px var(--brass-lo), 0 2px 5px rgba(0, 0, 0, 0.35); }
+html.standard .tini { font-family: var(--label); background: linear-gradient(180deg, #fbefc4, #d6b464); color: #2b1a06; border-color: #6b4a14; }
+
+/* Statements: witness cards with typed testimony. */
+html.standard #clues li { margin-bottom: 10px; }
+html.standard .clue {
+  font-family: Georgia, serif; border: 1px solid #d3bf8e; border-radius: 2px; color: #2b2012;
+  background: linear-gradient(180deg, #fffaec, #f5ead0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), inset 0 0 0 3px #fffaec, inset 0 0 0 4px rgba(154, 116, 38, 0.35);
+  padding: 12px 14px;
+}
+html.standard .clue strong { font-size: 18px; }
+html.standard .clue .role { font-family: var(--label); font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8a7350; margin-left: 4px; }
+html.standard .clue .txt { font-family: var(--type); font-size: 15.5px; line-height: 1.5; color: #2b2012; margin-top: 6px; }
+html.standard .clue .vic {
+  display: inline-block; margin-left: 8px; padding: 0 6px; transform: rotate(-4deg);
+  font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.2em;
+  color: #9b1c1c; border: 2px solid #9b1c1c; border-radius: 3px; opacity: 0.85;
+}
+html.standard #clues li.focus .clue { border-color: var(--lacquer); box-shadow: 0 0 0 3px var(--brass-hi), 0 8px 16px rgba(0, 0, 0, 0.2); transform: translateX(6px) rotate(-0.3deg); }
+html.standard .done-li .clue { opacity: 0.62; }
+@media (prefers-color-scheme: dark) {
+  html.standard .clue { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45), inset 0 0 0 3px #fffaec, inset 0 0 0 4px rgba(154, 116, 38, 0.35); }
+}
+html.standard .clue-head, html.standard .legend-title { color: var(--ink); }
+html.standard .box, html.standard #accuse { background: var(--card); border: 1px solid var(--brass-lo); border-radius: 2px; box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 4px var(--brass-hi); }
+
+/* Ending: a gilt-edged card. */
+html.standard #solved.modal .card, html.standard #solved .card {
+  background: linear-gradient(180deg, #fffaec, #f1e3c0); color: #2b2012; border: 0; border-radius: 4px;
+  box-shadow: inset 0 0 0 3px #fffaec, inset 0 0 0 5px var(--brass-lo), inset 0 0 0 8px #fffaec, inset 0 0 0 9px var(--brass-lo), 0 24px 60px rgba(0, 0, 0, 0.5);
+  padding: 26px 24px;
+}
+html.standard #solved:not(.modal) { border: 0; padding: 0; background: none; }
+html.standard .stamp { font-family: var(--display); font-weight: normal; letter-spacing: 0.18em; font-size: 24px; border-width: 4px; border-style: double; color: #9b1c1c; border-color: #9b1c1c; }
+html.standard #outro { font-family: var(--type); font-size: 16px; line-height: 1.55; }
+html.standard #culprit strong { font-family: var(--display); font-weight: normal; font-size: 20px; letter-spacing: 0.04em; }
+
+/* Case list: chapters are ticket headers, cases are tickets with a stub. */
+html.standard .ticket {
+  border: 0; border-radius: 4px; padding: 12px 16px; color: #2b2012;
+  background: linear-gradient(90deg, rgba(122, 31, 36, 0.08), transparent 30%), linear-gradient(180deg, #fffaec, #f1e3c0);
+  box-shadow: inset 0 0 0 3px #fffaec, inset 0 0 0 4px var(--brass-lo), 0 4px 10px rgba(0, 0, 0, 0.14);
+}
+html.standard .ticket .tk-ch { font-family: var(--label); font-weight: 700; letter-spacing: 0.24em; color: var(--burgundy); }
+html.standard .ticket strong { font-family: var(--display); font-weight: normal; font-size: 26px; letter-spacing: 0.04em; }
+html.standard .ticket .tk-prog { font-family: var(--label); letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px; color: #6b5a44; }
+html.standard .pbar { height: 7px; border: 0; border-radius: 4px; background: rgba(0, 0, 0, 0.1); }
+html.standard .pbar i { border-radius: 4px; background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi)); }
+html.standard .levels li { padding: 5px; }
+html.standard .level {
+  position: relative; display: table; table-layout: fixed; width: 100%; min-height: 66px; padding: 0; overflow: hidden;
+  border: 0; border-radius: 6px; color: #2b2012;
+  background: linear-gradient(180deg, #fffaec, #f3e6c6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(154, 116, 38, 0.5);
+}
+html.standard .level .stub, html.standard .level .tk-body { display: table-cell; vertical-align: middle; }
+html.standard .level .stub {
+  width: 64px; text-align: center; border-right: 2px dashed rgba(122, 31, 36, 0.4);
+  background: linear-gradient(180deg, #1d3d2e, var(--lacquer)); color: var(--brass-hi);
+}
+html.standard .level .num { margin: 0; font-family: var(--display); font-weight: normal; font-size: 26px; }
+html.standard .level .num:after { content: ""; }
+html.standard .level .tk-body { padding: 8px 12px; }
+html.standard .level .tt { display: block; font-size: 17px; }
+html.standard .level .state { font-family: var(--label); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a7350; }
+html.standard .level.solved { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(154, 116, 38, 0.5); }
+html.standard .level.solved .stub { background: linear-gradient(180deg, #7a1f24, #4a1014); }
+html.standard .punch {
+  display: block; position: absolute; right: 10px; top: 50%; margin-top: -14px; padding: 2px 8px; transform: rotate(-8deg);
+  font: 700 13px/1.4 var(--label); letter-spacing: 0.22em; text-transform: uppercase;
+  color: #9b1c1c; border: 3px double #9b1c1c; border-radius: 4px; opacity: 0.75;
+}
+html.standard .level[disabled] { opacity: 0.55; }
+html.standard .level.solved .state { display: none; }
+@media (hover: hover) {
+  html.standard .level:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), inset 0 0 0 1px var(--brass-lo); }
+}
+html.standard .level { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+
+/* Route map as an old railway poster. */
+html.standard #route svg {
+  background: radial-gradient(ellipse at 40% 40%, #fbf3dc, #ead9ad); border: 0; border-radius: 4px;
+  box-shadow: inset 0 0 0 4px #fbf3dc, inset 0 0 0 6px var(--brass-lo), inset 0 0 0 9px #fbf3dc, inset 0 0 0 10px var(--brass-lo), 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+html.standard #route .sea { fill: #a9c4cc; }
+html.standard #route svg { padding: 12px; }
+html.standard #route .city { font-family: var(--display); font-weight: normal; fill: #2b2012; letter-spacing: 0.04em; }
+html.standard #route .chip { fill: var(--lacquer); stroke: var(--brass-hi); stroke-width: 2.5; }
+html.standard #route .chip-t { font-family: var(--label); fill: var(--brass-hi); }
+html.standard #route .stop { fill: #fffaec; stroke: #2b2012; }
+html.standard #route .rail { stroke: #2b2012; }
+html.standard #route .sleepers { stroke: #6b4a2a; }
+html.standard #route .loco { fill: #3a2414; }
+html.standard #route .poster-title { display: block; }
+html.standard #continue { font-size: 15px; padding: 12px 20px; }
+html.standard .help, html.standard .note { font-family: Georgia, serif; }
+html.standard .legend { font-family: var(--label); font-size: 13px; letter-spacing: 0.06em; }
+
 /* Phones: a compact case header so the board shows without scrolling. */
 @media (max-width: 600px) {
   .bar .wrap { padding-top: 4px; padding-bottom: 4px; }
@@ -327,6 +557,15 @@ html.standard .btn, html.standard .clue, html.standard .level, html.standard #gr
   #coach { padding: 6px 10px; font-size: 15px; }
   .ticket .tk-prog { float: none; display: block; margin: 2px 0 0; }
   #route .city { font-size: 27px; }
+  #case-intro.clamp { max-height: 3.1em; }
+  html.standard .logo { font-size: 22px; }
+  html.standard .bar { margin-bottom: 6px; }
+  html.standard h2 { font-size: 24px; }
+  html.standard .telegram { margin: 4px 0 10px; padding: 6px 10px 4px; transform: none; }
+  html.standard .tg-head { font-size: 10px; margin: 0; }
+  html.standard .telegram .intro { font-size: 14px; }
+  html.standard .carriage { padding: 26px 10px 8px; }
+  html.standard #coach p { font-size: 20px; line-height: 25px; }
   #route .chip-t { font-size: 20px; }
 }
 
@@ -340,7 +579,7 @@ html.eink .tok { box-shadow: none; }
 <body>
 <header class="bar">
   <div class="wrap">
-    <h1>Cellmates <small>The Midnight Express</small></h1>
+    <h1><span class="logo">Cellmates</span> <small>The Midnight Express</small></h1>
     <span class="nav">
       <button class="btn small" id="nav-cases" type="button">Cases</button>
       <button class="btn small" id="nav-help" type="button">Help</button>
@@ -362,17 +601,32 @@ html.eink .tok { box-shadow: none; }
   <section id="screen-play" class="hide" aria-labelledby="case-title">
     <p class="kicker" id="case-kicker"></p>
     <h2 id="case-title"></h2>
-    <p class="intro" id="case-intro"></p>
-    <button class="linkish hide" id="intro-more" type="button" aria-expanded="false">More</button>
+    <div class="telegram">
+      <p class="tg-head" aria-hidden="true">Telegram</p>
+      <p class="intro" id="case-intro"></p>
+      <button class="linkish hide" id="intro-more" type="button" aria-expanded="false">More</button>
+    </div>
     <div id="coach" class="hide" role="status" aria-live="polite">
       <p class="coach-title">Detective's notebook</p>
       <p id="coach-text"></p>
     </div>
     <div class="layout">
       <div class="board-col" id="board-col">
-        <div id="board-wrap">
-          <table id="grid" role="grid" aria-label="Crime scene"></table>
-          <div id="labels" aria-hidden="true"></div>
+        <div class="carriage" id="carriage">
+          <p class="car-plate" id="car-plate" aria-hidden="true"></p>
+          <div id="board-wrap">
+            <table id="grid" role="grid" aria-label="Crime scene"></table>
+            <div id="labels" aria-hidden="true"></div>
+          </div>
+          <svg class="bogies" viewBox="0 0 400 46" aria-hidden="true" focusable="false">
+            <path class="chassis" d="M14 4h372v8H14z"/>
+            <path class="frame" d="M40 12h100v10H40zM260 12h100v10H260z"/>
+            <g class="wheel"><circle cx="66" cy="30" r="14"/><circle class="hub" cx="66" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="114" cy="30" r="14"/><circle class="hub" cx="114" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="286" cy="30" r="14"/><circle class="hub" cx="286" cy="30" r="4"/></g>
+            <g class="wheel"><circle cx="334" cy="30" r="14"/><circle class="hub" cx="334" cy="30" r="4"/></g>
+            <path class="rails" d="M0 44h400"/>
+          </svg>
         </div>
         <p id="cellinfo" aria-live="polite"></p>
         <p id="hint"></p>
@@ -460,7 +714,7 @@ html.eink .tok { box-shadow: none; }
     <div class="opt">
       <button class="btn small" type="button" id="reset-all">Erase all progress</button>
     </div>
-    <p class="note">Object icons by Delapouite, Lorc and Caro Asercion from <a href="https://game-icons.net">game-icons.net</a>, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, recoloured. The table, stove, desk, bench and rug were drawn for Cellmates. Portraits are busts drawn for Cellmates wearing hats by Lorc and Delapouite from the same site; the locomotive is by Delapouite.</p>
+    <p class="note">Object icons by Delapouite, Lorc and Caro Asercion from <a href="https://game-icons.net">game-icons.net</a>, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, recoloured. The table, stove, desk, bench and rug were drawn for Cellmates. Portraits are busts drawn for Cellmates wearing hats by Lorc and Delapouite from the same site; the locomotive is by Delapouite. Colour mode uses the Limelight, Josefin Sans, Special Elite and Caveat fonts from Google Fonts, under open licences.</p>
     <p class="note">Tip: add <code>?mode=eink</code> or <code>?mode=standard</code> to the address to force a display mode.</p>
     <p><button class="btn primary" type="button" id="help-back">Back</button></p>
   </section>
@@ -661,7 +915,8 @@ html.eink .tok { box-shadow: none; }
         if (next < 0 && !locked && !(st && st.solved)) next = i;
         var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size + (c.tutorial ? ' · guided' : '');
         html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
-          '<span class="num">' + c.level + '.</span>' + esc(c.title) + '<span class="state">' + state + '</span></button></li>';
+          '<span class="stub"><span class="num">' + c.level + '</span></span><span class="tk-body"><span class="tt">' + esc(c.title) + '</span>' +
+          '<span class="state">' + state + '</span></span>' + (st && st.solved ? '<span class="punch">Solved</span>' : '') + '</button></li>';
       }
       html += '</ul></div>';
     }
@@ -736,6 +991,8 @@ html.eink .tok { box-shadow: none; }
     'Sleeper No. 3': 'Sleeper 3', 'Baggage Car': 'Baggage', 'Kitchen Car': 'Kitchen', 'Dining Car': 'Dining',
     'Lounge Car': 'Lounge', 'Sleeper Car': 'Sleeper', 'Mail Car': 'Mail', 'Locomotive': 'Engine'
   };
+  // Last resort for rooms one cell wide.
+  var TINY_ROOM = { "Conductor's Cabin": 'Cond.', 'Corridor': 'Corr.', 'Observation Car': 'Obs.', 'Customs Office': 'Cust.', 'Waiting Room': 'Wait.' };
 
   function icon(type, cls) {
     return '<svg class="' + cls + '" viewBox="0 0 512 512" aria-hidden="true" focusable="false">' + ICONS[type] + '</svg>';
@@ -764,6 +1021,7 @@ html.eink .tok { box-shadow: none; }
     for (var t = 0; t < data.tiers.length; t++) if (data.tiers[t].id === current.tier) tier = data.tiers[t];
     $('case-kicker').innerHTML = 'Case ' + current.level + ' · ' + esc(tier.name) + ' · ' + esc(tier.leg);
     $('case-title').innerHTML = esc(current.title);
+    $('car-plate').innerHTML = 'Car No. ' + current.level + ' · ' + esc(tier.name);
     $('case-intro').innerHTML = esc(current.intro);
     addClass($('case-intro'), 'clamp');
     $('intro-more').innerHTML = 'More';
@@ -828,6 +1086,8 @@ html.eink .tok { box-shadow: none; }
     if (!current) return;
     var col = $('board-col');
     var w = col.clientWidth || (window.innerWidth - 32);
+    // In colour mode the board sits inside the carriage's panelling.
+    if (hasClass(document.documentElement, 'standard')) w -= window.innerWidth <= 600 ? 26 : 36;
     var size = Math.floor(Math.min(60, (w - 6) / (n + 0.7)));
     if (size < 30) size = 30;
     var css = '#grid td.c{width:' + size + 'px;height:' + size + 'px}' +
@@ -861,19 +1121,27 @@ html.eink .tok { box-shadow: none; }
       }
       var td = cellEls[best.i].parentNode.getBoundingClientRect();
       var width = best.len * td.width - 6, name = current.roomNames[room];
-      // Uppercase Arial runs about 0.68 em per letter; shrinking (below) is tried before abbreviating.
-      if (name.length * 7 * 0.68 > width) name = SHORT_ROOM[name] || name;
-      html += '<span class="rlabel r' + k + '" style="left:' + Math.round(td.left - wrap.left + 3) + 'px;top:' + Math.round(td.top - wrap.top + 3) +
-        'px;max-width:' + Math.round(width) + 'px">' + esc(name) + '</span>';
+      html += '<span class="rlabel r' + k + '" data-w="' + Math.round(width) + '" style="left:' + Math.round(td.left - wrap.left + 3) + 'px;top:' + Math.round(td.top - wrap.top + 3) +
+        'px">' + esc(name) + '</span>';
     }
     $('labels').innerHTML = html;
-    // Shrink any name that still does not fit its run of cells.
+    // Fit each name to its run of cells: shrink it, then try shorter forms of the name.
     var spans = $('labels').getElementsByTagName('span');
     for (var j = 0; j < spans.length; j++) {
-      for (var f = font; spans[j].scrollWidth > spans[j].clientWidth + 1 && f > 7; f--) {
-        spans[j].style.fontSize = (f - 1) + 'px';
-        spans[j].style.letterSpacing = '0';
+      var el = spans[j], limit = +el.getAttribute('data-w'), full = el.innerHTML;
+      var forms = [full, SHORT_ROOM[full], TINY_ROOM[full] || full.slice(0, 4) + '.'];
+      for (var fi = 0; fi < forms.length; fi++) {
+        if (!forms[fi]) continue;
+        el.innerHTML = forms[fi];
+        el.style.fontSize = '';
+        el.style.letterSpacing = '';
+        for (var f = font; el.offsetWidth > limit && f > 7; f--) {
+          el.style.fontSize = (f - 1) + 'px';
+          el.style.letterSpacing = '0';
+        }
+        if (el.offsetWidth <= limit) break;
       }
+      el.style.maxWidth = limit + 'px';
     }
   }
 

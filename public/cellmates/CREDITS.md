@@ -24,3 +24,6 @@ Portraits are busts drawn for Cellmates wearing hats from game-icons.net
 (CC BY 3.0): top-hat and fedora by Lorc; skimmer-hat, captain-hat-profile,
 chef-toque, western-hat, fez, flower-hat, tiara and turban by Delapouite.
 The route map's train is steam-locomotive by Delapouite.
+
+Colour mode loads the Limelight, Josefin Sans, Special Elite and Caveat
+fonts from Google Fonts (open licences); e-ink mode uses system fonts.
