@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en" class="standard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cellmates: The Midnight Express</title>
+<script>
+// Display mode, decided before first paint: ?mode= > saved setting > device > standard.
+(function () {
+  var mode = null, m;
+  try { m = /[?&]mode=(eink|standard)\b/.exec(location.search); if (m) mode = m[1]; } catch (e) {}
+  if (!mode) {
+    try {
+      var saved = JSON.parse(localStorage.getItem('cellmates:v1') || '{}');
+      if (saved.settings && (saved.settings.mode === 'eink' || saved.settings.mode === 'standard')) mode = saved.settings.mode;
+    } catch (e) {}
+  }
+  if (!mode) {
+    var ua = navigator.userAgent || '';
+    if (/Kindle/.test(ua) && !/Silk/.test(ua)) mode = 'eink';
+    else if (window.matchMedia && (matchMedia('(monochrome)').matches || matchMedia('(update: slow)').matches)) mode = 'eink';
+  }
+  document.documentElement.className = mode || 'standard';
+})();
+</script>
+<style>
+/* Base styles are plain, high-contrast black and white with no custom
+   properties: this is the e-ink look, and what an old browser falls back to.
+   html.standard layers colour, themes and motion on top. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #fff; color: #000;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.45;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+.hide { display: none !important; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 32px; }
+
+.bar { border-bottom: 3px solid #000; background: #fff; }
+.bar .wrap { padding-top: 8px; padding-bottom: 8px; overflow: hidden; }
+.bar h1 { display: inline-block; margin: 0; font-size: 22px; letter-spacing: 0.04em; vertical-align: middle; }
+.bar h1 small { font-size: 14px; font-weight: normal; letter-spacing: 0; }
+.bar .nav { float: right; }
+.btn {
+  display: inline-block; min-height: 44px; padding: 8px 14px; margin: 3px 2px;
+  border: 2px solid #000; border-radius: 4px; background: #fff; text-align: center;
+  font-size: 17px; line-height: 1.2; vertical-align: middle;
+}
+.btn[aria-pressed="true"], .btn.on { background: #000; color: #fff; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.btn.small { min-height: 36px; padding: 5px 10px; font-size: 15px; }
+:focus { outline: 3px solid #000; outline-offset: 2px; }
+
+h2 { font-size: 24px; margin: 18px 0 4px; }
+h3 { font-size: 19px; margin: 18px 0 6px; }
+.kicker { margin: 14px 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+.intro { margin: 6px 0 12px; }
+.note { font-size: 15px; }
+
+/* Case list */
+.tier { margin-bottom: 20px; }
+.levels { list-style: none; margin: 0; padding: 0; }
+.levels li { display: inline-block; width: 49%; vertical-align: top; padding: 3px; }
+.level {
+  display: block; width: 100%; min-height: 56px; padding: 8px 10px; text-align: left;
+  border: 2px solid #000; border-radius: 4px; background: #fff;
+}
+.level .num { font-weight: bold; margin-right: 6px; }
+.level .state { display: block; font-size: 14px; }
+.level.solved { border-width: 4px; }
+.level[disabled] { border-style: dashed; cursor: default; }
+
+/* Board */
+.board-col { position: relative; }
+#grid { border-collapse: collapse; margin: 6px 0 8px; }
+#grid th { font-size: 13px; font-weight: normal; text-align: center; padding: 0; }
+#grid td { padding: 0; border: 1px solid #777; position: relative; background: #fff; }
+#grid td.bt { border-top: 4px solid #000; }
+#grid td.bb { border-bottom: 4px solid #000; }
+#grid td.bl { border-left: 4px solid #000; }
+#grid td.br { border-right: 4px solid #000; }
+#grid td.blocked { background: #c8c8c8; }
+.cell {
+  display: block; width: 100%; height: 100%; margin: 0; padding: 0;
+  border: 0; background: transparent; position: relative; overflow: hidden;
+}
+.cell .who { position: absolute; left: 0; right: 0; top: 50%; margin-top: -0.6em; line-height: 1.2em; text-align: center; font-weight: bold; }
+.cell .x { font-weight: normal; }
+.cell .tag { position: absolute; left: 2px; top: 1px; font-size: 10px; line-height: 1; font-family: Arial, sans-serif; }
+.cell svg { position: absolute; right: 2px; bottom: 2px; fill: none; stroke: #000; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.blocked .cell svg { left: 50%; top: 50%; right: auto; bottom: auto; }
+.cell.sel { box-shadow: inset 0 0 0 4px #000; }
+.cell.conflict { border: 3px dotted #000; }
+.cell:focus { outline: none; }
+.cell:focus.sel { box-shadow: inset 0 0 0 4px #000, inset 0 0 0 7px #fff, inset 0 0 0 9px #000; }
+
+#cellinfo { min-height: 1.45em; margin: 0 0 6px; font-size: 15px; }
+#palette .btn { min-width: 52px; }
+#palette .ini { font-weight: bold; font-size: 20px; }
+#palette .nm { display: block; font-size: 12px; }
+#palette .placed { text-decoration: underline; }
+.tools { margin: 8px 0; }
+#msg { min-height: 1.45em; font-weight: bold; margin: 8px 0; }
+#accuse, #solved { border: 3px solid #000; padding: 10px 12px; margin: 10px 0; }
+#accuse p, #solved p { margin: 4px 0 8px; }
+
+.legend { list-style: none; padding: 0; margin: 8px 0; font-size: 15px; }
+.legend li { display: inline-block; margin: 2px 12px 2px 0; }
+.legend .sw { display: inline-block; min-width: 20px; padding: 0 3px; border: 2px solid #000; text-align: center; font-size: 11px; font-family: Arial, sans-serif; margin-right: 4px; }
+
+/* Clues */
+#clue-toggle { margin-top: 10px; }
+#clues { list-style: none; margin: 8px 0; padding: 0; }
+#clues li { margin: 0 0 6px; }
+.clue { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; }
+.clue .badge { display: inline-block; min-width: 28px; padding: 0 4px; margin-right: 6px; border: 2px solid #000; text-align: center; font-weight: bold; }
+.clue .role { font-size: 14px; font-style: italic; }
+.clue .vic { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid #000; padding: 0 4px; margin-left: 4px; }
+.clue .txt { display: block; margin-top: 4px; }
+.clue[aria-pressed="true"] .txt { text-decoration: line-through; color: #555; }
+.clue[aria-pressed="true"] { border-style: dashed; }
+
+/* Help & settings */
+.help li { margin-bottom: 4px; }
+.opt { margin: 6px 0; }
+kbd { border: 1px solid #000; border-radius: 3px; padding: 0 4px; font-family: inherit; font-size: 15px; }
+
+/* ---------- Standard mode: colour, themes, motion ---------- */
+html.standard {
+  --paper: #f7f1e5; --card: #fffaf0; --ink: #221b14; --muted: #5d5244;
+  --wood: #6b3f1f; --brass: #9a7426; --green: #1f3b2d; --line: #8a7c68; --edge: #2a2118;
+  --block: #cbbfa9; --focus: #1f5fbf;
+  --r0: #f1dfbd; --r1: #d6e6cf; --r2: #d7e2ef; --r3: #f0d4cf; --r4: #e3d8ee; --r5: #ece2bf; --r6: #cfe6e2; --r7: #e8d6c6; --r8: #dfe0c8;
+  --p0: #8b1e1e; --p1: #1d4a7a; --p2: #2a5e2c; --p3: #6e4300; --p4: #5b2a86; --p5: #0c5c5c; --p6: #93306a; --p7: #3d3d3d; --p8: #7a5000;
+}
+@media (prefers-color-scheme: dark) {
+  html.standard {
+    --paper: #17130f; --card: #211b15; --ink: #f1e8d8; --muted: #c2b49d;
+    --wood: #c08a5a; --brass: #d8b45c; --green: #0f2219; --line: #6d604f; --edge: #e8dcc6;
+    --block: #4a4035; --focus: #7fb0ff;
+    --r0: #3d3222; --r1: #263826; --r2: #24303f; --r3: #40292a; --r4: #342a40; --r5: #3a3420; --r6: #1f3a36; --r7: #3b2d24; --r8: #33341f;
+    --p0: #ff9a8a; --p1: #9cc6ff; --p2: #9be29a; --p3: #f2c27a; --p4: #d1a8ff; --p5: #7fe0dc; --p6: #ff9fd0; --p7: #e4e4e4; --p8: #ffd27a;
+  }
+}
+html.standard body { background: var(--paper); color: var(--ink); }
+html.standard .bar { background: var(--green); color: #f3e6c4; border-bottom: 3px solid var(--brass); }
+html.standard .bar h1 { color: #f3e6c4; }
+html.standard .bar .btn { background: transparent; color: #f3e6c4; border-color: #c9a75a; }
+html.standard .btn { background: var(--card); color: var(--ink); border-color: var(--wood); }
+html.standard .btn[aria-pressed="true"], html.standard .btn.on { background: var(--wood); color: var(--card); }
+html.standard .btn.primary { background: var(--green); color: #f3e6c4; border-color: var(--green); }
+@media (prefers-color-scheme: dark) {
+  html.standard .btn.primary { background: var(--brass); color: #17130f; border-color: var(--brass); }
+}
+html.standard :focus { outline-color: var(--focus); }
+html.standard .kicker, html.standard .note, html.standard .clue .role { color: var(--muted); }
+html.standard .level { background: var(--card); border-color: var(--line); }
+html.standard .level.solved { border-color: var(--green); border-width: 2px; box-shadow: inset 6px 0 0 var(--green); }
+html.standard #grid { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); }
+html.standard #grid th { color: var(--muted); }
+html.standard #grid td { border-color: var(--line); }
+html.standard #grid td.bt { border-top-color: var(--edge); }
+html.standard #grid td.bb { border-bottom-color: var(--edge); }
+html.standard #grid td.bl { border-left-color: var(--edge); }
+html.standard #grid td.br { border-right-color: var(--edge); }
+html.standard #grid td.r0 { background: var(--r0); } html.standard #grid td.r1 { background: var(--r1); }
+html.standard #grid td.r2 { background: var(--r2); } html.standard #grid td.r3 { background: var(--r3); }
+html.standard #grid td.r4 { background: var(--r4); } html.standard #grid td.r5 { background: var(--r5); }
+html.standard #grid td.r6 { background: var(--r6); } html.standard #grid td.r7 { background: var(--r7); }
+html.standard #grid td.r8 { background: var(--r8); }
+html.standard #grid td.blocked { background-image: repeating-linear-gradient(45deg, transparent 0, transparent 5px, rgba(60, 40, 20, 0.18) 5px, rgba(60, 40, 20, 0.18) 7px); }
+html.standard .cell svg { stroke: var(--brass); }
+html.standard .blocked .cell svg { stroke: var(--wood); }
+html.standard .cell .x { color: var(--muted); }
+html.standard .cell .tag { color: var(--muted); }
+html.standard .cell.sel { box-shadow: inset 0 0 0 4px var(--focus); }
+html.standard .cell:focus.sel { box-shadow: inset 0 0 0 4px var(--focus); }
+html.standard .cell.conflict { border-color: #b3261e; }
+html.standard .p0 { color: var(--p0); } html.standard .p1 { color: var(--p1); } html.standard .p2 { color: var(--p2); }
+html.standard .p3 { color: var(--p3); } html.standard .p4 { color: var(--p4); } html.standard .p5 { color: var(--p5); }
+html.standard .p6 { color: var(--p6); } html.standard .p7 { color: var(--p7); } html.standard .p8 { color: var(--p8); }
+html.standard .clue { background: var(--card); border-color: var(--line); }
+html.standard .clue .badge { border-color: currentColor; }
+html.standard .clue[aria-pressed="true"] .txt { color: var(--muted); }
+html.standard #accuse, html.standard #solved { background: var(--card); border-color: var(--brass); border-radius: 6px; }
+html.standard .legend .sw { border-color: var(--edge); color: var(--ink); }
+html.standard .legend .r0 { background: var(--r0); } html.standard .legend .r1 { background: var(--r1); }
+html.standard .legend .r2 { background: var(--r2); } html.standard .legend .r3 { background: var(--r3); }
+html.standard .legend .r4 { background: var(--r4); } html.standard .legend .r5 { background: var(--r5); }
+html.standard .legend .r6 { background: var(--r6); } html.standard .legend .r7 { background: var(--r7); }
+html.standard .legend .r8 { background: var(--r8); }
+html.standard .btn, html.standard .clue, html.standard .level, html.standard #grid td { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+@media (hover: hover) {
+  html.standard .btn:hover, html.standard .level:hover, html.standard .clue:hover { border-color: var(--brass); }
+  html.standard .cell:hover { box-shadow: inset 0 0 0 2px var(--brass); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.standard * { transition: none !important; }
+}
+/* Tablet landscape and desktop: grid left, clues right. */
+@media (min-width: 860px) {
+  html.standard .layout { display: flex; align-items: flex-start; }
+  html.standard .board-col { flex: 0 0 auto; width: 58%; max-width: 640px; margin-right: 24px; }
+  html.standard .clue-col { flex: 1 1 auto; min-width: 0; }
+  html.standard #clue-toggle { display: none; }
+  html.standard #clues { display: block !important; }
+}
+
+/* ---------- E-ink mode: no motion, larger type, crisp edges ---------- */
+html.eink * { transition: none !important; animation: none !important; }
+html.eink body { font-size: 19px; }
+html.eink .levels li { width: 100%; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <h1>Cellmates <small>The Midnight Express</small></h1>
+    <span class="nav">
+      <button class="btn small" id="nav-cases" type="button">Cases</button>
+      <button class="btn small" id="nav-help" type="button">Help</button>
+    </span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p id="loading">Loading cases…</p>
+
+  <section id="screen-cases" class="hide" aria-labelledby="cases-title">
+    <h2 id="cases-title">The Midnight Express</h2>
+    <p class="intro">A luxury night train crosses Europe in the 1930s, and someone aboard keeps killing. Fifty cases stand between Paris and Istanbul.</p>
+    <div id="tiers"></div>
+  </section>
+
+  <section id="screen-play" class="hide" aria-labelledby="case-title">
+    <p class="kicker" id="case-kicker"></p>
+    <h2 id="case-title"></h2>
+    <p class="intro" id="case-intro"></p>
+    <div class="layout">
+      <div class="board-col" id="board-col">
+        <table id="grid" role="grid" aria-label="Crime scene"></table>
+        <p id="cellinfo" aria-live="polite"></p>
+        <div id="palette" role="group" aria-label="Place a person"></div>
+        <div class="tools">
+          <button class="btn" id="undo" type="button">Undo</button>
+          <button class="btn" id="marks" type="button" aria-pressed="false">Marks only</button>
+          <button class="btn" id="check" type="button">Check</button>
+          <button class="btn primary" id="accuse-btn" type="button">Accuse</button>
+        </div>
+        <p id="msg" role="status" aria-live="polite"></p>
+        <div id="accuse" class="hide">
+          <p><strong>Who did it?</strong> The murderer is the only person who was alone with the victim in a room.</p>
+          <div id="suspects"></div>
+          <button class="btn small" id="accuse-cancel" type="button">Not yet</button>
+        </div>
+        <div id="solved" class="hide">
+          <p><strong>Case solved.</strong></p>
+          <p id="outro"></p>
+          <button class="btn primary" id="next" type="button">Next case</button>
+        </div>
+        <ul class="legend" id="legend" aria-label="Rooms"></ul>
+      </div>
+      <div class="clue-col">
+        <button class="btn" id="clue-toggle" type="button" aria-expanded="true" aria-controls="clues">Hide clues</button>
+        <ol id="clues" aria-label="Clues. Tap a clue to mark it as used."></ol>
+        <p class="note">Tap a clue to cross it off once you have used it.</p>
+        <p><button class="btn small" id="restart" type="button">Restart case</button></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-help" class="hide" aria-labelledby="help-title">
+    <h2 id="help-title">How to play</h2>
+    <ul class="help">
+      <li>Each case is a floor plan of the train. Thick lines separate rooms.</li>
+      <li>Every <strong>row</strong> and every <strong>column</strong> holds exactly one person, victim included.</li>
+      <li>Nobody can stand on a <strong>shaded</strong> cell: tables, pianos, stoves, trunks, crates, desks, washbasins, mail sacks, coal and the firebox.</li>
+      <li>People can stand on seats, bunks, rugs, windows, lamps and suitcases. "Sitting in a seat" means standing on a seat cell.</li>
+      <li><strong>Beside</strong> an object: in a cell that shares an edge with it.</li>
+      <li><strong>Diagonally next to</strong> someone: the two cells touch at a corner.</li>
+      <li><strong>Left of</strong> / <strong>above</strong>: in any column further left, or any row higher up, not necessarily next to each other.</li>
+      <li>Rows are numbered from the top, columns from the left.</li>
+      <li>The <strong>murderer</strong> is the only person who was alone with the victim in a room.</li>
+    </ul>
+    <h3>Controls</h3>
+    <ul class="help">
+      <li>Tap a cell, then tap a name to place that person. Placing someone again moves them.</li>
+      <li><strong>×</strong> rules a cell out. <strong>Marks only</strong> makes every tap toggle ×.</li>
+      <li><strong>Check</strong> tells you whether your placements fit. <strong>Accuse</strong> names the killer.</li>
+      <li>Keyboard: arrow keys move, a letter places that person, <kbd>X</kbd> marks, <kbd>Backspace</kbd> clears, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes.</li>
+    </ul>
+    <h3>Settings</h3>
+    <div class="opt" role="radiogroup" aria-label="Display">
+      Display:
+      <button class="btn small" type="button" data-mode="auto" aria-pressed="false">Auto</button>
+      <button class="btn small" type="button" data-mode="eink" aria-pressed="false">E-ink</button>
+      <button class="btn small" type="button" data-mode="standard" aria-pressed="false">Colour</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="lock" aria-pressed="false">Lock cases until the previous one is solved</button>
+    </div>
+    <div class="opt">
+      <button class="btn small" type="button" id="reset-all">Erase all progress</button>
+    </div>
+    <p class="note">Tip: add <code>?mode=eink</code> or <code>?mode=standard</code> to the address to force a display mode.</p>
+    <p><button class="btn primary" type="button" id="help-back">Back</button></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'cellmates:v1';
+  var OBJECT_NAMES = {
+    seat: 'seat', bunk: 'bunk', rug: 'rug', window: 'window', lamp: 'lamp', suitcase: 'suitcase',
+    table: 'table', piano: 'piano', stove: 'stove', trunk: 'trunk', mailsack: 'mail sack',
+    crate: 'crate', coal: 'coal heap', basin: 'washbasin', desk: 'desk', firebox: 'firebox'
+  };
+  var BLOCKING = { table: 1, piano: 1, stove: 1, trunk: 1, mailsack: 1, crate: 1, coal: 1, basin: 1, desk: 1, firebox: 1 };
+  var ICONS = {
+    seat: '<path d="M7 3v10h10V3M5 13h14M7 13v8M17 13v8"/>',
+    bunk: '<path d="M3 6v14M21 11v9M3 16h18M3 12h18M6 12V9h5v3"/>',
+    rug: '<rect x="4" y="6" width="16" height="12" rx="1"/><path d="M8 10h8M8 14h8M2 8v8M22 8v8"/>',
+    window: '<rect x="5" y="3" width="14" height="18"/><path d="M12 3v18M5 12h14"/>',
+    lamp: '<path d="M8 3h8l3 8H5zM12 11v8M8 21h8"/>',
+    suitcase: '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5h6v3M3 13h18"/>',
+    table: '<ellipse cx="12" cy="9" rx="9" ry="4"/><path d="M6 12v8M18 12v8"/>',
+    piano: '<rect x="3" y="5" width="18" height="14"/><path d="M3 12h18M7 12v7M11 12v7M15 12v7M19 12v7"/>',
+    stove: '<rect x="4" y="3" width="16" height="18"/><circle cx="9" cy="8" r="2"/><circle cx="15" cy="8" r="2"/><path d="M7 14h10v4H7z"/>',
+    trunk: '<path d="M3 10a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10H3zM3 11h18M11 11v3h2v-3"/>',
+    mailsack: '<path d="M8 4h8l-1 3c4 2 5 6 5 9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4c0-3 1-7 5-9zM9 13h6"/>',
+    crate: '<rect x="4" y="4" width="16" height="16"/><path d="M4 9h16M4 15h16M9 4v16"/>',
+    coal: '<circle cx="7" cy="16" r="3"/><circle cx="13" cy="15" r="3.5"/><circle cx="18" cy="17" r="2.5"/><circle cx="10" cy="10" r="3"/><circle cx="16" cy="10" r="2.5"/>',
+    basin: '<path d="M3 10h18a9 6 0 0 1-18 0zM12 10V5h4M10 16v5h4v-5"/>',
+    desk: '<path d="M3 8h18M5 8v12M19 8v12M13 8v6h6"/>',
+    firebox: '<rect x="3" y="5" width="18" height="15"/><path d="M12 17c-3 0-4-2-3-5 1 1 2 1 2-2 2 1 4 3 4 5a3 3 0 0 1-3 2z"/>'
+  };
+
+  // ---------- small DOM helpers (ES5, no classList) ----------
+  function $(id) { return document.getElementById(id); }
+  function hasClass(el, c) { return (' ' + el.className + ' ').indexOf(' ' + c + ' ') >= 0; }
+  function addClass(el, c) { if (!hasClass(el, c)) el.className = (el.className ? el.className + ' ' : '') + c; }
+  function removeClass(el, c) { el.className = (' ' + el.className + ' ').replace(' ' + c + ' ', ' ').replace(/^\s+|\s+$/g, ''); }
+  function toggleClass(el, c, on) { if (on) addClass(el, c); else removeClass(el, c); }
+  function show(el, on) { toggleClass(el, 'hide', !on); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function closest(el, attr) { while (el && el.getAttribute) { if (el.getAttribute(attr) !== null) return el; el = el.parentNode; } return null; }
+  function on(el, ev, fn) { el.addEventListener(ev, fn, false); }
+
+  // ---------- storage (optional: the game works without it) ----------
+  var store = { settings: { mode: 'auto', lock: false }, progress: {}, last: null };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.progress) store = parsed;
+      if (!store.settings) store.settings = { mode: 'auto', lock: false };
+    }
+  } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+  // ---------- state ----------
+  var data = null, current = null, n = 0;
+  var cells = [];          // '' | initial | 'x', one per cell
+  var board = null;        // { room: [], obj: [], roomIndex: {} }
+  var sel = -1;            // selected cell index
+  var history = [];        // undo stack: arrays of [index, previous value]
+  var marksOnly = false;
+  var used = {};           // initials whose clue is crossed off
+  var colorOf = {};        // initial -> palette index
+  var cellEls = [];        // button per cell
+  var lastConflicts = {};
+
+  function caseState(id) {
+    var s = store.progress[id];
+    if (!s) { s = store.progress[id] = { cells: null, used: {}, solved: false }; }
+    return s;
+  }
+
+  // ---------- loading ----------
+  function load() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'cases.json', true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+        try { data = JSON.parse(xhr.responseText); } catch (e) { data = null; }
+      }
+      if (!data) { $('loading').innerHTML = 'Could not load the cases. Check your connection and reload.'; return; }
+      show($('loading'), false);
+      var start = /[?&]case=(\d+)/.exec(location.search);
+      if (start && data.cases[+start[1] - 1]) openCase(+start[1] - 1);
+      else showCases();
+    };
+    xhr.send(null);
+  }
+
+  // ---------- screens ----------
+  function screen(name) {
+    show($('screen-cases'), name === 'cases');
+    show($('screen-play'), name === 'play');
+    show($('screen-help'), name === 'help');
+    window.scrollTo(0, 0);
+  }
+
+  function isLocked(i) {
+    if (!store.settings.lock || i === 0) return false;
+    var prev = store.progress[data.cases[i - 1].id];
+    return !(prev && prev.solved);
+  }
+
+  function showCases() {
+    var html = '';
+    for (var t = 0; t < data.tiers.length; t++) {
+      var tier = data.tiers[t];
+      html += '<div class="tier"><h3>Chapter ' + (t + 1) + ': ' + esc(tier.name) + ' <span class="note">' + esc(tier.leg) + '</span></h3><ul class="levels">';
+      for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) {
+        var c = data.cases[i], st = store.progress[c.id], locked = isLocked(i);
+        var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size;
+        html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
+          '<span class="num">' + c.level + '.</span>' + esc(c.title) + '<span class="state">' + state + '</span></button></li>';
+      }
+      html += '</ul></div>';
+    }
+    $('tiers').innerHTML = html;
+    screen('cases');
+  }
+
+  // ---------- board ----------
+  function buildBoard(c) {
+    var b = { room: [], obj: [], roomIndex: {}, first: {} };
+    var keys = [];
+    for (var k in c.roomNames) if (c.roomNames.hasOwnProperty(k)) keys.push(k);
+    keys.sort();
+    for (var j = 0; j < keys.length; j++) b.roomIndex[keys[j]] = j;
+    for (var r = 0; r < n; r++) for (var col = 0; col < n; col++) {
+      var i = r * n + col, room = c.rooms[r].charAt(col);
+      b.room[i] = room;
+      b.obj[i] = null;
+      if (b.first[room] === undefined) b.first[room] = i;
+    }
+    for (var o = 0; o < c.objects.length; o++) b.obj[c.objects[o].row * n + c.objects[o].col] = c.objects[o].type;
+    b.keys = keys;
+    return b;
+  }
+
+  function isBlocked(i) { return !!(board.obj[i] && BLOCKING[board.obj[i]]); }
+  function personByInitial(ini) {
+    for (var k = 0; k < current.characters.length; k++) if (current.characters[k].initial === ini) return current.characters[k];
+    return null;
+  }
+
+  function openCase(idx) {
+    if (isLocked(idx)) return;
+    current = data.cases[idx];
+    current.index = idx;
+    n = current.size;
+    board = buildBoard(current);
+    var st = caseState(current.id);
+    cells = st.cells && st.cells.length === n * n ? st.cells.slice() : emptyCells();
+    used = st.used || {};
+    history = [];
+    sel = -1;
+    colorOf = {};
+    for (var k = 0; k < current.characters.length; k++) colorOf[current.characters[k].initial] = k;
+    store.last = current.id;
+    save();
+
+    var tier = data.tiers[0];
+    for (var t = 0; t < data.tiers.length; t++) if (data.tiers[t].id === current.tier) tier = data.tiers[t];
+    $('case-kicker').innerHTML = 'Case ' + current.level + ' · ' + esc(tier.name) + ' · ' + esc(tier.leg);
+    $('case-title').innerHTML = esc(current.title);
+    $('case-intro').innerHTML = esc(current.intro);
+    renderGrid();
+    renderPalette();
+    renderClues();
+    renderLegend();
+    setMsg('');
+    show($('accuse'), false);
+    showSolved(st.solved);
+    screen('play');
+    sizeGrid();
+  }
+
+  function emptyCells() { var a = []; for (var i = 0; i < n * n; i++) a.push(''); return a; }
+
+  function renderGrid() {
+    var html = '<thead><tr><th scope="col"><span class="hide">Row / column</span></th>';
+    for (var col = 0; col < n; col++) html += '<th scope="col">' + (col + 1) + '</th>';
+    html += '</tr></thead><tbody>';
+    for (var r = 0; r < n; r++) {
+      html += '<tr><th scope="row">' + (r + 1) + '</th>';
+      for (var c = 0; c < n; c++) {
+        var i = r * n + c, room = board.room[i], cls = 'c r' + board.roomIndex[room];
+        if (r === 0 || board.room[i - n] !== room) cls += ' bt';
+        if (r === n - 1 || board.room[i + n] !== room) cls += ' bb';
+        if (c === 0 || board.room[i - 1] !== room) cls += ' bl';
+        if (c === n - 1 || board.room[i + 1] !== room) cls += ' br';
+        if (isBlocked(i)) cls += ' blocked';
+        var inner = '';
+        if (board.first[room] === i) inner += '<span class="tag" aria-hidden="true">' + (board.roomIndex[room] + 1) + '</span>';
+        if (board.obj[i]) inner += '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + ICONS[board.obj[i]] + '</svg>';
+        inner += '<span class="who" aria-hidden="true"></span>';
+        html += '<td class="' + cls + '" role="gridcell"><button type="button" class="cell" data-i="' + i + '" tabindex="-1">' + inner + '</button></td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody>';
+    $('grid').innerHTML = html;
+    cellEls = [];
+    var btns = $('grid').getElementsByTagName('button');
+    for (var b = 0; b < btns.length; b++) cellEls[+btns[b].getAttribute('data-i')] = btns[b];
+    lastConflicts = {};
+    for (var k = 0; k < n * n; k++) paintCell(k);
+    paintConflicts();
+    if (cellEls[0]) cellEls[0].setAttribute('tabindex', '0');
+  }
+
+  // Sizes cells to the available width (CSS min() is not available everywhere).
+  function sizeGrid() {
+    if (!current) return;
+    var col = $('board-col');
+    var w = col.clientWidth || (window.innerWidth - 32);
+    var size = Math.floor(Math.min(60, (w - 6) / (n + 0.7)));
+    if (size < 30) size = 30;
+    var css = '#grid td.c{width:' + size + 'px;height:' + size + 'px}' +
+      '#grid th{height:' + Math.round(size * 0.7) + 'px;min-width:' + Math.round(size * 0.7) + 'px}' +
+      '.cell .who{font-size:' + Math.round(size * 0.55) + 'px}' +
+      '.cell svg{width:' + Math.round(size * 0.38) + 'px;height:' + Math.round(size * 0.38) + 'px}' +
+      '.blocked .cell svg{width:' + Math.round(size * 0.62) + 'px;height:' + Math.round(size * 0.62) + 'px;margin:-' + Math.round(size * 0.31) + 'px 0 0 -' + Math.round(size * 0.31) + 'px}';
+    var el = $('grid-size');
+    if (!el) { el = document.createElement('style'); el.id = 'grid-size'; document.getElementsByTagName('head')[0].appendChild(el); }
+    el.innerHTML = css;
+  }
+
+  function describe(i) {
+    var r = Math.floor(i / n), c = i % n, parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]]];
+    if (board.obj[i]) parts.push(OBJECT_NAMES[board.obj[i]] + (isBlocked(i) ? ' (nobody can stand here)' : ''));
+    var v = cells[i];
+    if (v === 'x') parts.push('ruled out');
+    else if (v) parts.push(personByInitial(v).name);
+    else if (!isBlocked(i)) parts.push('empty');
+    return parts.join(', ');
+  }
+
+  function paintCell(i) {
+    var btn = cellEls[i], v = cells[i], who = btn.lastChild;
+    who.className = 'who' + (v === 'x' ? ' x' : v ? ' p' + colorOf[v] : '');
+    who.innerHTML = v === 'x' ? '×' : v;
+    btn.setAttribute('aria-label', describe(i));
+    toggleClass(btn, 'sel', i === sel);
+  }
+
+  // Marks people who share a row or column with someone else.
+  function paintConflicts() {
+    var rows = {}, cols = {}, i, now = {};
+    for (i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') {
+      var r = Math.floor(i / n), c = i % n;
+      rows[r] = (rows[r] || 0) + 1; cols[c] = (cols[c] || 0) + 1;
+    }
+    for (i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x' && (rows[Math.floor(i / n)] > 1 || cols[i % n] > 1)) now[i] = 1;
+    for (i = 0; i < n * n; i++) if (!!now[i] !== !!lastConflicts[i]) toggleClass(cellEls[i], 'conflict', !!now[i]);
+    lastConflicts = now;
+  }
+
+  function select(i, focus) {
+    var prev = sel;
+    sel = i;
+    if (prev >= 0 && cellEls[prev]) { toggleClass(cellEls[prev], 'sel', false); cellEls[prev].setAttribute('tabindex', '-1'); }
+    if (i >= 0) {
+      toggleClass(cellEls[i], 'sel', true);
+      cellEls[i].setAttribute('tabindex', '0');
+      if (focus) cellEls[i].focus();
+      $('cellinfo').innerHTML = esc(describe(i));
+    }
+    updatePalette();
+  }
+
+  // Applies a list of [index, value] changes as one undoable move.
+  function apply(changes) {
+    var undo = [], touched = [];
+    for (var k = 0; k < changes.length; k++) {
+      var i = changes[k][0];
+      if (cells[i] === changes[k][1]) continue;
+      undo.push([i, cells[i]]);
+      cells[i] = changes[k][1];
+      touched.push(i);
+    }
+    if (!undo.length) return;
+    history.push(undo);
+    if (history.length > 200) history.shift();
+    afterChange(touched);
+  }
+
+  function afterChange(touched) {
+    for (var k = 0; k < touched.length; k++) paintCell(touched[k]);
+    paintConflicts();
+    if (sel >= 0) $('cellinfo').innerHTML = esc(describe(sel));
+    updatePalette();
+    setMsg('');
+    caseState(current.id).cells = cells.slice();
+    save();
+  }
+
+  function undo() {
+    var last = history.pop();
+    if (!last) { setMsg('Nothing to undo.'); return; }
+    var touched = [];
+    for (var k = last.length - 1; k >= 0; k--) { cells[last[k][0]] = last[k][1]; touched.push(last[k][0]); }
+    afterChange(touched);
+  }
+
+  function place(ini) {
+    if (sel < 0) { setMsg('Select a cell first.'); return; }
+    if (isBlocked(sel)) { setMsg('Nobody can stand on a ' + OBJECT_NAMES[board.obj[sel]] + '.'); return; }
+    var changes = [];
+    if (cells[sel] === ini) changes.push([sel, '']);
+    else {
+      for (var i = 0; i < n * n; i++) if (cells[i] === ini) changes.push([i, '']);
+      changes.push([sel, ini]);
+    }
+    apply(changes);
+  }
+
+  function mark(i) {
+    if (i < 0) { setMsg('Select a cell first.'); return; }
+    if (isBlocked(i)) return;
+    if (cells[i] && cells[i] !== 'x') return;
+    apply([[i, cells[i] === 'x' ? '' : 'x']]);
+  }
+
+  function clearCell() { if (sel >= 0 && cells[sel]) apply([[sel, '']]); }
+
+  // ---------- palette, clues, legend ----------
+  function renderPalette() {
+    var html = '';
+    for (var k = 0; k < current.characters.length; k++) {
+      var ch = current.characters[k];
+      html += '<button type="button" class="btn" data-ini="' + ch.initial + '" aria-label="Place ' + esc(ch.name) + '">' +
+        '<span class="ini p' + k + '">' + ch.initial + '</span><span class="nm">' + esc(shortName(ch.name)) + '</span></button>';
+    }
+    html += '<button type="button" class="btn" data-ini="x" aria-label="Rule out this cell"><span class="ini">×</span><span class="nm">rule out</span></button>';
+    html += '<button type="button" class="btn" data-ini="" aria-label="Clear this cell"><span class="ini">–</span><span class="nm">clear</span></button>';
+    $('palette').innerHTML = html;
+    updatePalette();
+  }
+
+  function shortName(name) { var p = name.split(' '); return p.length > 1 ? p[p.length - 1] : name; }
+
+  function updatePalette() {
+    var btns = $('palette').getElementsByTagName('button');
+    var placed = {};
+    for (var i = 0; i < n * n; i++) if (cells[i] && cells[i] !== 'x') placed[cells[i]] = 1;
+    for (var k = 0; k < btns.length; k++) {
+      var ini = btns[k].getAttribute('data-ini');
+      btns[k].disabled = sel < 0 || isBlocked(sel);
+      if (ini && ini !== 'x') toggleClass(btns[k], 'placed', !!placed[ini]);
+    }
+  }
+
+  function renderClues() {
+    var html = '';
+    for (var k = 0; k < current.characters.length; k++) {
+      var ch = current.characters[k];
+      html += '<li><button type="button" class="clue" data-clue="' + ch.initial + '" aria-pressed="' + (used[ch.initial] ? 'true' : 'false') + '">' +
+        '<span class="badge p' + k + '">' + ch.initial + '</span><strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
+        (ch.victim ? '<span class="vic">Victim</span>' : '') +
+        '<span class="txt">' + esc(ch.clue) + '</span></button></li>';
+    }
+    $('clues').innerHTML = html;
+  }
+
+  function renderLegend() {
+    var html = '';
+    for (var k = 0; k < board.keys.length; k++) {
+      html += '<li><span class="sw r' + k + '">' + (k + 1) + '</span>' + esc(current.roomNames[board.keys[k]]) + '</li>';
+    }
+    $('legend').innerHTML = html;
+  }
+
+  // ---------- check & accuse ----------
+  function setMsg(text) { $('msg').innerHTML = esc(text); }
+
+  function evaluate() {
+    var placed = 0, wrong = 0, badMarks = 0, sol = current.solution;
+    var at = {};
+    for (var ini in sol) if (sol.hasOwnProperty(ini)) at[sol[ini][0] * n + sol[ini][1]] = ini;
+    for (var i = 0; i < n * n; i++) {
+      if (cells[i] === 'x') { if (at[i]) badMarks++; }
+      else if (cells[i]) { placed++; if (at[i] !== cells[i]) wrong++; }
+    }
+    return { placed: placed, wrong: wrong, badMarks: badMarks, complete: placed === n && wrong === 0 };
+  }
+
+  function check() {
+    var e = evaluate();
+    if (e.wrong) setMsg(e.wrong === 1 ? 'One person is not where the evidence puts them.' : e.wrong + ' people are not where the evidence puts them.');
+    else if (e.badMarks) setMsg('Your placements hold up, but one of your × marks rules out a spot someone really was in.');
+    else if (e.complete) setMsg('Everyone is exactly where they were. Time to accuse someone.');
+    else if (!e.placed) setMsg('Nobody placed yet. Start with the most specific clue.');
+    else setMsg('So far so good: ' + e.placed + ' of ' + n + ' placed correctly.');
+  }
+
+  function openAccuse() {
+    var html = '';
+    for (var k = 0; k < current.characters.length; k++) {
+      var ch = current.characters[k];
+      if (ch.victim) continue;
+      html += '<button type="button" class="btn" data-accuse="' + ch.initial + '"><span class="p' + k + '"><strong>' + ch.initial + '</strong></span> ' + esc(ch.name) + '</button>';
+    }
+    $('suspects').innerHTML = html;
+    show($('accuse'), true);
+    setMsg('');
+  }
+
+  function accuse(ini) {
+    show($('accuse'), false);
+    var e = evaluate();
+    if (e.placed < n) { setMsg('Place everyone before you accuse anyone. The killer is the only one alone with the victim.'); return; }
+    if (e.wrong) { setMsg('Your reconstruction of the scene does not hold up yet. Use Check to find out how far off it is.'); return; }
+    if (ini !== current.murderer) { setMsg(personByInitial(ini).name + ' has an alibi: someone else was alone with the victim.'); return; }
+    var st = caseState(current.id);
+    st.solved = true;
+    save();
+    showSolved(true);
+    setMsg('');
+  }
+
+  function showSolved(isSolved) {
+    show($('solved'), !!isSolved);
+    if (isSolved) {
+      $('outro').innerHTML = esc(current.outro);
+      var last = current.index >= data.cases.length - 1;
+      $('next').innerHTML = last ? 'Back to all cases' : 'Next case';
+    }
+  }
+
+  // ---------- events ----------
+  on($('grid'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-i');
+    if (!btn) return;
+    var i = +btn.getAttribute('data-i');
+    if (marksOnly) { select(i, false); mark(i); return; }
+    select(i, false);
+  });
+
+  on($('palette'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-ini');
+    if (!btn || btn.disabled) return;
+    var ini = btn.getAttribute('data-ini');
+    if (ini === 'x') mark(sel);
+    else if (ini === '') clearCell();
+    else place(ini);
+  });
+
+  on($('clues'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-clue');
+    if (!btn) return;
+    var ini = btn.getAttribute('data-clue');
+    if (used[ini]) delete used[ini]; else used[ini] = 1;
+    btn.setAttribute('aria-pressed', used[ini] ? 'true' : 'false');
+    caseState(current.id).used = used;
+    save();
+  });
+
+  on($('tiers'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-case');
+    if (btn && !btn.disabled) openCase(+btn.getAttribute('data-case'));
+  });
+
+  on($('suspects'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-accuse');
+    if (btn) accuse(btn.getAttribute('data-accuse'));
+  });
+
+  on($('undo'), 'click', undo);
+  on($('check'), 'click', check);
+  on($('accuse-btn'), 'click', openAccuse);
+  on($('accuse-cancel'), 'click', function () { show($('accuse'), false); });
+  on($('marks'), 'click', function () {
+    marksOnly = !marksOnly;
+    $('marks').setAttribute('aria-pressed', marksOnly ? 'true' : 'false');
+  });
+  on($('next'), 'click', function () {
+    if (current.index >= data.cases.length - 1) showCases();
+    else openCase(current.index + 1);
+  });
+  on($('restart'), 'click', function () {
+    if (!window.confirm('Clear the board for this case?')) return;
+    var changes = [];
+    for (var i = 0; i < n * n; i++) if (cells[i]) changes.push([i, '']);
+    apply(changes);
+    used = {};
+    caseState(current.id).used = used;
+    save();
+    renderClues();
+  });
+  on($('clue-toggle'), 'click', function () {
+    var open = hasClass($('clues'), 'hide');
+    show($('clues'), open);
+    $('clue-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('clue-toggle').innerHTML = open ? 'Hide clues' : 'Show clues';
+  });
+  on($('nav-cases'), 'click', function () { if (data) showCases(); });
+  on($('nav-help'), 'click', function () { syncSettings(); screen('help'); });
+  on($('help-back'), 'click', function () {
+    if (!data) return;
+    if (current) { screen('play'); sizeGrid(); } else showCases();
+  });
+
+  // Settings
+  function syncSettings() {
+    var btns = $('screen-help').getElementsByTagName('button');
+    for (var k = 0; k < btns.length; k++) {
+      var m = btns[k].getAttribute('data-mode');
+      if (m) btns[k].setAttribute('aria-pressed', (store.settings.mode || 'auto') === m ? 'true' : 'false');
+    }
+    $('lock').setAttribute('aria-pressed', store.settings.lock ? 'true' : 'false');
+  }
+  on($('screen-help'), 'click', function (ev) {
+    var btn = closest(ev.target, 'data-mode');
+    if (!btn) return;
+    store.settings.mode = btn.getAttribute('data-mode');
+    save();
+    // Reload so the mode is decided the same way as on a fresh visit.
+    location.reload();
+  });
+  on($('lock'), 'click', function () { store.settings.lock = !store.settings.lock; save(); syncSettings(); });
+  on($('reset-all'), 'click', function () {
+    if (!window.confirm('Erase progress on all fifty cases?')) return;
+    store.progress = {};
+    save();
+    current = null;
+    showCases();
+  });
+
+  // Keyboard: arrows move, letters place, X marks, Backspace clears, Ctrl+Z undoes.
+  on(document, 'keydown', function (ev) {
+    if (!current || hasClass($('screen-play'), 'hide')) return;
+    var key = ev.key || '', code = ev.keyCode;
+    if ((ev.ctrlKey || ev.metaKey) && (key === 'z' || key === 'Z' || code === 90)) { ev.preventDefault(); undo(); return; }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var t = ev.target && ev.target.tagName;
+    if (t === 'INPUT' || t === 'TEXTAREA') return;
+    var inBoard = false;
+    for (var el = ev.target; el; el = el.parentNode) if (el.id === 'board-col') { inBoard = true; break; }
+    var dir = { ArrowUp: -n, Up: -n, ArrowDown: n, Down: n, ArrowLeft: -1, Left: -1, ArrowRight: 1, Right: 1 }[key];
+    if (dir === undefined) dir = { 38: -n, 40: n, 37: -1, 39: 1 }[code];
+    if (dir !== undefined && inBoard) {
+      ev.preventDefault();
+      var from = sel < 0 ? 0 : sel, to = from + dir;
+      if ((dir === 1 && from % n === n - 1) || (dir === -1 && from % n === 0) || to < 0 || to >= n * n) to = from;
+      select(to, true);
+      return;
+    }
+    if (sel < 0) return;
+    if (key === 'Backspace' || key === 'Delete' || code === 8 || code === 46) { ev.preventDefault(); clearCell(); return; }
+    var letter = key.length === 1 ? key.toUpperCase() : (code >= 65 && code <= 90 ? String.fromCharCode(code) : '');
+    if (letter === 'X') { ev.preventDefault(); mark(sel); return; }
+    if (letter && personByInitial(letter)) { ev.preventDefault(); place(letter); }
+  });
+
+  var resizeTimer = null;
+  on(window, 'resize', function () {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(sizeGrid, 150);
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
