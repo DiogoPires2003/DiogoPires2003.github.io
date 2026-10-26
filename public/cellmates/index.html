@@ -87,11 +87,28 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
   display: block; width: 100%; height: 100%; margin: 0; padding: 0;
   border: 0; background: transparent; position: relative; overflow: hidden;
 }
-.cell .who { position: absolute; left: 0; right: 0; top: 50%; margin-top: -0.6em; line-height: 1.2em; text-align: center; font-weight: bold; }
+.cell .who { position: absolute; left: 0; top: 0; width: 100%; height: 100%; text-align: center; font-weight: bold; }
 .cell .x { font-weight: normal; }
-.cell .tag { position: absolute; left: 2px; top: 1px; font-size: 10px; line-height: 1; font-family: Arial, sans-serif; }
-.cell svg { position: absolute; left: 50%; top: 50%; fill: #000; }
-.cell.occ svg { left: auto; top: auto; right: 2px; bottom: 2px; margin: 0 !important; }
+.cell .obj { position: absolute; left: 50%; top: 50%; fill: #000; }
+.cell.occ .obj { left: auto; top: auto; right: 2px; bottom: 2px; margin: 0 !important; }
+
+/* Room names written on the plan */
+#board-wrap { position: relative; display: inline-block; }
+#labels { position: absolute; left: 0; top: 0; }
+.rlabel { position: absolute; padding: 0 3px; background: #fff; font: bold 10px/1.3 Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+
+/* Portraits: a bust with period headwear, and the initial in the corner */
+.tok { display: inline-block; position: relative; width: 44px; height: 44px; border: 2px solid #000; border-radius: 50%; background: #fff; vertical-align: middle; line-height: 1; }
+.tok .pt { display: block; width: 100%; height: 100%; border-radius: 50%; fill: #000; color: #fff; }
+.pt .halo, .pt .bg { fill: currentColor; stroke: currentColor; }
+.tini { position: absolute; right: -5px; bottom: -4px; min-width: 1.4em; padding: 0 2px; border: 1px solid #000; border-radius: 3px; background: #fff; color: #000; font: bold 12px/1.3 Arial, sans-serif; text-align: center; }
+.cell .tini { right: 0; bottom: 0; }
+.tok.huge { width: 96px; height: 96px; }
+.tok.huge .tini { font-size: 18px; }
+.clue .tok { float: left; margin: 2px 10px 4px 0; }
+.clue .who-line { display: block; }
+#suspects .btn { padding-left: 8px; }
+#suspects .tok { width: 36px; height: 36px; margin-right: 6px; }
 .cell.sel { box-shadow: inset 0 0 0 4px #000; }
 .cell.conflict { border: 3px dotted #000; }
 .cell:focus { outline: none; }
@@ -105,10 +122,34 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 #msg { min-height: 1.45em; font-weight: bold; margin: 8px 0; }
 #accuse, #solved { border: 3px solid #000; padding: 10px 12px; margin: 10px 0; }
 #accuse p, #solved p { margin: 4px 0 8px; }
+#solved .card { text-align: center; }
+.stamp { display: inline-block; margin: 4px 0 12px !important; padding: 2px 12px; border: 3px solid #000; font: bold 20px Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; }
+#culprit p { margin: 8px 0; }
+.linkish { border: 0; background: none; padding: 0 0 6px; text-decoration: underline; font-size: 15px; }
+
+/* Route map and chapter tickets */
+#route svg { display: block; width: 100%; height: auto; max-width: 760px; margin: 0 auto; }
+#route .seg-hit { cursor: pointer; }
+#route .sea { fill: #e6e6e6; }
+#route .sleepers { fill: none; stroke: #000; stroke-width: 14; stroke-dasharray: 2 7; }
+#route .rail { fill: none; stroke: #000; stroke-width: 4; }
+#route .done { fill: none; stroke: #000; stroke-width: 9; stroke-linecap: round; }
+#route .stop { fill: #fff; stroke: #000; stroke-width: 3; }
+#route .stop.reached { fill: #000; }
+#route .chip { fill: #fff; stroke: #000; stroke-width: 2; }
+#route .chip-t { font: bold 15px Arial, sans-serif; }
+#route .city { font: bold 17px Georgia, serif; }
+#route .loco { fill: #000; }
+.ticket { border: 2px dashed #000; border-radius: 6px; padding: 8px 12px; margin: 22px 0 8px; overflow: hidden; }
+.ticket .tk-ch { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; }
+.ticket strong { font-size: 20px; }
+.ticket .tk-tier { margin-left: 8px; font-style: italic; }
+.ticket .tk-prog { float: right; font-size: 15px; margin-top: 6px; }
+.pbar { display: block; height: 6px; margin-top: 6px; border: 1px solid #000; }
+.pbar i { display: block; height: 100%; background: #000; }
 
 .legend { list-style: none; padding: 0; margin: 8px 0; font-size: 15px; }
 .legend li { display: inline-block; margin: 2px 12px 2px 0; }
-.legend .sw { display: inline-block; min-width: 20px; padding: 0 3px; border: 2px solid #000; text-align: center; font-size: 11px; font-family: Arial, sans-serif; margin-right: 4px; }
 
 #hint { margin: 4px 0; font-size: 15px; font-style: italic; }
 #palette .btn[aria-pressed="true"] .nm, #palette .btn[aria-pressed="true"] .ini { color: inherit; }
@@ -120,7 +161,6 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 .cell.wrong .who { text-decoration: line-through; }
 .legend-title { font-size: 15px; margin: 12px 0 0; }
 .legend .ic, .clue .ic { width: 1.2em; height: 1.2em; vertical-align: -0.25em; fill: #000; }
-.rb { display: inline-block; min-width: 1.3em; padding: 0 2px; border: 1px solid #000; font-size: 12px; line-height: 1.3; text-align: center; font-family: Arial, sans-serif; vertical-align: 0.1em; margin-left: 2px; }
 .clue-head { margin-top: 10px; }
 .nw { white-space: nowrap; }
 
@@ -130,10 +170,10 @@ h3 { font-size: 19px; margin: 18px 0 6px; }
 #clues li { margin: 0 0 6px; position: relative; }
 #clues li.focus .clue { border-width: 4px; }
 .clue { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; }
-.clue .badge { display: inline-block; min-width: 28px; padding: 0 4px; margin-right: 6px; border: 2px solid #000; text-align: center; font-weight: bold; }
 .clue .role { font-size: 14px; font-style: italic; }
 .clue .vic { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid #000; padding: 0 4px; margin-left: 4px; }
-.clue .txt { display: block; margin-top: 4px; }
+.clue .txt { display: block; margin-top: 4px; clear: none; }
+.clue:after { content: ""; display: block; clear: both; }
 .done-li .txt { text-decoration: line-through; color: #555; }
 .done-li .clue { border-style: dashed; }
 
@@ -149,6 +189,7 @@ html.standard {
   --block: #cbbfa9; --focus: #1f5fbf;
   --r0: #f1dfbd; --r1: #d6e6cf; --r2: #d7e2ef; --r3: #f0d4cf; --r4: #e3d8ee; --r5: #ece2bf; --r6: #cfe6e2; --r7: #e8d6c6; --r8: #dfe0c8;
   --p0: #8b1e1e; --p1: #1d4a7a; --p2: #2a5e2c; --p3: #6e4300; --p4: #5b2a86; --p5: #0c5c5c; --p6: #93306a; --p7: #3d3d3d; --p8: #7a5000;
+  --tokfg: #fffaf0; --fl: rgba(80, 50, 20, 0.13); --fl2: rgba(130, 40, 40, 0.13); --sea: #cfe0e8;
 }
 @media (prefers-color-scheme: dark) {
   html.standard {
@@ -157,6 +198,7 @@ html.standard {
     --block: #4a4035; --focus: #7fb0ff;
     --r0: #3d3222; --r1: #263826; --r2: #24303f; --r3: #40292a; --r4: #342a40; --r5: #3a3420; --r6: #1f3a36; --r7: #3b2d24; --r8: #33341f;
     --p0: #ff9a8a; --p1: #9cc6ff; --p2: #9be29a; --p3: #f2c27a; --p4: #d1a8ff; --p5: #7fe0dc; --p6: #ff9fd0; --p7: #e4e4e4; --p8: #ffd27a;
+    --tokfg: #1b1510; --fl: rgba(255, 240, 215, 0.07); --fl2: rgba(255, 180, 160, 0.08); --sea: #1d2f3a;
   }
 }
 html.standard body { background: var(--paper); color: var(--ink); }
@@ -185,11 +227,57 @@ html.standard #grid td.r2 { background: var(--r2); } html.standard #grid td.r3 {
 html.standard #grid td.r4 { background: var(--r4); } html.standard #grid td.r5 { background: var(--r5); }
 html.standard #grid td.r6 { background: var(--r6); } html.standard #grid td.r7 { background: var(--r7); }
 html.standard #grid td.r8 { background: var(--r8); }
+/* Floors: planks, carpet, a corridor runner, tiles, flagstones and steel plate */
+html.standard #grid td.f-wood { background-image: repeating-linear-gradient(0deg, var(--fl) 0, var(--fl) 1px, transparent 1px, transparent 10px); }
+html.standard #grid td.f-carpet { background-image: radial-gradient(circle, var(--fl2) 20%, transparent 24%); background-size: 10px 10px; }
+html.standard #grid td.f-runner { background-image: linear-gradient(0deg, transparent 22%, var(--fl2) 22%, var(--fl2) 78%, transparent 78%), repeating-linear-gradient(90deg, var(--fl) 0, var(--fl) 1px, transparent 1px, transparent 12px); }
+html.standard #grid td.f-tile { background-image: linear-gradient(45deg, var(--fl) 25%, transparent 25%, transparent 75%, var(--fl) 75%), linear-gradient(45deg, var(--fl) 25%, transparent 25%, transparent 75%, var(--fl) 75%); background-size: 14px 14px; background-position: 0 0, 7px 7px; }
+html.standard #grid td.f-stone { background-image: linear-gradient(90deg, var(--fl) 1px, transparent 1px), linear-gradient(0deg, var(--fl) 1px, transparent 1px); background-size: 50% 50%; }
+html.standard #grid td.f-metal { background-image: repeating-linear-gradient(45deg, var(--fl) 0, var(--fl) 2px, transparent 2px, transparent 8px), repeating-linear-gradient(-45deg, var(--fl) 0, var(--fl) 2px, transparent 2px, transparent 8px); }
 html.standard #grid td.blocked { background-image: repeating-linear-gradient(45deg, transparent 0, transparent 5px, rgba(60, 40, 20, 0.18) 5px, rgba(60, 40, 20, 0.18) 7px); }
-html.standard .cell svg { fill: var(--brass); }
-html.standard .blocked .cell svg { fill: var(--wood); }
+html.standard .cell .obj { fill: var(--brass); }
+html.standard .blocked .cell .obj { fill: var(--wood); }
+html.standard .rlabel { color: var(--ink); border-radius: 3px; opacity: 0.88; }
+html.standard .rlabel.r0 { background: var(--r0); } html.standard .rlabel.r1 { background: var(--r1); } html.standard .rlabel.r2 { background: var(--r2); }
+html.standard .rlabel.r3 { background: var(--r3); } html.standard .rlabel.r4 { background: var(--r4); } html.standard .rlabel.r5 { background: var(--r5); }
+html.standard .rlabel.r6 { background: var(--r6); } html.standard .rlabel.r7 { background: var(--r7); } html.standard .rlabel.r8 { background: var(--r8); }
+html.standard .tok { background: currentColor; border-color: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+html.standard .tok .pt { fill: var(--tokfg); color: inherit; }
+html.standard .tini { background: var(--card); color: var(--ink); border-color: var(--line); }
+html.standard .tok.pop { animation: pop 0.28s ease-out; }
+@keyframes pop { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+html.standard .ticket { background: var(--card); border-color: var(--wood); }
+html.standard #route svg { background: var(--card); border: 2px solid var(--line); border-radius: 10px; }
+html.standard #route .sea { fill: var(--sea); }
+html.standard #route .sleepers { stroke: var(--wood); }
+html.standard #route .rail { stroke: var(--edge); }
+html.standard #route .done { stroke: var(--brass); }
+html.standard #route .stop { fill: var(--card); stroke: var(--edge); }
+html.standard #route .stop.reached { fill: var(--brass); }
+html.standard #route .chip { fill: var(--green); stroke: var(--brass); }
+html.standard #route .chip-t { fill: #f3e6c4; }
+html.standard #route .city { fill: var(--ink); }
+html.standard #route .loco { fill: var(--wood); }
+html.standard .ticket .tk-ch, html.standard .ticket .tk-tier { color: var(--muted); }
+html.standard .pbar { border-color: var(--line); border-radius: 3px; }
+html.standard .pbar i { background: var(--brass); }
+html.standard .stamp { color: #9b1c1c; border-color: #9b1c1c; transform: rotate(-5deg); }
+@media (prefers-color-scheme: dark) { html.standard .stamp { color: #ff8a7a; border-color: #ff8a7a; } }
+/* The ending opens over the page right after a case is solved. */
+html.standard #solved.modal { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 50; margin: 0; padding: 16px; border: 0; border-radius: 0; background: rgba(15, 10, 5, 0.62); display: flex; align-items: center; justify-content: center; animation: fade 0.3s ease-out; }
+html.standard #solved.modal .card { max-width: 460px; max-height: 100%; overflow: auto; padding: 22px; background: var(--card); border: 3px solid var(--brass); border-radius: 10px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); animation: rise 0.35s ease-out; }
+html.standard #solved.modal .stamp { animation: stamp 0.45s 0.25s ease-out both; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes stamp { from { transform: rotate(-5deg) scale(2.4); opacity: 0; } to { transform: rotate(-5deg) scale(1); opacity: 1; } }
+@supports (text-decoration-color: red) {
+  html.standard .clue .txt { text-decoration: line-through; text-decoration-color: transparent; transition: text-decoration-color 0.4s ease, color 0.4s ease; }
+  html.standard .done-li .clue .txt { text-decoration-color: var(--muted); }
+}
+html.standard .clue { transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.4s ease, transform 0.15s ease; }
+html.standard .done-li .clue { opacity: 0.72; }
+html.standard #clues li.focus .clue { transform: translateX(4px); }
 html.standard .cell .x { color: var(--muted); }
-html.standard .cell .tag { color: var(--muted); }
 html.standard .cell.sel { box-shadow: inset 0 0 0 4px var(--focus); }
 html.standard .cell:focus.sel { box-shadow: inset 0 0 0 4px var(--focus); }
 html.standard .cell.conflict { border-color: #b3261e; }
@@ -197,7 +285,6 @@ html.standard .p0 { color: var(--p0); } html.standard .p1 { color: var(--p1); } 
 html.standard .p3 { color: var(--p3); } html.standard .p4 { color: var(--p4); } html.standard .p5 { color: var(--p5); }
 html.standard .p6 { color: var(--p6); } html.standard .p7 { color: var(--p7); } html.standard .p8 { color: var(--p8); }
 html.standard .clue { background: var(--card); border-color: var(--line); }
-html.standard .clue .badge { border-color: currentColor; }
 html.standard .done-li .txt { color: var(--muted); }
 html.standard #coach, html.standard .box { background: var(--card); border-color: var(--brass); border-radius: 6px; }
 html.standard #coach { border-left-width: 8px; }
@@ -209,24 +296,14 @@ html.standard .cell.taken { background: rgba(60, 40, 20, 0.16); }
 html.standard .cell.wrong { box-shadow: inset 0 0 0 4px #b3261e; }
 html.standard #clues li.focus .clue { border-color: var(--focus); border-width: 3px; }
 html.standard .legend .ic, html.standard .clue .ic { fill: var(--brass); }
-html.standard .rb { border-color: var(--edge); }
-html.standard .rb.r0 { background: var(--r0); } html.standard .rb.r1 { background: var(--r1); } html.standard .rb.r2 { background: var(--r2); }
-html.standard .rb.r3 { background: var(--r3); } html.standard .rb.r4 { background: var(--r4); } html.standard .rb.r5 { background: var(--r5); }
-html.standard .rb.r6 { background: var(--r6); } html.standard .rb.r7 { background: var(--r7); } html.standard .rb.r8 { background: var(--r8); }
 html.standard #accuse, html.standard #solved { background: var(--card); border-color: var(--brass); border-radius: 6px; }
-html.standard .legend .sw { border-color: var(--edge); color: var(--ink); }
-html.standard .legend .r0 { background: var(--r0); } html.standard .legend .r1 { background: var(--r1); }
-html.standard .legend .r2 { background: var(--r2); } html.standard .legend .r3 { background: var(--r3); }
-html.standard .legend .r4 { background: var(--r4); } html.standard .legend .r5 { background: var(--r5); }
-html.standard .legend .r6 { background: var(--r6); } html.standard .legend .r7 { background: var(--r7); }
-html.standard .legend .r8 { background: var(--r8); }
 html.standard .btn, html.standard .clue, html.standard .level, html.standard #grid td { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
 @media (hover: hover) {
   html.standard .btn:hover, html.standard .level:hover, html.standard .clue:hover { border-color: var(--brass); }
   html.standard .cell:hover { box-shadow: inset 0 0 0 2px var(--brass); }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.standard * { transition: none !important; }
+  html.standard * { transition: none !important; animation: none !important; }
 }
 /* Tablet landscape and desktop: grid left, clues right. */
 @media (min-width: 860px) {
@@ -237,10 +314,27 @@ html.standard .btn, html.standard .clue, html.standard .level, html.standard #gr
   html.standard #clue-box { display: block !important; }
 }
 
+/* Phones: a compact case header so the board shows without scrolling. */
+@media (max-width: 600px) {
+  .bar .wrap { padding-top: 4px; padding-bottom: 4px; }
+  .bar h1 { font-size: 18px; }
+  .bar h1 small { display: none; }
+  .bar .btn.small { min-height: 34px; padding: 3px 9px; }
+  #screen-play .kicker { margin-top: 8px; font-size: 12px; }
+  #screen-play h2 { font-size: 20px; margin: 2px 0; }
+  #case-intro { margin: 4px 0; font-size: 16px; }
+  #case-intro.clamp { max-height: 2.9em; overflow: hidden; }
+  #coach { padding: 6px 10px; font-size: 15px; }
+  .ticket .tk-prog { float: none; display: block; margin: 2px 0 0; }
+  #route .city { font-size: 27px; }
+  #route .chip-t { font-size: 20px; }
+}
+
 /* ---------- E-ink mode: no motion, larger type, crisp edges ---------- */
 html.eink * { transition: none !important; animation: none !important; }
 html.eink body { font-size: 19px; }
 html.eink .levels li { width: 100%; }
+html.eink .tok { box-shadow: none; }
 </style>
 </head>
 <body>
@@ -260,6 +354,8 @@ html.eink .levels li { width: 100%; }
   <section id="screen-cases" class="hide" aria-labelledby="cases-title">
     <h2 id="cases-title">The Midnight Express</h2>
     <p class="intro">A luxury night train crosses Europe in the 1930s, and someone aboard keeps killing. Fifty cases stand between Paris and Istanbul.</p>
+    <div id="route"></div>
+    <p id="continue-wrap"><button class="btn primary" id="continue" type="button"></button></p>
     <div id="tiers"></div>
   </section>
 
@@ -267,13 +363,17 @@ html.eink .levels li { width: 100%; }
     <p class="kicker" id="case-kicker"></p>
     <h2 id="case-title"></h2>
     <p class="intro" id="case-intro"></p>
+    <button class="linkish hide" id="intro-more" type="button" aria-expanded="false">More</button>
     <div id="coach" class="hide" role="status" aria-live="polite">
       <p class="coach-title">Detective's notebook</p>
       <p id="coach-text"></p>
     </div>
     <div class="layout">
       <div class="board-col" id="board-col">
-        <table id="grid" role="grid" aria-label="Crime scene"></table>
+        <div id="board-wrap">
+          <table id="grid" role="grid" aria-label="Crime scene"></table>
+          <div id="labels" aria-hidden="true"></div>
+        </div>
         <p id="cellinfo" aria-live="polite"></p>
         <p id="hint"></p>
         <div id="palette" role="group" aria-label="Tools"></div>
@@ -289,10 +389,14 @@ html.eink .levels li { width: 100%; }
           <div id="suspects"></div>
           <button class="btn small" id="accuse-cancel" type="button">Not yet</button>
         </div>
-        <div id="solved" class="hide">
-          <p><strong>Case solved.</strong></p>
-          <p id="outro"></p>
-          <button class="btn primary" id="next" type="button">Next case</button>
+        <div id="solved" class="hide" role="dialog" aria-labelledby="stamp">
+          <div class="card">
+            <p class="stamp" id="stamp">Case closed</p>
+            <div id="culprit"></div>
+            <p id="outro"></p>
+            <button class="btn primary" id="next" type="button">Next case</button>
+            <button class="btn" id="view-board" type="button">View board</button>
+          </div>
         </div>
       </div>
       <div class="clue-col">
@@ -313,7 +417,6 @@ html.eink .levels li { width: 100%; }
           </ul>
         </div>
         <h3 class="legend-title">Map key</h3>
-        <ul class="legend" id="legend" aria-label="Rooms"></ul>
         <ul class="legend" id="objkey" aria-label="Objects"></ul>
         <p><button class="btn small" id="restart" type="button">Restart case</button></p>
       </div>
@@ -357,7 +460,7 @@ html.eink .levels li { width: 100%; }
     <div class="opt">
       <button class="btn small" type="button" id="reset-all">Erase all progress</button>
     </div>
-    <p class="note">Object icons by Delapouite, Lorc and Caro Asercion from <a href="https://game-icons.net">game-icons.net</a>, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, recoloured. The table, stove, desk, bench and rug were drawn for Cellmates.</p>
+    <p class="note">Object icons by Delapouite, Lorc and Caro Asercion from <a href="https://game-icons.net">game-icons.net</a>, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, recoloured. The table, stove, desk, bench and rug were drawn for Cellmates. Portraits are busts drawn for Cellmates wearing hats by Lorc and Delapouite from the same site; the locomotive is by Delapouite.</p>
     <p class="note">Tip: add <code>?mode=eink</code> or <code>?mode=standard</code> to the address to force a display mode.</p>
     <p><button class="btn primary" type="button" id="help-back">Back</button></p>
   </section>
@@ -393,6 +496,27 @@ html.eink .levels li { width: 100%; }
     desk: '<path fill-rule="evenodd" d="M40 200h432v32H40zM56 232h152v232H56zM64 320h136v8H64zM64 392h136v8H64zM108 272h48v14h-48zM108 352h48v14h-48zM108 424h48v14h-48z"/><path d="M424 232h32v232h-32zM300 184h80v16h-80zM332 124h16v60h-16zM284 92h112l-14 32h-84z"/>',
     firebox: '<path d="m183.8 25l-13.4 94h171.2l-13.4-94zm-79.5 112L73.82 487H438.2l-30.5-350zm30.7 62h242v48h32v114h-32v48H135zm18 18v174h206v-30h-16V247h16v-30zm30 16h146v112H183zm74.2 10.7c-6.5 22-24.5 43.6-13.6 66.1c-17.8-9.5-20.2-25.1-23.4-40.6c-2.2 15.5-9.3 30.8-6.8 45.4c-6.3-4.6-11.6-10.9-18.2-18c7 28.2 7.9 35.8 31.8 37.4h51.5c32.1-3.6 26.8-21.3 41-38.2c-12.7.4-18.9 4.5-25.8 12.3c10.3-18.7-1.5-18.9-2.7-34.3c-5.1 9.8-16.9 20.7-23.3 18.6c-8.5-2.6-9.3-30.7-10.5-48.7M361 265v78h30v-78zM183 432h18v32h-18zm64 0h18v32h-18zm64 0h18v32h-18z"/>'
   };
+  // Portraits drawn for Cellmates; hats from game-icons.net (see the help page).
+  var PORTRAITS = {
+    'man': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/></g>',
+    'man-glasses': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM188 222a30 30 0 1 0 60 0a30 30 0 1 0-60 0zM264 222a30 30 0 1 0 60 0a30 30 0 1 0-60 0zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><path class="bg" d="M244 216h24v10h-24z"/></g>',
+    'man-collar': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM232 350h48v26h-48z"/></g>',
+    'woman': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'woman-bun': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM256 64a46 46 0 1 0 0.1 0zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'woman-veil': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 92c80 0 128 56 128 140v150H128V232c0-84 48-140 128-140zM256 158c-44 0-74 34-74 80s30 92 74 92 74-46 74-92-30-80-74-80zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/></g>',
+    'man-top': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(120.1 -69.4) scale(0.5294)"><g class="halo" stroke-width="37.8"><path d="M203.594 58.188c-1.933-.01-3.824-.006-5.688.03c-22.398.437-39.932 4.19-51.812 9.688c-15.84 7.33-20.987 15.728-19.78 25.625c1.434 11.79 13.465 23.993 37.405 33.532c23.94 9.54 58.333 15.71 98.78 16.813c39.643 1.082 78.206-.902 103.563-7.625c12.678-3.362 21.815-8.05 26.062-12.5s5.273-7.606 2.47-15.22c-2.138-5.8-9.053-12.543-20.626-18.56c-11.575-6.02-27.22-11.233-44.564-15.47c-34.675-8.47-76.14-13.155-107.5-15.563h-.03a261 261 0 0 0-18.282-.75zm-72.313 72.718c5.676 41.283 10.312 83.897 5.94 129.03c.064 6.285 2.516 11.206 7.81 16.345c5.873 5.7 15.5 10.996 27.72 15.158c24.44 8.323 58.864 12.14 92.938 11.75c34.073-.39 67.996-4.942 91.406-12.22c11.704-3.638 20.75-8.09 25.47-12.03c2.653-2.217 3.885-3.58 4.31-4.813c-6.956-41.256-4.108-83.612 2.407-126.22c-5.526 2.566-11.706 4.63-18.405 6.407c-28.88 7.658-68.327 9.357-108.875 8.25c-42.035-1.147-78.177-7.392-105.188-18.156c-9.615-3.83-18.264-8.317-25.53-13.5zM117.657 266.78c-10.383 3.2-20.108 6.752-29.062 10.658c-42.218 18.415-66.15 43.515-67.938 68.812c-1.084 15.323 3.8 28.18 14.344 40.125c10.543 11.944 27.054 22.592 48.406 31.094c42.706 17.003 104.308 25.326 172.97 23.03c67.127-2.244 127.832-10.5 170.718-25.28c21.443-7.392 38.36-16.458 49.375-26.5c11.014-10.045 16.25-20.462 16.25-32.94c0-12.476-5.55-24.876-16.845-37.155c-11.296-12.28-28.275-24.05-49.688-34.156a280 280 0 0 0-19.968-8.47c2.088 11.05 4.905 21.955 8.655 32.688c4.382 12.54.81 25.65-7.438 35.03c-8.248 9.383-20.406 16.283-35.03 21.938c-29.25 11.31-68.99 17.358-108.97 18.22c-39.978.86-79.94-3.45-109.718-14.376c-14.89-5.463-27.414-12.538-35.907-22.563c-8.494-10.024-12.13-23.69-8.407-37.593c3.867-14.44 6.522-28.603 8.25-42.563zm15.22 23.69a329 329 0 0 1-5.407 23.717c-2.33 8.702-.7 14.412 4.593 20.657c5.29 6.245 15.052 12.34 28.093 17.125c26.083 9.57 64.56 14.043 102.875 13.217s76.716-6.937 102.658-16.968c12.97-5.017 22.683-11.086 27.718-16.814s6.182-9.87 3.844-16.562a242 242 0 0 1-5.813-19.188c-7.61 5.452-17.37 9.6-28.812 13.156c-26.114 8.118-61.16 12.657-96.72 13.063c-35.557.406-71.418-3.262-99.186-12.72c-13.456-4.58-25.092-10.516-33.845-18.686z"/></g><path d="M203.594 58.188c-1.933-.01-3.824-.006-5.688.03c-22.398.437-39.932 4.19-51.812 9.688c-15.84 7.33-20.987 15.728-19.78 25.625c1.434 11.79 13.465 23.993 37.405 33.532c23.94 9.54 58.333 15.71 98.78 16.813c39.643 1.082 78.206-.902 103.563-7.625c12.678-3.362 21.815-8.05 26.062-12.5s5.273-7.606 2.47-15.22c-2.138-5.8-9.053-12.543-20.626-18.56c-11.575-6.02-27.22-11.233-44.564-15.47c-34.675-8.47-76.14-13.155-107.5-15.563h-.03a261 261 0 0 0-18.282-.75zm-72.313 72.718c5.676 41.283 10.312 83.897 5.94 129.03c.064 6.285 2.516 11.206 7.81 16.345c5.873 5.7 15.5 10.996 27.72 15.158c24.44 8.323 58.864 12.14 92.938 11.75c34.073-.39 67.996-4.942 91.406-12.22c11.704-3.638 20.75-8.09 25.47-12.03c2.653-2.217 3.885-3.58 4.31-4.813c-6.956-41.256-4.108-83.612 2.407-126.22c-5.526 2.566-11.706 4.63-18.405 6.407c-28.88 7.658-68.327 9.357-108.875 8.25c-42.035-1.147-78.177-7.392-105.188-18.156c-9.615-3.83-18.264-8.317-25.53-13.5zM117.657 266.78c-10.383 3.2-20.108 6.752-29.062 10.658c-42.218 18.415-66.15 43.515-67.938 68.812c-1.084 15.323 3.8 28.18 14.344 40.125c10.543 11.944 27.054 22.592 48.406 31.094c42.706 17.003 104.308 25.326 172.97 23.03c67.127-2.244 127.832-10.5 170.718-25.28c21.443-7.392 38.36-16.458 49.375-26.5c11.014-10.045 16.25-20.462 16.25-32.94c0-12.476-5.55-24.876-16.845-37.155c-11.296-12.28-28.275-24.05-49.688-34.156a280 280 0 0 0-19.968-8.47c2.088 11.05 4.905 21.955 8.655 32.688c4.382 12.54.81 25.65-7.438 35.03c-8.248 9.383-20.406 16.283-35.03 21.938c-29.25 11.31-68.99 17.358-108.97 18.22c-39.978.86-79.94-3.45-109.718-14.376c-14.89-5.463-27.414-12.538-35.907-22.563c-8.494-10.024-12.13-23.69-8.407-37.593c3.867-14.44 6.522-28.603 8.25-42.563zm15.22 23.69a329 329 0 0 1-5.407 23.717c-2.33 8.702-.7 14.412 4.593 20.657c5.29 6.245 15.052 12.34 28.093 17.125c26.083 9.57 64.56 14.043 102.875 13.217s76.716-6.937 102.658-16.968c12.97-5.017 22.683-11.086 27.718-16.814s6.182-9.87 3.844-16.562a242 242 0 0 1-5.813-19.188c-7.61 5.452-17.37 9.6-28.812 13.156c-26.114 8.118-61.16 12.657-96.72 13.063c-35.557.406-71.418-3.262-99.186-12.72c-13.456-4.58-25.092-10.516-33.845-18.686z"/></g></g>',
+    'man-fedora': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(93.9 -86.4) scale(0.6318)"><g class="halo" stroke-width="31.7"><path d="M239.125 97.438c-8.085.263-14.998 3.486-22.125 9.062c-10.136 7.93-19.822 21.153-28.906 36.47c-12.06 20.333-22.702 43.987-35.188 63.686l1.156.72c-.418.68-.383.62-.25 1.374c.134.754.767 2.354 2.407 4.5c3.277 4.293 10.342 10.21 19.936 16.156c19.188 11.89 48.29 24.49 78.813 34.906c30.52 10.418 62.6 18.744 87.874 22.625c12.637 1.94 23.6 2.753 31.406 2.313c6.83-.385 10.57-2.374 11.094-2.47c2.313-12.74 5.12-26.273 7.437-40.03c5.32-31.57 7.318-63.1-.686-79.188c-7.48-15.038-17.617-20.69-29.03-22.375c-7.012-1.034-14.537-.068-21.627 1.97c8.783 5.46 18.177 9.676 28.594 11.624l-3.436 18.376c-29.7-5.554-51.25-24.54-69.344-42s-33.43-33.012-47.156-36.437c-3.314-.828-6.41-1.236-9.344-1.282a31 31 0 0 0-1.625 0M51.72 172.156c-3.565.077-6.743.487-9.532 1.22c-11.158 2.926-17.707 9.42-21.282 27.343c-5.598 28.066 2.315 52.298 19.938 74.874s45.243 42.83 77.625 59.937c62.247 32.887 141.57 54.053 199.155 63.19l7.594-18.064l4.342-10.28l9.344 6.062l54.25 35.062c32.376 2.315 60.15-1.828 77.78-10.563c9.02-4.468 15.296-9.976 18.94-16.062c3.642-6.086 5.003-12.87 3.437-21.72c-4.446-25.12-12.418-39.6-23.375-49.31c-10.958-9.712-25.828-15.125-45.313-19.22c-6.452-1.356-13.402-2.563-20.75-3.75c-2.82 16.205-4.812 30.047-4.188 38.344c.416 5.53-2.52 11.542-6.625 14.717c-4.104 3.176-8.748 4.535-13.843 5.407c-10.19 1.743-22.893 1.178-37.908-.75c-30.03-3.857-68.82-13.617-106.125-26.375c-37.304-12.76-72.902-28.365-96.687-44.908c-11.892-8.27-21.073-16.588-25.813-26.78c-2.37-5.097-3.465-10.944-2.28-16.688c1.183-5.744 4.534-10.91 9.156-15.094c5.593-5.063 11.163-12.628 16.78-21.625c-15.758-6.912-30.355-12.82-43.468-17.125c-16.417-5.39-30.464-8.075-41.156-7.844zm88.968 51.47c-2.743 3.246-5.603 6.26-8.594 8.968c-2.423 2.193-3.146 3.77-3.406 5.03c-.26 1.262-.158 2.677.937 5.032c2.19 4.71 9.037 11.992 19.563 19.313c21.05 14.64 55.74 30.15 92.03 42.56c36.292 12.413 74.398 21.896 102.47 25.5c14.035 1.804 25.686 2.02 32.375.876c2.73-.467 4.262-1.1 4.968-1.47c-.39-6.627.103-14.072 1.095-22.123c-2.2.287-4.467.46-6.813.593c-9.955.562-21.878-.436-35.312-2.5c-26.868-4.126-59.644-12.682-91.063-23.406c-31.418-10.724-61.326-23.52-82.625-36.72c-10.65-6.598-19.196-13.17-24.937-20.686c-.24-.316-.456-.648-.688-.97z"/></g><path d="M239.125 97.438c-8.085.263-14.998 3.486-22.125 9.062c-10.136 7.93-19.822 21.153-28.906 36.47c-12.06 20.333-22.702 43.987-35.188 63.686l1.156.72c-.418.68-.383.62-.25 1.374c.134.754.767 2.354 2.407 4.5c3.277 4.293 10.342 10.21 19.936 16.156c19.188 11.89 48.29 24.49 78.813 34.906c30.52 10.418 62.6 18.744 87.874 22.625c12.637 1.94 23.6 2.753 31.406 2.313c6.83-.385 10.57-2.374 11.094-2.47c2.313-12.74 5.12-26.273 7.437-40.03c5.32-31.57 7.318-63.1-.686-79.188c-7.48-15.038-17.617-20.69-29.03-22.375c-7.012-1.034-14.537-.068-21.627 1.97c8.783 5.46 18.177 9.676 28.594 11.624l-3.436 18.376c-29.7-5.554-51.25-24.54-69.344-42s-33.43-33.012-47.156-36.437c-3.314-.828-6.41-1.236-9.344-1.282a31 31 0 0 0-1.625 0M51.72 172.156c-3.565.077-6.743.487-9.532 1.22c-11.158 2.926-17.707 9.42-21.282 27.343c-5.598 28.066 2.315 52.298 19.938 74.874s45.243 42.83 77.625 59.937c62.247 32.887 141.57 54.053 199.155 63.19l7.594-18.064l4.342-10.28l9.344 6.062l54.25 35.062c32.376 2.315 60.15-1.828 77.78-10.563c9.02-4.468 15.296-9.976 18.94-16.062c3.642-6.086 5.003-12.87 3.437-21.72c-4.446-25.12-12.418-39.6-23.375-49.31c-10.958-9.712-25.828-15.125-45.313-19.22c-6.452-1.356-13.402-2.563-20.75-3.75c-2.82 16.205-4.812 30.047-4.188 38.344c.416 5.53-2.52 11.542-6.625 14.717c-4.104 3.176-8.748 4.535-13.843 5.407c-10.19 1.743-22.893 1.178-37.908-.75c-30.03-3.857-68.82-13.617-106.125-26.375c-37.304-12.76-72.902-28.365-96.687-44.908c-11.892-8.27-21.073-16.588-25.813-26.78c-2.37-5.097-3.465-10.944-2.28-16.688c1.183-5.744 4.534-10.91 9.156-15.094c5.593-5.063 11.163-12.628 16.78-21.625c-15.758-6.912-30.355-12.82-43.468-17.125c-16.417-5.39-30.464-8.075-41.156-7.844zm88.968 51.47c-2.743 3.246-5.603 6.26-8.594 8.968c-2.423 2.193-3.146 3.77-3.406 5.03c-.26 1.262-.158 2.677.937 5.032c2.19 4.71 9.037 11.992 19.563 19.313c21.05 14.64 55.74 30.15 92.03 42.56c36.292 12.413 74.398 21.896 102.47 25.5c14.035 1.804 25.686 2.02 32.375.876c2.73-.467 4.262-1.1 4.968-1.47c-.39-6.627.103-14.072 1.095-22.123c-2.2.287-4.467.46-6.813.593c-9.955.562-21.878-.436-35.312-2.5c-26.868-4.126-59.644-12.682-91.063-23.406c-31.418-10.724-61.326-23.52-82.625-36.72c-10.65-6.598-19.196-13.17-24.937-20.686c-.24-.316-.456-.648-.688-.97z"/></g></g>',
+    'man-boater': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(100.2 -101.3) scale(0.6085)"><g class="halo" stroke-width="32.9"><path d="M189 80.54c-3.2 5.57-3.7 12.82-.8 22.46c2.9 9.6 9.4 21.3 19 33.4c19.4 24.3 51.3 50.8 90.7 73c39.4 22.1 78.6 35.6 109.5 39.5c15.3 1.9 28.6 1.5 38.3-1.1c9.8-2.5 15.7-6.7 18.9-12.3c3.1-5.6 3.6-12.8.7-22.5c-2.9-9.6-9.4-21.2-19-33.3c-19.4-24.3-51.3-50.9-90.7-73c-39.4-22.18-78.6-35.61-109.4-39.54c-17.2-1.94-47.6-3.07-57.2 13.38m-18.3 26.56l-25.6 36.5c-2.6 17.2 8.7 39.9 30.8 63.2c22.6 23.9 55.3 47.7 90.2 67.2c34.8 19.5 71.9 34.6 102.6 41.5c18.8 3.1 46.2 9.2 61.6-3.7l21.4-47c-15.4 4.3-33.3 3.6-46.7 1.9c-33.9-4.3-74.9-18.5-115.9-41.6c-41.1-23.1-74.6-50.7-95.9-77.5c-9.1-13.2-18.7-26.7-22.5-40.5m-59.8 8.3c-42.85-.1-73.64 12.4-86.43 35.1c-14.594 25.9-5.48 65 25.56 108c31 43 82.97 88.4 148.07 125s131 57.5 183.8 61.6c52.8 4.2 91-8.3 105.6-34.3s5.5-65-25.6-108c-1.5-2.2-3.2-4.3-4.8-6.4l-30.5 67.1c-7.7 12.9-19.4 22.3-32.1 25.8c-14.4 3.8-31.3 3.4-50 .4c-37.3-6.2-81.6-23.4-122.8-46.1c-41.3-22.8-79.4-51-103.8-80.1c-12.3-14.6-21.14-29.4-24.8-44.6c-3.67-15.1-1.52-30.9 8-44.1l40.4-57.4c-10.2-1.3-21-2-30.6-2m18.2 50.9c-11.2 15-22.3 30.6-18.5 48.4c2.7 11.2 10 24 21 37.2c12.6 15 29.9 30.2 49.7 44.7c4.8-11.2 12.3-24.1 25.3-39.4c-16.5-12-31.4-24.9-43.8-38c-16.2-17.1-28.6-35-33.7-52.9m92.2 101.3c-14.1 16.3-20.7 28.6-24.9 39.5c10.2 6.8 20.9 13.4 31.9 19.5c3.9-9.7 9.6-20.7 23.9-39.8q-15.9-9.15-30.9-19.2m46.9 28c-15.9 20.8-20.3 29.7-23.9 39.6c35.7 18.3 72.9 31.7 103.1 36.7c20.6 2.7 53.9 5.2 62.7-15.7l9.2-20.2c-18.3 3.2-39.2.5-54.6-2.9c-29.8-6.8-63.7-20.2-96.5-37.5"/></g><path d="M189 80.54c-3.2 5.57-3.7 12.82-.8 22.46c2.9 9.6 9.4 21.3 19 33.4c19.4 24.3 51.3 50.8 90.7 73c39.4 22.1 78.6 35.6 109.5 39.5c15.3 1.9 28.6 1.5 38.3-1.1c9.8-2.5 15.7-6.7 18.9-12.3c3.1-5.6 3.6-12.8.7-22.5c-2.9-9.6-9.4-21.2-19-33.3c-19.4-24.3-51.3-50.9-90.7-73c-39.4-22.18-78.6-35.61-109.4-39.54c-17.2-1.94-47.6-3.07-57.2 13.38m-18.3 26.56l-25.6 36.5c-2.6 17.2 8.7 39.9 30.8 63.2c22.6 23.9 55.3 47.7 90.2 67.2c34.8 19.5 71.9 34.6 102.6 41.5c18.8 3.1 46.2 9.2 61.6-3.7l21.4-47c-15.4 4.3-33.3 3.6-46.7 1.9c-33.9-4.3-74.9-18.5-115.9-41.6c-41.1-23.1-74.6-50.7-95.9-77.5c-9.1-13.2-18.7-26.7-22.5-40.5m-59.8 8.3c-42.85-.1-73.64 12.4-86.43 35.1c-14.594 25.9-5.48 65 25.56 108c31 43 82.97 88.4 148.07 125s131 57.5 183.8 61.6c52.8 4.2 91-8.3 105.6-34.3s5.5-65-25.6-108c-1.5-2.2-3.2-4.3-4.8-6.4l-30.5 67.1c-7.7 12.9-19.4 22.3-32.1 25.8c-14.4 3.8-31.3 3.4-50 .4c-37.3-6.2-81.6-23.4-122.8-46.1c-41.3-22.8-79.4-51-103.8-80.1c-12.3-14.6-21.14-29.4-24.8-44.6c-3.67-15.1-1.52-30.9 8-44.1l40.4-57.4c-10.2-1.3-21-2-30.6-2m18.2 50.9c-11.2 15-22.3 30.6-18.5 48.4c2.7 11.2 10 24 21 37.2c12.6 15 29.9 30.2 49.7 44.7c4.8-11.2 12.3-24.1 25.3-39.4c-16.5-12-31.4-24.9-43.8-38c-16.2-17.1-28.6-35-33.7-52.9m92.2 101.3c-14.1 16.3-20.7 28.6-24.9 39.5c10.2 6.8 20.9 13.4 31.9 19.5c3.9-9.7 9.6-20.7 23.9-39.8q-15.9-9.15-30.9-19.2m46.9 28c-15.9 20.8-20.3 29.7-23.9 39.6c35.7 18.3 72.9 31.7 103.1 36.7c20.6 2.7 53.9 5.2 62.7-15.7l9.2-20.2c-18.3 3.2-39.2.5-54.6-2.9c-29.8-6.8-63.7-20.2-96.5-37.5"/></g></g>',
+    'man-cap': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(111.0 -49.2) scale(0.5665)"><g class="halo" stroke-width="35.3"><path d="M404.7 79.78h-2.8c-7.5.26-15.8 1.73-24.8 4.3c-18 5.16-38.4 14.56-59.3 25.78c-41.9 22.4-85.8 52-121.5 68.6c-26.4 12.4-59.3 20.4-89.8 27.5s-58.95 13.4-74.36 20.6c-7.13 3.4-10.9 6.9-12.71 9.9c-1.8 2.9-2.1 5.2-1.44 8.4c1.32 6.4 8.57 15.4 18.49 21.9l3.29 2.1c162.63-2.3 289.43-13.7 387.73-52.6c2.1-17.6 6.7-34.7 16.5-48.5v-.1l.1-.1c24.5-32.2 8.9-72.58-22.4-84.89c-5-1.95-10.7-2.91-17-2.93zm21.9 185.12c-44.2 25.1-103.8 37-169.2 41.2c-68.7 4.4-143.7.1-213.52-7.8l1.89 14c31.19 3.2 98.53 11.8 172.83 11.5c77.2-.3 159.6-11.3 208.6-46.2c-.2-4.1-.4-8.3-.6-12.7m7.1 30.2c-46.9 31.5-113.8 42.9-179.9 45.8c44.7 39 89.3 55.1 127.3 59.1c45.2 4.8 81.5-8.7 94.8-19.8c13-10.8 17.5-19.5 18.3-26.2c.7-6.8-2-13.3-8.2-20.5c-11.3-13.4-33.5-26.4-52.3-38.4"/></g><path d="M404.7 79.78h-2.8c-7.5.26-15.8 1.73-24.8 4.3c-18 5.16-38.4 14.56-59.3 25.78c-41.9 22.4-85.8 52-121.5 68.6c-26.4 12.4-59.3 20.4-89.8 27.5s-58.95 13.4-74.36 20.6c-7.13 3.4-10.9 6.9-12.71 9.9c-1.8 2.9-2.1 5.2-1.44 8.4c1.32 6.4 8.57 15.4 18.49 21.9l3.29 2.1c162.63-2.3 289.43-13.7 387.73-52.6c2.1-17.6 6.7-34.7 16.5-48.5v-.1l.1-.1c24.5-32.2 8.9-72.58-22.4-84.89c-5-1.95-10.7-2.91-17-2.93zm21.9 185.12c-44.2 25.1-103.8 37-169.2 41.2c-68.7 4.4-143.7.1-213.52-7.8l1.89 14c31.19 3.2 98.53 11.8 172.83 11.5c77.2-.3 159.6-11.3 208.6-46.2c-.2-4.1-.4-8.3-.6-12.7m7.1 30.2c-46.9 31.5-113.8 42.9-179.9 45.8c44.7 39 89.3 55.1 127.3 59.1c45.2 4.8 81.5-8.7 94.8-19.8c13-10.8 17.5-19.5 18.3-26.2c.7-6.8-2-13.3-8.2-20.5c-11.3-13.4-33.5-26.4-52.3-38.4"/></g></g>',
+    'man-chef': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(104.2 -118.5) scale(0.5929)"><g class="halo" stroke-width="33.7"><path d="M268.608 25.48c-26.47.197-43.568 5.534-55.357 13.75c-13.473 9.39-21.036 23.152-27.08 40.974c2.562 20.932 23.94 48.19 19.657 70.38c-16.48-28.212-33.466-67.988-63.31-76.116c-17.075-4.62-36.54-5.802-43.54-1.436c-8.273 5.16-13.81 14.76-16.943 26.854c-3.132 12.095-3.66 26.237-2.69 38.285c2.432 30.134 24.784 74.997 46.92 111.093c16.58 27.035 32.78 49.416 39.87 58.953a264 264 0 0 1 22.85-5.62c-1.538-18.02 1.384-34.673.828-53.947c4.206 18.19 7.84 34.576 14.275 51.36c12.383-1.772 25.42-2.8 38.85-2.82a262 262 0 0 1 28.256 1.463l14.22-41.562l-2.373 43.103c17.118 2.644 34.412 7.158 51.38 13.978c12.21-12.758 16.877-27.402 24.99-41.186c.398 16.003-4.507 31.896-15.052 45.464c8.902 4.1 17.684 8.87 26.268 14.38c41.514-67.15 66.69-133.49 61.885-198.7c-1.497-20.33-6.088-38.187-12.69-51.105c-6.6-12.92-14.827-20.444-23.493-22.704c-6.985-1.822-24.825 2.828-39.44 9.496c-26.947 10.81-48.5 45.717-55.894 69.53c-.253-11.64 3.003-44.39 15.947-60.698c-3.98-12.57-6.914-26.394-12.085-36.362c-10.442-16.115-20.236-16.91-36.247-16.806zm-26.836 289.85c-25.985.123-50.39 4.192-70.77 10.214l-11.626 98.96c10.16-5.65 22.32-9.144 35.318-11.17c9.958-1.553 20.53-2.233 31.362-2.17q2.32.015 4.658.073c12.457.313 25.19 1.57 37.674 3.582c24.965 4.023 48.854 11.044 67.463 20.175c7.344 3.604 14.094 7.5 19.717 11.9l8.33-96.945c-38.464-25.67-82.153-34.81-122.125-34.62zm-15.84 113.86c-10.017-.06-19.652.554-28.464 1.928c-16.116 2.513-29.044 7.62-37.168 14.707c50.417 46.585 123.38 52.03 190.373 22.225c-3.786-4.99-11.387-11.32-22.752-16.897c-16.367-8.032-38.93-14.78-62.398-18.562c-13.2-2.127-26.71-3.32-39.59-3.4z"/></g><path d="M268.608 25.48c-26.47.197-43.568 5.534-55.357 13.75c-13.473 9.39-21.036 23.152-27.08 40.974c2.562 20.932 23.94 48.19 19.657 70.38c-16.48-28.212-33.466-67.988-63.31-76.116c-17.075-4.62-36.54-5.802-43.54-1.436c-8.273 5.16-13.81 14.76-16.943 26.854c-3.132 12.095-3.66 26.237-2.69 38.285c2.432 30.134 24.784 74.997 46.92 111.093c16.58 27.035 32.78 49.416 39.87 58.953a264 264 0 0 1 22.85-5.62c-1.538-18.02 1.384-34.673.828-53.947c4.206 18.19 7.84 34.576 14.275 51.36c12.383-1.772 25.42-2.8 38.85-2.82a262 262 0 0 1 28.256 1.463l14.22-41.562l-2.373 43.103c17.118 2.644 34.412 7.158 51.38 13.978c12.21-12.758 16.877-27.402 24.99-41.186c.398 16.003-4.507 31.896-15.052 45.464c8.902 4.1 17.684 8.87 26.268 14.38c41.514-67.15 66.69-133.49 61.885-198.7c-1.497-20.33-6.088-38.187-12.69-51.105c-6.6-12.92-14.827-20.444-23.493-22.704c-6.985-1.822-24.825 2.828-39.44 9.496c-26.947 10.81-48.5 45.717-55.894 69.53c-.253-11.64 3.003-44.39 15.947-60.698c-3.98-12.57-6.914-26.394-12.085-36.362c-10.442-16.115-20.236-16.91-36.247-16.806zm-26.836 289.85c-25.985.123-50.39 4.192-70.77 10.214l-11.626 98.96c10.16-5.65 22.32-9.144 35.318-11.17c9.958-1.553 20.53-2.233 31.362-2.17q2.32.015 4.658.073c12.457.313 25.19 1.57 37.674 3.582c24.965 4.023 48.854 11.044 67.463 20.175c7.344 3.604 14.094 7.5 19.717 11.9l8.33-96.945c-38.464-25.67-82.153-34.81-122.125-34.62zm-15.84 113.86c-10.017-.06-19.652.554-28.464 1.928c-16.116 2.513-29.044 7.62-37.168 14.707c50.417 46.585 123.38 52.03 190.373 22.225c-3.786-4.99-11.387-11.32-22.752-16.897c-16.367-8.032-38.93-14.78-62.398-18.562c-13.2-2.127-26.71-3.32-39.59-3.4z"/></g></g>',
+    'man-western': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(70.9 -115.2) scale(0.7229)"><g class="halo" stroke-width="27.7"><path d="M199.117 111.268c-2.435.007-4.816.524-7.117 1.675c-18.365 9.194-38.59 129.65-50.16 164.987c45.64 13.262 87.106 16.556 115.314 16.425c28.21-.13 68.652-3.635 112.97-16.49C358.53 242.48 338.34 122.123 320 112.943c-21.065-10.53-48.73 31.998-64 32c-13.6.002-37.05-33.734-56.883-33.675M224 160c11.53 40.5 9.107 74.724 0 96s-32 11.235-32 0c25.333-6.927 26.21-35.5 32-96m64 0c5.79 60.5 6.667 89.073 32 96c0 11.235-22.893 21.276-32 0s-11.53-55.5 0-96M46.79 263.127c-17.5.4-24.138 17.83-14.79 40.873c11.088 30.345 58.972 96.774 112 96c24.103-.352 31.438-15.483 112-16s87.88 15.648 112 16c53.017.774 100.907-65.655 112-96c13.006-32.066-4.934-53.25-40.016-32.84c-21.85 11.926-44.06 17.898-65.984 24.48c-.02 0-.044.024-.064.024v-.006c-45.8 13.756-87.924 17.486-116.754 17.615c-28.83.13-72.027-3.357-119.145-17.548c-21.897-6.618-44.09-12.59-66.027-24.565c-9.866-5.74-18.374-8.19-25.22-8.033"/></g><path d="M199.117 111.268c-2.435.007-4.816.524-7.117 1.675c-18.365 9.194-38.59 129.65-50.16 164.987c45.64 13.262 87.106 16.556 115.314 16.425c28.21-.13 68.652-3.635 112.97-16.49C358.53 242.48 338.34 122.123 320 112.943c-21.065-10.53-48.73 31.998-64 32c-13.6.002-37.05-33.734-56.883-33.675M224 160c11.53 40.5 9.107 74.724 0 96s-32 11.235-32 0c25.333-6.927 26.21-35.5 32-96m64 0c5.79 60.5 6.667 89.073 32 96c0 11.235-22.893 21.276-32 0s-11.53-55.5 0-96M46.79 263.127c-17.5.4-24.138 17.83-14.79 40.873c11.088 30.345 58.972 96.774 112 96c24.103-.352 31.438-15.483 112-16s87.88 15.648 112 16c53.017.774 100.907-65.655 112-96c13.006-32.066-4.934-53.25-40.016-32.84c-21.85 11.926-44.06 17.898-65.984 24.48c-.02 0-.044.024-.064.024v-.006c-45.8 13.756-87.924 17.486-116.754 17.615c-28.83.13-72.027-3.357-119.145-17.548c-21.897-6.618-44.09-12.59-66.027-24.565c-9.866-5.74-18.374-8.19-25.22-8.033"/></g></g>',
+    'man-fez': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 118c56 0 98 44 98 108s-42 118-98 118-98-54-98-118 42-108 98-108zM70 512c0-110 72-166 186-166s186 56 186 166zM226 350l30 62 30-62z"/><g transform="translate(134.6 -25.5) scale(0.4669)"><g class="halo" stroke-width="42.8"><path d="M258.75 101.906c-31.427 0-62.877 6.504-84.156 16.875c-10.67 5.202-18.88 11.344-24 17.376c-5.122 6.033-7.26 11.777-7.25 17.188v.03c-.01 5.412 2.128 11.156 7.25 17.19c5.12 6.03 13.33 12.173 24 17.374c21.28 10.37 52.73 16.875 84.156 16.875c15.063 0 30.11-1.52 44.063-4.22l-43.97-41.53a9.345 9.345 0 0 1 .72-14.344a9.35 9.35 0 0 1 7.312-3.782a9.35 9.35 0 0 1 5.313 1.53l71.093 45.282c10.485-5.16 18.566-11.228 23.626-17.188c5.122-6.032 7.26-11.776 7.25-17.187v-.03c.01-5.412-2.128-11.156-7.25-17.19c-5.12-6.03-13.33-12.173-24-17.374c-21.28-10.37-52.73-16.874-84.156-16.874zm120.813 82.563c-6.293 6.876-14.454 12.902-24.094 18.06l27.78 131.282a9.36 9.36 0 1 1-18.313 3.875L338 210.313c-2.143.8-4.305 1.583-6.53 2.313L347 351.5a9.356 9.356 0 1 1-18.594 2.094l-15.156-136c-17.117 3.857-35.744 5.906-54.5 5.906c-33.927 0-67.43-6.608-92.344-18.75c-11.15-5.434-20.55-11.927-27.687-19.47l-28.19 159.75c-1.38 8.68.893 16.09 6.876 23.814c5.983 7.722 15.94 15.275 28.875 21.75c25.87 12.95 63.244 21.503 101.595 23.406s77.75-2.813 107.844-15c29.562-11.972 49.355-30.17 54.25-56.375L379.56 184.47z"/></g><path d="M258.75 101.906c-31.427 0-62.877 6.504-84.156 16.875c-10.67 5.202-18.88 11.344-24 17.376c-5.122 6.033-7.26 11.777-7.25 17.188v.03c-.01 5.412 2.128 11.156 7.25 17.19c5.12 6.03 13.33 12.173 24 17.374c21.28 10.37 52.73 16.875 84.156 16.875c15.063 0 30.11-1.52 44.063-4.22l-43.97-41.53a9.345 9.345 0 0 1 .72-14.344a9.35 9.35 0 0 1 7.312-3.782a9.35 9.35 0 0 1 5.313 1.53l71.093 45.282c10.485-5.16 18.566-11.228 23.626-17.188c5.122-6.032 7.26-11.776 7.25-17.187v-.03c.01-5.412-2.128-11.156-7.25-17.19c-5.12-6.03-13.33-12.173-24-17.374c-21.28-10.37-52.73-16.874-84.156-16.874zm120.813 82.563c-6.293 6.876-14.454 12.902-24.094 18.06l27.78 131.282a9.36 9.36 0 1 1-18.313 3.875L338 210.313c-2.143.8-4.305 1.583-6.53 2.313L347 351.5a9.356 9.356 0 1 1-18.594 2.094l-15.156-136c-17.117 3.857-35.744 5.906-54.5 5.906c-33.927 0-67.43-6.608-92.344-18.75c-11.15-5.434-20.55-11.927-27.687-19.47l-28.19 159.75c-1.38 8.68.893 16.09 6.876 23.814c5.983 7.722 15.94 15.275 28.875 21.75c25.87 12.95 63.244 21.503 101.595 23.406s77.75-2.813 107.844-15c29.562-11.972 49.355-30.17 54.25-56.375L379.56 184.47z"/></g></g>',
+    'woman-cloche': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(106.3 -80.1) scale(0.5848)"><g class="halo" stroke-width="34.2"><path d="M256 29.59c-45.5 0-91.7 19.17-126.2 47.91c-32.32 26.9-53.88 61.9-56.52 96.1c2.48.6 4.98 1.2 7.48 1.8c61.74 14.2 123.34 20.9 185.04 20.1c-1.8-4.2-2.6-8.9-1.8-13.8c1.6-8.9 8.2-15.4 15.8-18.9c7.6-3.6 16.8-4.7 26.1-3c.4.1.8.2 1.3.3c-.3-1.1-.4-2.3-.6-3.4c-1.4-9.7 0-18.9 3.9-26.6c3.9-7.6 10.9-14.1 19.9-15.3c9-1.3 17.5 3 23.3 9.2c5.4 6 9.2 13.7 10.8 22.6c.2-.3.5-.6.7-.9c6.2-7.6 13.9-12.8 22.2-15.2c8.2-2.4 17.6-1.7 24.7 4.1c7.1 5.7 9.8 14.8 9.2 23.3c-.6 7.3-3.2 14.6-7.8 21.3c2.2-.5 4.5-.9 6.7-1.4c1.7-.3 3.4-.7 5.1-1.1c1.1-.2 2.3-.5 3.4-.7c3.3-.8 6.7-1.6 10-2.4c-2.6-34.2-24.2-69.2-56.5-96.1c-34.5-28.74-80.7-47.91-126.2-47.91m77.7 102.91c-.2 0-.5.1-.8.1c-2.2.3-4.4 1.8-6.4 5.6c-1.9 3.9-3 9.6-2.1 16c.7 5.1 2.6 9.6 4.9 12.8c5.1-3.1 10.9-4.9 17.2-5c.7-3.2 1-7.1.5-11c-.9-6.3-3.6-11.5-6.4-14.7c-2.6-2.8-4.9-3.8-6.9-3.8m62.7 14.6c-1.2 0-2.5.2-4.1.6c-4.1 1.3-9.1 4.4-13.1 9.4c-4 4.9-6 10.4-6.4 14.7v1.3c2.3 2.4 4.3 5.2 5.9 8.2c1.4.2 3.1 0 5.2-.6c4-1.2 9.1-4.4 13-9.3c4.1-5 6-10.4 6.4-14.7c.3-4.3-.8-6.8-2.5-8.2c-1.1-.8-2.5-1.4-4.4-1.4m-98 30c-4.3-.1-8.2.7-11 1.9c-3.8 1.8-5.3 3.9-5.6 5.9c-.4 1.9.3 4.4 3.2 7.3s7.9 5.7 13.9 6.8c4.4.8 8.7.5 12.1-.4c.2-5.6 1.6-11 3.9-15.8c-3-2.3-7.2-4.4-12.1-5.3c-1.5-.2-3-.4-4.4-.4m48.8 2.9c-9.8 0-18.2 8.5-18.2 19.8s8.4 19.8 18.2 19.8s18.2-8.5 18.2-19.8S357 180 347.2 180M68.76 191c-6.58 12.8-27.22 51.2-52.15 80.6c164.29 42.5 314.49 42.5 478.79 0c-24.9-29.4-45.6-67.8-52.2-80.6c-4.9 1.2-9.8 2.3-14.6 3.4c4.4 5.3 7.1 12 6.2 19.3c-1 9-7.2 16.2-14.7 20.2c-7.6 4.1-16.7 5.8-26.5 4.7c-2.9-.3-5.6-.8-8.3-1.6c.8 2.8 1.5 5.7 1.8 8.8c1.1 9.8-.6 18.9-4.7 26.5c-4.1 7.5-11.3 13.7-20.3 14.7c-9.1 1-17.4-3.5-23.1-9.9c-4.8-5.6-8.2-12.6-9.8-20.6c-7 6.8-15.4 11-23.9 12.4c-8.4 1.3-17.7-.6-24-7.1c-6.3-6.6-7.9-15.9-6.2-24.3c1.7-8.2 6.1-16.2 12.8-22.9c-1.4-.5-2.7-1-4-1.6c-71.7 2.5-143.5-4.8-215.14-22m325.04 6.9c-4 .1-7.6 1-10.4 2.2c-.1 5.1-1.1 10-2.9 14.5l.2.2c3.3 2.7 8.7 5.3 14.9 6c6.4.7 12.1-.6 15.9-2.6c3.8-2.1 5.2-4.4 5.5-6.5c.2-2.2-.7-4.7-3.9-7.6c-3.3-2.8-8.6-5.3-15-6c-.8-.1-1.5-.1-2.3-.2zm-77.5 21.5c-.4 0-.9 0-1.3.1c-4.2.7-9.5 3.2-14.1 7.6s-7.3 9.6-8.2 13.8c-.8 4.3.1 6.8 1.6 8.4s4 2.5 8.3 1.8c4.2-.7 9.5-3.2 14.1-7.6s7.3-9.6 8.2-13.8v-.2c-3.4-2.8-6.4-6.2-8.6-10.1m47.3 14.1c-4.7 2.5-10.1 4-15.8 4.1c-1.2 3.5-1.8 8-1.3 12.7c.7 6.4 3.2 11.7 6 15c2.9 3.2 5.4 4.1 7.6 3.9c2.2-.3 4.4-1.7 6.5-5.5c2-3.8 3.3-9.5 2.6-15.9c-.7-5.9-2.9-11-5.6-14.3M148 315c7.4 52.7 17.9 91.2 30.6 118.1c9.2 19.7 19.6 33.4 31.6 41.5c12.1 8.1 26.1 9.8 38.8 5.6c25.4-8.4 46-36.2 62.4-74.3c10.9-25.1 19.6-55.1 25.2-88c-6.2.6-12.3 1-18.5 1.5c-5.4 29.8-13.5 56.9-23.2 79.4c-15.4 35.8-35.4 59-51.5 64.3c-8.1 2.7-15 2-23.1-3.4c-8.1-5.5-17.1-16.4-25.4-34.2c-11.2-23.6-21.1-59.2-28.4-108.4c-6.1-.7-12.3-1.3-18.5-2.1"/></g><path d="M256 29.59c-45.5 0-91.7 19.17-126.2 47.91c-32.32 26.9-53.88 61.9-56.52 96.1c2.48.6 4.98 1.2 7.48 1.8c61.74 14.2 123.34 20.9 185.04 20.1c-1.8-4.2-2.6-8.9-1.8-13.8c1.6-8.9 8.2-15.4 15.8-18.9c7.6-3.6 16.8-4.7 26.1-3c.4.1.8.2 1.3.3c-.3-1.1-.4-2.3-.6-3.4c-1.4-9.7 0-18.9 3.9-26.6c3.9-7.6 10.9-14.1 19.9-15.3c9-1.3 17.5 3 23.3 9.2c5.4 6 9.2 13.7 10.8 22.6c.2-.3.5-.6.7-.9c6.2-7.6 13.9-12.8 22.2-15.2c8.2-2.4 17.6-1.7 24.7 4.1c7.1 5.7 9.8 14.8 9.2 23.3c-.6 7.3-3.2 14.6-7.8 21.3c2.2-.5 4.5-.9 6.7-1.4c1.7-.3 3.4-.7 5.1-1.1c1.1-.2 2.3-.5 3.4-.7c3.3-.8 6.7-1.6 10-2.4c-2.6-34.2-24.2-69.2-56.5-96.1c-34.5-28.74-80.7-47.91-126.2-47.91m77.7 102.91c-.2 0-.5.1-.8.1c-2.2.3-4.4 1.8-6.4 5.6c-1.9 3.9-3 9.6-2.1 16c.7 5.1 2.6 9.6 4.9 12.8c5.1-3.1 10.9-4.9 17.2-5c.7-3.2 1-7.1.5-11c-.9-6.3-3.6-11.5-6.4-14.7c-2.6-2.8-4.9-3.8-6.9-3.8m62.7 14.6c-1.2 0-2.5.2-4.1.6c-4.1 1.3-9.1 4.4-13.1 9.4c-4 4.9-6 10.4-6.4 14.7v1.3c2.3 2.4 4.3 5.2 5.9 8.2c1.4.2 3.1 0 5.2-.6c4-1.2 9.1-4.4 13-9.3c4.1-5 6-10.4 6.4-14.7c.3-4.3-.8-6.8-2.5-8.2c-1.1-.8-2.5-1.4-4.4-1.4m-98 30c-4.3-.1-8.2.7-11 1.9c-3.8 1.8-5.3 3.9-5.6 5.9c-.4 1.9.3 4.4 3.2 7.3s7.9 5.7 13.9 6.8c4.4.8 8.7.5 12.1-.4c.2-5.6 1.6-11 3.9-15.8c-3-2.3-7.2-4.4-12.1-5.3c-1.5-.2-3-.4-4.4-.4m48.8 2.9c-9.8 0-18.2 8.5-18.2 19.8s8.4 19.8 18.2 19.8s18.2-8.5 18.2-19.8S357 180 347.2 180M68.76 191c-6.58 12.8-27.22 51.2-52.15 80.6c164.29 42.5 314.49 42.5 478.79 0c-24.9-29.4-45.6-67.8-52.2-80.6c-4.9 1.2-9.8 2.3-14.6 3.4c4.4 5.3 7.1 12 6.2 19.3c-1 9-7.2 16.2-14.7 20.2c-7.6 4.1-16.7 5.8-26.5 4.7c-2.9-.3-5.6-.8-8.3-1.6c.8 2.8 1.5 5.7 1.8 8.8c1.1 9.8-.6 18.9-4.7 26.5c-4.1 7.5-11.3 13.7-20.3 14.7c-9.1 1-17.4-3.5-23.1-9.9c-4.8-5.6-8.2-12.6-9.8-20.6c-7 6.8-15.4 11-23.9 12.4c-8.4 1.3-17.7-.6-24-7.1c-6.3-6.6-7.9-15.9-6.2-24.3c1.7-8.2 6.1-16.2 12.8-22.9c-1.4-.5-2.7-1-4-1.6c-71.7 2.5-143.5-4.8-215.14-22m325.04 6.9c-4 .1-7.6 1-10.4 2.2c-.1 5.1-1.1 10-2.9 14.5l.2.2c3.3 2.7 8.7 5.3 14.9 6c6.4.7 12.1-.6 15.9-2.6c3.8-2.1 5.2-4.4 5.5-6.5c.2-2.2-.7-4.7-3.9-7.6c-3.3-2.8-8.6-5.3-15-6c-.8-.1-1.5-.1-2.3-.2zm-77.5 21.5c-.4 0-.9 0-1.3.1c-4.2.7-9.5 3.2-14.1 7.6s-7.3 9.6-8.2 13.8c-.8 4.3.1 6.8 1.6 8.4s4 2.5 8.3 1.8c4.2-.7 9.5-3.2 14.1-7.6s7.3-9.6 8.2-13.8v-.2c-3.4-2.8-6.4-6.2-8.6-10.1m47.3 14.1c-4.7 2.5-10.1 4-15.8 4.1c-1.2 3.5-1.8 8-1.3 12.7c.7 6.4 3.2 11.7 6 15c2.9 3.2 5.4 4.1 7.6 3.9c2.2-.3 4.4-1.7 6.5-5.5c2-3.8 3.3-9.5 2.6-15.9c-.7-5.9-2.9-11-5.6-14.3M148 315c7.4 52.7 17.9 91.2 30.6 118.1c9.2 19.7 19.6 33.4 31.6 41.5c12.1 8.1 26.1 9.8 38.8 5.6c25.4-8.4 46-36.2 62.4-74.3c10.9-25.1 19.6-55.1 25.2-88c-6.2.6-12.3 1-18.5 1.5c-5.4 29.8-13.5 56.9-23.2 79.4c-15.4 35.8-35.4 59-51.5 64.3c-8.1 2.7-15 2-23.1-3.4c-8.1-5.5-17.1-16.4-25.4-34.2c-11.2-23.6-21.1-59.2-28.4-108.4c-6.1-.7-12.3-1.3-18.5-2.1"/></g></g>',
+    'woman-tiara': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(142.6 -31.7) scale(0.4432)"><g class="halo" stroke-width="45.1"><path d="m256 27.88l-8.1 16.09c-8.2 16.54-20.2 44.64-30.4 73.03c-10.1 28.3-18.5 56-18.5 75c0 22 6.1 43.4 14.4 61.2c-1.5.1-2.9.2-4.3.3c-15-6.8-29.5-15-41.5-24.5c-18.7-15-30.6-32.5-30.6-53c0-14.5 3.7-21.8 7-25s6.9-3.7 11.5-2.3c4.6 1.3 9.5 5 12 9.3s3.1 8.7.4 14l16.2 8c5.3-10.7 3.9-22.3-1.1-31s-13.1-15-22.5-17.7c-2.4-.6-4.8-1-7.4-1.1c-7.5-.4-15.4 1.9-21.6 7.8c-8.2 7.8-12.5 20.5-12.5 38c0 27.5 16.1 50 37.4 67c6 4.8 12.4 9.2 19.1 13.2c-14.3 1.6-28 3.6-40.8 5.9c-9.9-1.3-21-3.9-30.4-7.6c-7.17-2.8-13.37-6.4-17.17-10c-3.9-3.6-5.4-6.6-5.5-9.9v-.1c-.2-9.9 7.2-15.3 13.4-16c3.1-.4 5.37.4 7.17 2.2c1.7 1.8 3.6 5.4 3.2 12.9l18 1c.6-11.1-2.4-20.4-8.3-26.5c-4.5-4.6-10.3-7-16.17-7.5c-2-.2-3.9-.2-5.9 0c-15.2 1.6-29.7 15.1-29.4 34.3c.2 9.1 5 17 11.2 22.8c6.1 5.7 13.6 9.7 21.8 13.1l-1.2.3c-15.8 4.5-29.4 9.6-40.5 15.5c-3.1.2-6 .4-8.3.1c-2.8-.3-4.6-1-5.9-2c-1.3-.9-2.4-2.3-3.5-5.7c-.6-2 1.7-6.1 4.8-7.6c1.6-.8 2.7-.8 3.3-.5c.7.2 1.8.7 3.2 4.3l16.8-6.4c-2.7-7.1-7.6-12.6-13.7-14.8c-3.1-1.2-6.2-1.5-9.2-1.2c-2.9.3-5.8 1.2-8.3 2.4c-10.1 5-17.9 16.4-14.1 29c1.9 6.4 5.4 11.6 10 15c1.8 1.4 3.7 2.4 5.7 3.2c-7.2 10.4-11.7 24.5-11.7 33.6c0 12.6 8.7 23.1 21.1 31.5c12.5 8.5 29.5 15.5 50.3 21.4c26.77 7.7 59.77 13.4 96.57 16.5c16-5.4 16-5.4 0-16.1c-35.4-3.1-67.1-8.6-92.17-15.7c-19.7-5.7-35.5-12.4-45.7-19.3s-14.1-13.2-14.1-18.3s3.9-11.4 14.1-18.3s26-13.6 45.7-19.3c33.57-9.5 78.77-16.2 129.27-18c0 .1.1.1.1.1v-.1h1.1c1.6 2.1 3.4 4 5.1 5.7c6 6.1 12.1 10.9 20.6 10.9s14.6-4.8 20.6-10.9c1.7-1.7 3.5-3.6 5.1-5.7h1.1v.1s.1 0 .1-.1c50.5 1.8 95.7 8.5 129.3 18c19.7 5.7 35.5 12.4 45.7 19.3S472 330.9 472 336s-3.9 11.4-14.1 18.3s-26 13.6-45.7 19.3c-25.1 7.1-56.8 12.6-92.2 15.7c-16 10.7-16 10.7 0 16.1c36.8-3.1 69.8-8.8 96.6-16.5c20.8-5.9 37.8-12.9 50.3-21.4c12.4-8.4 21.1-18.9 21.1-31.5c0-9.1-4.5-23.3-11.7-33.6c1.9-.8 3.8-1.9 5.6-3.2c4.6-3.4 8.1-8.6 10-15c3.8-12.6-4-24-14.1-29c-2.5-1.2-5.3-2.1-8.3-2.4s-6.1 0-9.2 1.2c-6.1 2.2-11 7.7-13.7 14.8l16.8 6.4c1.4-3.6 2.5-4.1 3.2-4.3c.6-.3 1.7-.3 3.3.5c3.1 1.5 5.4 5.6 4.8 7.6c-1.1 3.4-2.2 4.8-3.5 5.7c-1.3 1-3.1 1.7-5.9 2c-2.3.2-5.1.1-8.2-.1c-11.1-5.9-24.7-11-40.5-15.5l-1.2-.3c8.2-3.4 15.7-7.4 21.7-13.1c6.3-5.8 11.1-13.7 11.2-22.9c.3-19.1-14.1-32.6-29.4-34.2c-1.9-.2-3.9-.2-5.8 0c-5.9.5-11.7 2.9-16.2 7.5c-5.9 6.1-8.9 15.4-8.3 26.5l18-1c-.4-7.5 1.5-11.1 3.2-12.9c1.8-1.8 4.1-2.6 7.2-2.2c6.1.7 13.5 6.1 13.3 16v.1c-.1 3.3-1.6 6.3-5.4 9.9c-3.9 3.6-10.1 7.2-17.2 10c-9.4 3.7-20.5 6.3-30.4 7.6c-12.8-2.3-26.5-4.3-40.8-5.9c6.7-4 13.1-8.4 19.1-13.2c21.3-17 37.4-39.5 37.4-67c0-17.5-4.3-30.2-12.5-38c-6.2-5.9-14.1-8.2-21.6-7.8c-2.6.1-5 .5-7.4 1.1c-9.4 2.7-17.5 9-22.5 17.7s-6.4 20.3-1.1 31l16.2-8c-2.7-5.3-2.1-9.7.4-14s7.4-8 12-9.3c4.6-1.4 8.2-.9 11.5 2.3s7 10.5 7 25c0 20.5-11.9 38-30.6 53c-12 9.5-26.5 17.7-41.5 24.5c-1.4-.1-2.8-.2-4.3-.3C306.9 235.4 313 214 313 192c0-19-8.4-46.7-18.5-75c-10.2-28.39-22.2-56.49-30.4-73.03zm0 41.45c6.8 15.23 14.6 34.37 21.5 53.67c9.9 27.7 17.5 56 17.5 69c0 22-7.5 44.8-16.9 61.6c-4.6 8.4-9.8 15.3-14.2 19.8c-4 3.9-7.5 5.3-7.9 5.5c0 .1.1.1 0 .1s0 0 0-.1c-.4-.2-3.9-1.6-7.9-5.5c-4.4-4.5-9.6-11.4-14.2-19.8C224.5 236.8 217 214 217 192c0-13 7.6-41.3 17.5-69c6.9-19.3 14.7-38.44 21.5-53.67"/></g><path d="m256 27.88l-8.1 16.09c-8.2 16.54-20.2 44.64-30.4 73.03c-10.1 28.3-18.5 56-18.5 75c0 22 6.1 43.4 14.4 61.2c-1.5.1-2.9.2-4.3.3c-15-6.8-29.5-15-41.5-24.5c-18.7-15-30.6-32.5-30.6-53c0-14.5 3.7-21.8 7-25s6.9-3.7 11.5-2.3c4.6 1.3 9.5 5 12 9.3s3.1 8.7.4 14l16.2 8c5.3-10.7 3.9-22.3-1.1-31s-13.1-15-22.5-17.7c-2.4-.6-4.8-1-7.4-1.1c-7.5-.4-15.4 1.9-21.6 7.8c-8.2 7.8-12.5 20.5-12.5 38c0 27.5 16.1 50 37.4 67c6 4.8 12.4 9.2 19.1 13.2c-14.3 1.6-28 3.6-40.8 5.9c-9.9-1.3-21-3.9-30.4-7.6c-7.17-2.8-13.37-6.4-17.17-10c-3.9-3.6-5.4-6.6-5.5-9.9v-.1c-.2-9.9 7.2-15.3 13.4-16c3.1-.4 5.37.4 7.17 2.2c1.7 1.8 3.6 5.4 3.2 12.9l18 1c.6-11.1-2.4-20.4-8.3-26.5c-4.5-4.6-10.3-7-16.17-7.5c-2-.2-3.9-.2-5.9 0c-15.2 1.6-29.7 15.1-29.4 34.3c.2 9.1 5 17 11.2 22.8c6.1 5.7 13.6 9.7 21.8 13.1l-1.2.3c-15.8 4.5-29.4 9.6-40.5 15.5c-3.1.2-6 .4-8.3.1c-2.8-.3-4.6-1-5.9-2c-1.3-.9-2.4-2.3-3.5-5.7c-.6-2 1.7-6.1 4.8-7.6c1.6-.8 2.7-.8 3.3-.5c.7.2 1.8.7 3.2 4.3l16.8-6.4c-2.7-7.1-7.6-12.6-13.7-14.8c-3.1-1.2-6.2-1.5-9.2-1.2c-2.9.3-5.8 1.2-8.3 2.4c-10.1 5-17.9 16.4-14.1 29c1.9 6.4 5.4 11.6 10 15c1.8 1.4 3.7 2.4 5.7 3.2c-7.2 10.4-11.7 24.5-11.7 33.6c0 12.6 8.7 23.1 21.1 31.5c12.5 8.5 29.5 15.5 50.3 21.4c26.77 7.7 59.77 13.4 96.57 16.5c16-5.4 16-5.4 0-16.1c-35.4-3.1-67.1-8.6-92.17-15.7c-19.7-5.7-35.5-12.4-45.7-19.3s-14.1-13.2-14.1-18.3s3.9-11.4 14.1-18.3s26-13.6 45.7-19.3c33.57-9.5 78.77-16.2 129.27-18c0 .1.1.1.1.1v-.1h1.1c1.6 2.1 3.4 4 5.1 5.7c6 6.1 12.1 10.9 20.6 10.9s14.6-4.8 20.6-10.9c1.7-1.7 3.5-3.6 5.1-5.7h1.1v.1s.1 0 .1-.1c50.5 1.8 95.7 8.5 129.3 18c19.7 5.7 35.5 12.4 45.7 19.3S472 330.9 472 336s-3.9 11.4-14.1 18.3s-26 13.6-45.7 19.3c-25.1 7.1-56.8 12.6-92.2 15.7c-16 10.7-16 10.7 0 16.1c36.8-3.1 69.8-8.8 96.6-16.5c20.8-5.9 37.8-12.9 50.3-21.4c12.4-8.4 21.1-18.9 21.1-31.5c0-9.1-4.5-23.3-11.7-33.6c1.9-.8 3.8-1.9 5.6-3.2c4.6-3.4 8.1-8.6 10-15c3.8-12.6-4-24-14.1-29c-2.5-1.2-5.3-2.1-8.3-2.4s-6.1 0-9.2 1.2c-6.1 2.2-11 7.7-13.7 14.8l16.8 6.4c1.4-3.6 2.5-4.1 3.2-4.3c.6-.3 1.7-.3 3.3.5c3.1 1.5 5.4 5.6 4.8 7.6c-1.1 3.4-2.2 4.8-3.5 5.7c-1.3 1-3.1 1.7-5.9 2c-2.3.2-5.1.1-8.2-.1c-11.1-5.9-24.7-11-40.5-15.5l-1.2-.3c8.2-3.4 15.7-7.4 21.7-13.1c6.3-5.8 11.1-13.7 11.2-22.9c.3-19.1-14.1-32.6-29.4-34.2c-1.9-.2-3.9-.2-5.8 0c-5.9.5-11.7 2.9-16.2 7.5c-5.9 6.1-8.9 15.4-8.3 26.5l18-1c-.4-7.5 1.5-11.1 3.2-12.9c1.8-1.8 4.1-2.6 7.2-2.2c6.1.7 13.5 6.1 13.3 16v.1c-.1 3.3-1.6 6.3-5.4 9.9c-3.9 3.6-10.1 7.2-17.2 10c-9.4 3.7-20.5 6.3-30.4 7.6c-12.8-2.3-26.5-4.3-40.8-5.9c6.7-4 13.1-8.4 19.1-13.2c21.3-17 37.4-39.5 37.4-67c0-17.5-4.3-30.2-12.5-38c-6.2-5.9-14.1-8.2-21.6-7.8c-2.6.1-5 .5-7.4 1.1c-9.4 2.7-17.5 9-22.5 17.7s-6.4 20.3-1.1 31l16.2-8c-2.7-5.3-2.1-9.7.4-14s7.4-8 12-9.3c4.6-1.4 8.2-.9 11.5 2.3s7 10.5 7 25c0 20.5-11.9 38-30.6 53c-12 9.5-26.5 17.7-41.5 24.5c-1.4-.1-2.8-.2-4.3-.3C306.9 235.4 313 214 313 192c0-19-8.4-46.7-18.5-75c-10.2-28.39-22.2-56.49-30.4-73.03zm0 41.45c6.8 15.23 14.6 34.37 21.5 53.67c9.9 27.7 17.5 56 17.5 69c0 22-7.5 44.8-16.9 61.6c-4.6 8.4-9.8 15.3-14.2 19.8c-4 3.9-7.5 5.3-7.9 5.5c0 .1.1.1 0 .1s0 0 0-.1c-.4-.2-3.9-1.6-7.9-5.5c-4.4-4.5-9.6-11.4-14.2-19.8C224.5 236.8 217 214 217 192c0-13 7.6-41.3 17.5-69c6.9-19.3 14.7-38.44 21.5-53.67"/></g></g>',
+    'woman-turban': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(114.1 -84.4) scale(0.5662)"><g class="halo" stroke-width="35.3"><path d="M254.654 15.072c-12.396 26.293-18.327 55.655-26.254 84.526c5.225 5.148 11.26 10.11 18.594 14.771c-8.382 1.204-15.876.926-22.765-.357c-3.005 9.729-6.406 19.333-10.538 28.67c7.056 8.499 15.448 16.69 27.137 24.12c-10.826 1.555-20.17.639-28.642-1.728c8.837 17.645 23.203 36.3 36.605 49.24c2.385-13.769 4.764-33.947 5.723-55.628c1.477-33.415.1-71.578-6.604-100.088l17.524-4.12c7.38 31.392 8.587 70.53 7.062 105.002c-.938 21.206-2.718 40.143-5.162 54.862c16.875-14.522 32.157-38.713 40.344-56.26a261 261 0 0 0-.875-17.64c-6.972 1.33-14.562 1.63-23.065.41c8.527-5.42 15.285-11.25 21.067-17.303a229 229 0 0 0-5.45-25.653c-5.573.631-11.538.61-18.05-.326a111.7 111.7 0 0 0 14.619-11.045c-6.447-19.354-15.052-36.003-24.565-50.086c-3.554 3.028-7.617 5.847-12.316 8.405c2.423-6.369 4.098-12.409 5.242-18.215a191 191 0 0 0-9.63-11.557zm-56.94 161.881c-40.373 27.332-80.198 59.974-123.161 101.248c-.003.003-2.21 3.686-3.38 9.656c-1.168 5.971-1.849 14.058-1.923 23.178c-.128 15.76 1.604 34.596 4.768 52.383c76.585-11.245 132.73-24.958 166.714-46.209c-20.028-30.571-28.038-62.978-24.783-94.922a143 143 0 0 1 2.201-14.3c-7.724-9.618-14.802-20.207-20.435-31.034zm119.083 3.19c-5.477 10.117-12.258 20.951-20.342 30.873c1.767 9.172 2.867 17.895 3.258 26.195c1.026 21.788-2.996 40.877-11.856 57.098c47.332 23.797 95.577 45.482 149.383 58.296c4.716-12.839 5.421-24.583 2.762-36.6c-3.076-13.898-10.654-28.339-21.723-43.901c-8.591-12.08-33.38-36.278-63.834-61.83c-11.833-9.93-24.56-20.12-37.648-30.131m-83.045 45.101c-2.518 27.175 4.04 54.397 21.477 81.268a85 85 0 0 0 6.042-5.875c14.875-16.051 21.739-35.454 20.461-62.58c-.163-3.464-.487-7.066-.941-10.78c-6.397 5.504-13.349 10.17-20.857 13.48l-4.643 2.048l-4.154-2.912c-5.662-3.967-11.553-8.945-17.385-14.649m43.76 84.18a96 96 0 0 1-3.037 3.447c-13.118 14.156-30.662 25.324-52.467 34.502a2666 2666 0 0 0 61.008 42.272c41.574 27.949 84.45 54.98 118.697 73.6c17.123 9.309 32.136 16.512 43.371 20.612c5.617 2.05 10.31 3.301 13.494 3.739c.225.03.267-.009.473.011c5.211-31.844 8.244-73.704-18.738-115.89c-59.73-13.242-112.193-36.793-162.801-62.293m-75.778 45.547c-35.398 11.779-79.823 19.924-132.88 27.455l-1.668.76c-26.963 27.842-32.639 70.496-25.948 104.939c87.895-12.79 155.857-51.688 217.87-92.938a2655 2655 0 0 1-57.374-40.216"/></g><path d="M254.654 15.072c-12.396 26.293-18.327 55.655-26.254 84.526c5.225 5.148 11.26 10.11 18.594 14.771c-8.382 1.204-15.876.926-22.765-.357c-3.005 9.729-6.406 19.333-10.538 28.67c7.056 8.499 15.448 16.69 27.137 24.12c-10.826 1.555-20.17.639-28.642-1.728c8.837 17.645 23.203 36.3 36.605 49.24c2.385-13.769 4.764-33.947 5.723-55.628c1.477-33.415.1-71.578-6.604-100.088l17.524-4.12c7.38 31.392 8.587 70.53 7.062 105.002c-.938 21.206-2.718 40.143-5.162 54.862c16.875-14.522 32.157-38.713 40.344-56.26a261 261 0 0 0-.875-17.64c-6.972 1.33-14.562 1.63-23.065.41c8.527-5.42 15.285-11.25 21.067-17.303a229 229 0 0 0-5.45-25.653c-5.573.631-11.538.61-18.05-.326a111.7 111.7 0 0 0 14.619-11.045c-6.447-19.354-15.052-36.003-24.565-50.086c-3.554 3.028-7.617 5.847-12.316 8.405c2.423-6.369 4.098-12.409 5.242-18.215a191 191 0 0 0-9.63-11.557zm-56.94 161.881c-40.373 27.332-80.198 59.974-123.161 101.248c-.003.003-2.21 3.686-3.38 9.656c-1.168 5.971-1.849 14.058-1.923 23.178c-.128 15.76 1.604 34.596 4.768 52.383c76.585-11.245 132.73-24.958 166.714-46.209c-20.028-30.571-28.038-62.978-24.783-94.922a143 143 0 0 1 2.201-14.3c-7.724-9.618-14.802-20.207-20.435-31.034zm119.083 3.19c-5.477 10.117-12.258 20.951-20.342 30.873c1.767 9.172 2.867 17.895 3.258 26.195c1.026 21.788-2.996 40.877-11.856 57.098c47.332 23.797 95.577 45.482 149.383 58.296c4.716-12.839 5.421-24.583 2.762-36.6c-3.076-13.898-10.654-28.339-21.723-43.901c-8.591-12.08-33.38-36.278-63.834-61.83c-11.833-9.93-24.56-20.12-37.648-30.131m-83.045 45.101c-2.518 27.175 4.04 54.397 21.477 81.268a85 85 0 0 0 6.042-5.875c14.875-16.051 21.739-35.454 20.461-62.58c-.163-3.464-.487-7.066-.941-10.78c-6.397 5.504-13.349 10.17-20.857 13.48l-4.643 2.048l-4.154-2.912c-5.662-3.967-11.553-8.945-17.385-14.649m43.76 84.18a96 96 0 0 1-3.037 3.447c-13.118 14.156-30.662 25.324-52.467 34.502a2666 2666 0 0 0 61.008 42.272c41.574 27.949 84.45 54.98 118.697 73.6c17.123 9.309 32.136 16.512 43.371 20.612c5.617 2.05 10.31 3.301 13.494 3.739c.225.03.267-.009.473.011c5.211-31.844 8.244-73.704-18.738-115.89c-59.73-13.242-112.193-36.793-162.801-62.293m-75.778 45.547c-35.398 11.779-79.823 19.924-132.88 27.455l-1.668.76c-26.963 27.842-32.639 70.496-25.948 104.939c87.895-12.79 155.857-51.688 217.87-92.938a2655 2655 0 0 1-57.374-40.216"/></g></g>',
+    'woman-nurse': '<g transform="translate(46 84) scale(0.82)"><path fill-rule="evenodd" d="M256 112c66 0 112 46 112 116 0 52-12 88-34 106H178c-22-18-34-54-34-106 0-70 46-116 112-116zM96 512c0-104 64-156 160-156s160 52 160 156zM214 360c8 28 24 42 42 42s34-14 42-42z"/><g transform="translate(-21.7 -4.7) scale(1.0849)"><g class="halo" stroke-width="18.4"><path fill-rule="evenodd" d="M150 150l26-70h160l26 70zM244 92h24v16h16v22h-16v16h-24v-16h-16v-22h16z"/></g><path fill-rule="evenodd" d="M150 150l26-70h160l26 70zM244 92h24v16h16v22h-16v16h-24v-16h-16v-22h16z"/></g></g>'
+  };
+  var LOCOMOTIVE = '<path d="M18 18v31.758C38.244 53.855 59.076 55.953 80 56a318 318 0 0 0 50.658-4.27C143.375 100.622 200.964 135.96 268 136c15.1-.044 30.093-1.903 44.395-5.504c3.702 25.632 27.322 44.78 55.275 44.813q.713-.016 1.424-.048c4.215 14.473 20.33 24.72 38.906 24.738c22.09 0 40-14.327 40-32c-.022-13.555-10.718-25.63-26.697-30.137a48 48 0 0 0 2.203-14.21c-.02-19.245-11.602-36.886-30.057-45.772C402.962 63.617 407.94 47.92 408 32c-.033-7.4-1.128-6.774-3.268-14zm-2 205v18h23v48H25v94h142v-94h-14v-48h23v-18zm360 0v18h17v46h46v-46h17v-18zM57 241h14v48H57zm32 0h46v48H89zm231 20c-7.25 0-14.577 1.013-19.154 2.54c-2.077.69-3.287 1.444-3.846 1.855V287h46v-21.605c-.56-.41-1.77-1.164-3.846-1.856C334.577 262.012 327.25 261 320 261m-135 44v30h247v18H185v30h279c36 0 36-78 0-78zM25 401v37.22L75.67 401zm416 0v78h53.906c-4.965-9.187-9.113-19.953-12.734-31.557c-4.94-15.833-8.498-32.39-10.227-46.443zm-289 1.49c-10.72 0-20.57 3.55-28.455 9.533L164.325 463h32.714a47.4 47.4 0 0 0 1.96-13.51c0-26.064-20.936-47-47-47zm112 0c-8.46 0-16.374 2.217-23.213 6.088L284.327 463h24.712a47.4 47.4 0 0 0 1.96-13.51c0-26.064-20.936-47-47-47zm112 0c-8.46 0-16.374 2.217-23.213 6.088L396.327 463c1.68 2.254 1.69 1.93 1.673 4.2V481h-56.945c8.586 9.524 21.034 15.49 34.945 15.49c26.064 0 47-20.936 47-47s-20.936-47-47-47m-278.994 5.174L43.456 447H87.06c.512-13.423 5.137-25.816 12.633-35.975zm130.105 12.633C220.78 428.302 217 438.43 217 449.49c0 4.703.69 9.234 1.96 13.51h42.313zm112 0C332.78 428.302 329 438.43 329 449.49c0 4.703.69 9.234 1.96 13.51h42.313zm-227.684 5.392c-4.08 6.97-6.426 15.096-6.426 23.8c0 26.064 20.936 47 47 47c13.91 0 26.36-5.966 34.945-15.49h-31.27zM25.023 465c.522 16.756 14.085 30 30.977 30s30.455-13.244 30.977-30zm204.032 16c8.586 9.524 21.034 15.49 34.945 15.49c13.91 0 26.36-5.966 34.945-15.49z"/>';
 
   // ---------- small DOM helpers (ES5, no classList) ----------
   function $(id) { return document.getElementById(id); }
@@ -487,13 +611,54 @@ html.eink .levels li { width: 100%; }
     return !(prev && prev.solved);
   }
 
-  function showCases() {
-    var html = '';
+  // Stops on the line, roughly where they sit on a map; each leg between two is a chapter.
+  var CITIES = [['Paris', 70, 96], ['Vienna', 296, 84], ['Budapest', 368, 112], ['Bucharest', 482, 180], ['Varna', 556, 192], ['Istanbul', 540, 264]];
+  // City names sit below or beside the line, so the train above it never covers them.
+  var LABEL_AT = [[0, 34, 'middle'], [-8, 32, 'end'], [-12, 32, 'end'], [-4, 36, 'middle'], [16, -8, 'start'], [-16, 8, 'end']];
+
+  function tierProgress(tier) {
+    var solved = 0;
+    for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) { var st = savedState(data.cases[i]); if (st && st.solved) solved++; }
+    return solved;
+  }
+
+  function renderRoute() {
+    var svg = '<svg viewBox="30 18 645 272" role="img" aria-label="Route of the Midnight Express from Paris to Istanbul">';
+    // The Black Sea, for orientation.
+    svg += '<path class="sea" d="M604 110c-26 30-22 70-32 104-6 22-4 40 10 52 10 8 40 10 93 10V110z"/>';
+    var line = '';
+    for (var c = 0; c < CITIES.length; c++) line += (c ? 'L' : 'M') + CITIES[c][1] + ' ' + CITIES[c][2];
+    svg += '<path class="sleepers" d="' + line + '"/><path class="rail" d="' + line + '"/>';
+    var train = null;
     for (var t = 0; t < data.tiers.length; t++) {
-      var tier = data.tiers[t];
-      html += '<div class="tier"><h3>Chapter ' + (t + 1) + ': ' + esc(tier.name) + ' <span class="note">' + esc(tier.leg) + '</span></h3><ul class="levels">';
+      var a = CITIES[t], b = CITIES[t + 1], f = tierProgress(data.tiers[t]) / 10;
+      if (f > 0) svg += '<path class="done" d="M' + a[1] + ' ' + a[2] + 'L' + (a[1] + (b[1] - a[1]) * f) + ' ' + (a[2] + (b[2] - a[2]) * f) + '"/>';
+      if (!train && f < 1) train = [a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+      var mx = (a[1] + b[1]) / 2, my = (a[2] + b[2]) / 2;
+      svg += '<g class="seg-hit" data-tier="' + t + '"><path d="M' + a[1] + ' ' + a[2] + 'L' + b[1] + ' ' + b[2] + '" stroke="transparent" stroke-width="30"/>' +
+        '<circle class="chip" cx="' + mx + '" cy="' + my + '" r="13"/><text class="chip-t" x="' + mx + '" y="' + (my + 5) + '" text-anchor="middle">' + (t + 1) + '</text></g>';
+    }
+    if (!train) train = [CITIES[5][1], CITIES[5][2]];
+    for (var k = 0; k < CITIES.length; k++) {
+      var ct = CITIES[k], lb = LABEL_AT[k];
+      svg += '<circle class="stop' + (k === 0 || tierProgress(data.tiers[k - 1]) === 10 ? ' reached' : '') + '" cx="' + ct[1] + '" cy="' + ct[2] + '" r="9"/>' +
+        '<text class="city" x="' + (ct[1] + lb[0]) + '" y="' + (ct[2] + lb[1]) + '" text-anchor="' + lb[2] + '">' + ct[0] + '</text>';
+    }
+    svg += '<g class="loco" transform="translate(' + (train[0] - 20) + ' ' + (train[1] - 38) + ') scale(0.078)">' + LOCOMOTIVE + '</g>';
+    $('route').innerHTML = svg + '</svg>';
+  }
+
+  function showCases() {
+    renderRoute();
+    var html = '', next = -1;
+    for (var t = 0; t < data.tiers.length; t++) {
+      var tier = data.tiers[t], done = tierProgress(tier);
+      html += '<div class="tier" id="tier-' + t + '"><div class="ticket"><span class="tk-ch">Chapter ' + (t + 1) + ' · ' + esc(tier.name) + '</span>' +
+        '<strong>' + esc(tier.leg) + '</strong><span class="tk-prog">' + done + ' of 10 solved</span>' +
+        '<span class="pbar"><i style="width:' + done * 10 + '%"></i></span></div><ul class="levels">';
       for (var i = tier.levels[0] - 1; i < tier.levels[1]; i++) {
         var c = data.cases[i], st = savedState(c), locked = isLocked(i);
+        if (next < 0 && !locked && !(st && st.solved)) next = i;
         var state = locked ? 'Locked' : st && st.solved ? 'Solved' : st && st.cells ? 'In progress' : c.size + ' × ' + c.size + (c.tutorial ? ' · guided' : '');
         html += '<li><button type="button" class="level' + (st && st.solved ? ' solved' : '') + '" data-case="' + i + '"' + (locked ? ' disabled' : '') + '>' +
           '<span class="num">' + c.level + '.</span>' + esc(c.title) + '<span class="state">' + state + '</span></button></li>';
@@ -501,6 +666,11 @@ html.eink .levels li { width: 100%; }
       html += '</ul></div>';
     }
     $('tiers').innerHTML = html;
+    show($('continue-wrap'), next >= 0);
+    if (next >= 0) {
+      $('continue').innerHTML = (next === 0 ? 'Start: ' : 'Continue: ') + 'Case ' + data.cases[next].level + ', ' + esc(data.cases[next].title);
+      $('continue').setAttribute('data-case', next);
+    }
     screen('cases');
   }
 
@@ -527,6 +697,46 @@ html.eink .levels li { width: 100%; }
     for (var k = 0; k < current.characters.length; k++) if (current.characters[k].initial === ini) return current.characters[k];
     return null;
   }
+  // Headwear by title or role, a few named exceptions, and a stable pick for the rest.
+  var FEMALE = /^(Mrs\.|Miss|Madame|Frau|Signora|Fraulein|Sister|Lady|Countess|Princess|Nurse|Baroness) /;
+  var PORTRAIT_OF = {
+    'Mr. Hale': 'man-western', 'Yusuf Bey': 'man-fez', 'Madame Zara': 'woman-turban', 'Miss Tasker': 'woman-bun',
+    'Miss Ellery': 'woman-cloche', 'Herr Weiss': 'man-glasses', 'Mr. Orlov': 'man-glasses'
+  };
+  function portraitKey(ch) {
+    var name = ch.name;
+    if (PORTRAIT_OF[name]) return PORTRAIT_OF[name];
+    if (/^Father /.test(name)) return 'man-collar';
+    if (/^Sister /.test(name)) return 'woman-veil';
+    if (/^Nurse /.test(name)) return 'woman-nurse';
+    if (/^Chef /.test(name)) return 'man-chef';
+    if (/^(Conductor|Porter|Captain|Colonel|General) /.test(name)) return 'man-cap';
+    if (/^(Count|Baron|Sir) /.test(name)) return 'man-top';
+    if (/^(Countess|Princess|Lady|Baroness) /.test(name)) return 'woman-tiara';
+    if (/^(Dr\.|Professor) /.test(name)) return 'man-glasses';
+    var h = 0;
+    for (var k = 0; k < name.length; k++) h = (h * 31 + name.charCodeAt(k)) % 997;
+    if (FEMALE.test(name)) return ['woman-cloche', 'woman', 'woman-bun'][h % 3];
+    return ['man-fedora', 'man-boater', 'man', 'man-glasses'][h % 4];
+  }
+  function token(ch, cls) {
+    return '<span class="tok p' + colorOf[ch.initial] + (cls ? ' ' + cls : '') + '" aria-hidden="true">' +
+      '<svg class="pt" viewBox="0 0 512 512" focusable="false">' + PORTRAITS[portraitKey(ch)] + '</svg>' +
+      '<b class="tini">' + ch.initial + '</b></span>';
+  }
+
+  var FLOORS = {
+    'Dining Car': 'carpet', 'Lounge Car': 'carpet', 'Rose Suite': 'carpet', 'Ivory Suite': 'carpet', 'Gold Suite': 'carpet',
+    'Corridor': 'runner', 'Washroom': 'tile', 'Kitchen Car': 'tile', 'Pantry': 'tile', 'Platform': 'stone',
+    'Customs Office': 'stone', 'Waiting Room': 'stone', 'Locomotive': 'metal', 'Coal Tender': 'metal'
+  };
+  var SHORT_ROOM = {
+    "Conductor's Cabin": 'Conductor', 'Observation Car': 'Observation', 'Customs Office': 'Customs', 'Staff Quarters': 'Staff',
+    'Waiting Room': 'Waiting', 'Coal Tender': 'Tender', 'Sleeper No. 1': 'Sleeper 1', 'Sleeper No. 2': 'Sleeper 2',
+    'Sleeper No. 3': 'Sleeper 3', 'Baggage Car': 'Baggage', 'Kitchen Car': 'Kitchen', 'Dining Car': 'Dining',
+    'Lounge Car': 'Lounge', 'Sleeper Car': 'Sleeper', 'Mail Car': 'Mail', 'Locomotive': 'Engine'
+  };
+
   function icon(type, cls) {
     return '<svg class="' + cls + '" viewBox="0 0 512 512" aria-hidden="true" focusable="false">' + ICONS[type] + '</svg>';
   }
@@ -555,6 +765,8 @@ html.eink .levels li { width: 100%; }
     $('case-kicker').innerHTML = 'Case ' + current.level + ' · ' + esc(tier.name) + ' · ' + esc(tier.leg);
     $('case-title').innerHTML = esc(current.title);
     $('case-intro').innerHTML = esc(current.intro);
+    addClass($('case-intro'), 'clamp');
+    $('intro-more').innerHTML = 'More';
     renderGrid();
     renderPalette();
     renderClues();
@@ -568,6 +780,13 @@ html.eink .levels li { width: 100%; }
     screen('play');
     sizeGrid();
     updateCoach();
+    fitIntro();
+  }
+
+  // On phones the story is cut to two lines with a More button (the clamp only applies there).
+  function fitIntro() {
+    var el = $('case-intro');
+    show($('intro-more'), hasClass(el, 'clamp') ? el.scrollHeight > el.clientHeight + 2 : true);
   }
 
   function emptyCells() { var a = []; for (var i = 0; i < n * n; i++) a.push(''); return a; }
@@ -579,14 +798,14 @@ html.eink .levels li { width: 100%; }
     for (var r = 0; r < n; r++) {
       html += '<tr><th scope="row">' + (r + 1) + '</th>';
       for (var c = 0; c < n; c++) {
-        var i = r * n + c, room = board.room[i], cls = 'c r' + board.roomIndex[room];
+        var i = r * n + c, room = board.room[i];
+        var cls = 'c r' + board.roomIndex[room] + ' f-' + (FLOORS[current.roomNames[room]] || 'wood');
         if (r === 0 || board.room[i - n] !== room) cls += ' bt';
         if (r === n - 1 || board.room[i + n] !== room) cls += ' bb';
         if (c === 0 || board.room[i - 1] !== room) cls += ' bl';
         if (c === n - 1 || board.room[i + 1] !== room) cls += ' br';
         if (isBlocked(i)) cls += ' blocked';
         var inner = '';
-        if (board.first[room] === i) inner += '<span class="tag" aria-hidden="true">' + (board.roomIndex[room] + 1) + '</span>';
         if (board.obj[i]) inner += icon(board.obj[i], 'obj');
         inner += '<span class="who" aria-hidden="true"></span>';
         html += '<td class="' + cls + '" role="gridcell"><button type="button" class="cell" data-i="' + i + '" tabindex="-1">' + inner + '</button></td>';
@@ -613,18 +832,54 @@ html.eink .levels li { width: 100%; }
     if (size < 30) size = 30;
     var css = '#grid td.c{width:' + size + 'px;height:' + size + 'px}' +
       '#grid th{height:' + Math.round(size * 0.7) + 'px;min-width:' + Math.round(size * 0.7) + 'px}' +
-      '.cell .who{font-size:' + Math.round(size * 0.55) + 'px}' +
+      '.cell .who{font-size:' + Math.round(size * 0.55) + 'px;line-height:' + size + 'px}' +
+      '.cell .tok{width:' + Math.round(size * 0.8) + 'px;height:' + Math.round(size * 0.8) + 'px}' +
+      '.cell .tini{font-size:' + Math.max(9, Math.round(size * 0.24)) + 'px}' +
       // Objects fill an empty cell and shrink to a corner when someone stands there.
-      '.cell svg{width:' + Math.round(size * 0.66) + 'px;height:' + Math.round(size * 0.66) + 'px;margin:-' + Math.round(size * 0.33) + 'px 0 0 -' + Math.round(size * 0.33) + 'px}' +
-      '.cell.occ svg{width:' + Math.round(size * 0.36) + 'px;height:' + Math.round(size * 0.36) + 'px}';
+      '.cell .obj{width:' + Math.round(size * 0.66) + 'px;height:' + Math.round(size * 0.66) + 'px;margin:-' + Math.round(size * 0.33) + 'px 0 0 -' + Math.round(size * 0.33) + 'px}' +
+      '.cell.occ .obj{width:' + Math.round(size * 0.34) + 'px;height:' + Math.round(size * 0.34) + 'px}' +
+      '.rlabel{font-size:' + Math.max(9, Math.round(size * 0.21)) + 'px}';
     var el = $('grid-size');
     if (!el) { el = document.createElement('style'); el.id = 'grid-size'; document.getElementsByTagName('head')[0].appendChild(el); }
     el.innerHTML = css;
+    placeLabels(size);
+  }
+
+  // Writes each room's name over its longest horizontal run of cells.
+  function placeLabels(size) {
+    var wrap = $('board-wrap').getBoundingClientRect(), html = '';
+    var font = Math.max(9, Math.round(size * 0.21));
+    for (var k = 0; k < board.keys.length; k++) {
+      var room = board.keys[k], best = null;
+      for (var r = 0; r < n; r++) {
+        for (var c = 0; c < n; c++) {
+          if (board.room[r * n + c] !== room || (c > 0 && board.room[r * n + c - 1] === room)) continue;
+          var len = 0;
+          while (c + len < n && board.room[r * n + c + len] === room) len++;
+          if (!best || len > best.len) best = { i: r * n + c, len: len };
+        }
+      }
+      var td = cellEls[best.i].parentNode.getBoundingClientRect();
+      var width = best.len * td.width - 6, name = current.roomNames[room];
+      // Uppercase Arial runs about 0.68 em per letter; shrinking (below) is tried before abbreviating.
+      if (name.length * 7 * 0.68 > width) name = SHORT_ROOM[name] || name;
+      html += '<span class="rlabel r' + k + '" style="left:' + Math.round(td.left - wrap.left + 3) + 'px;top:' + Math.round(td.top - wrap.top + 3) +
+        'px;max-width:' + Math.round(width) + 'px">' + esc(name) + '</span>';
+    }
+    $('labels').innerHTML = html;
+    // Shrink any name that still does not fit its run of cells.
+    var spans = $('labels').getElementsByTagName('span');
+    for (var j = 0; j < spans.length; j++) {
+      for (var f = font; spans[j].scrollWidth > spans[j].clientWidth + 1 && f > 7; f--) {
+        spans[j].style.fontSize = (f - 1) + 'px';
+        spans[j].style.letterSpacing = '0';
+      }
+    }
   }
 
   function describe(i) {
     var r = Math.floor(i / n), c = i % n;
-    var parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]] + ' (room ' + (board.roomIndex[board.room[i]] + 1) + ')'];
+    var parts = ['Row ' + (r + 1) + ', column ' + (c + 1), current.roomNames[board.room[i]]];
     if (board.obj[i]) parts.push(OBJECT_NAMES[board.obj[i]] + (isBlocked(i) ? ' (nobody can stand here)' : ''));
     var v = cells[i];
     if (v === 'x') parts.push('ruled out');
@@ -633,10 +888,10 @@ html.eink .levels li { width: 100%; }
     return parts.join(', ');
   }
 
-  function paintCell(i) {
+  function paintCell(i, animate) {
     var btn = cellEls[i], v = cells[i], who = btn.lastChild;
-    who.className = 'who' + (v === 'x' ? ' x' : v ? ' p' + colorOf[v] : '');
-    who.innerHTML = v === 'x' ? '×' : v;
+    who.className = 'who' + (v === 'x' ? ' x' : '');
+    who.innerHTML = v === 'x' ? '×' : v ? token(personByInitial(v), animate ? 'pop' : '') : '';
     btn.setAttribute('aria-label', describe(i));
     toggleClass(btn, 'occ', !!v);
   }
@@ -693,7 +948,7 @@ html.eink .levels li { width: 100%; }
 
   function afterChange(touched) {
     wrongCells = {};
-    for (var k = 0; k < touched.length; k++) paintCell(touched[k]);
+    for (var k = 0; k < touched.length; k++) paintCell(touched[k], true);
     paintBoard();
     if (sel >= 0) $('cellinfo').innerHTML = esc(describe(sel));
     updatePalette();
@@ -783,15 +1038,11 @@ html.eink .levels li { width: 100%; }
     $('hint').innerHTML = esc(text);
   }
 
-  // Adds the room number after room names and an icon after objects in a statement.
+  // Adds an icon after each object named in a statement.
   function decorate(text) {
     var html = esc(text);
     for (var type in OBJECT_NAMES) if (OBJECT_NAMES.hasOwnProperty(type)) {
       html = html.replace(new RegExp('\\b(a|any) ' + OBJECT_NAMES[type] + '\\b', 'g'), '$1 <span class="nw">' + OBJECT_NAMES[type] + ' ' + icon(type, 'ic') + '</span>');
-    }
-    for (var k = 0; k < board.keys.length; k++) {
-      var name = esc(current.roomNames[board.keys[k]]);
-      html = html.split(name).join('<span class="nw">' + name + ' <span class="rb r' + k + '" title="Room ' + (k + 1) + '">' + (k + 1) + '</span></span>');
     }
     return html;
   }
@@ -802,7 +1053,7 @@ html.eink .levels li { width: 100%; }
       var ch = current.characters[k];
       html += '<li data-ini="' + ch.initial + '">' +
         '<button type="button" class="clue" data-pick="' + ch.initial + '" aria-pressed="false" aria-label="Pick ' + esc(ch.name) + '. ' + esc(ch.clue) + '">' +
-        '<span class="badge p' + k + '">' + ch.initial + '</span><strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
+        token(ch) + '<strong>' + esc(ch.name) + '</strong> <span class="role">' + esc(ch.role) + '</span>' +
         (ch.victim ? '<span class="vic">Victim</span>' : '') +
         '<span class="txt">' + decorate(ch.clue) + '</span></button></li>';
     }
@@ -811,11 +1062,6 @@ html.eink .levels li { width: 100%; }
   }
 
   function renderLegend() {
-    var html = '';
-    for (var k = 0; k < board.keys.length; k++) {
-      html += '<li><span class="sw r' + k + '">' + (k + 1) + '</span>' + esc(current.roomNames[board.keys[k]]) + '</li>';
-    }
-    $('legend').innerHTML = html;
     var seen = {}, stand = '', block = '';
     for (var i = 0; i < n * n; i++) {
       var t = board.obj[i];
@@ -893,7 +1139,7 @@ html.eink .levels li { width: 100%; }
     for (var k = 0; k < current.characters.length; k++) {
       var ch = current.characters[k];
       if (ch.victim) continue;
-      html += '<button type="button" class="btn" data-accuse="' + ch.initial + '"><span class="p' + k + '"><strong>' + ch.initial + '</strong></span> ' + esc(ch.name) + '</button>';
+      html += '<button type="button" class="btn" data-accuse="' + ch.initial + '">' + token(ch) + esc(ch.name) + '</button>';
     }
     $('suspects').innerHTML = html;
     show($('accuse'), true);
@@ -907,15 +1153,21 @@ html.eink .levels li { width: 100%; }
     show($('accuse'), false);
     caseState(current.id).solved = true;
     save();
-    showSolved(true);
+    showSolved(true, true);
     setMsg('');
     updateCoach();
   }
 
-  function showSolved(isSolved) {
+  // Right after solving, the ending opens over the page (colour mode); later it sits under the board.
+  function showSolved(isSolved, justNow) {
     show($('solved'), !!isSolved);
+    toggleClass($('solved'), 'modal', !!justNow && hasClass(document.documentElement, 'standard'));
     if (isSolved) {
+      var m = personByInitial(current.murderer), v;
+      for (var k = 0; k < current.characters.length; k++) if (current.characters[k].victim) v = current.characters[k];
+      $('culprit').innerHTML = token(m, 'huge') + '<p><strong>' + esc(m.name) + '</strong> was alone with ' + esc(v.name) + '.</p>';
       $('outro').innerHTML = esc(current.outro);
+      if (justNow && !hasClass($('solved'), 'modal')) $('solved').scrollIntoView();
       var last = current.index >= data.cases.length - 1;
       $('next').innerHTML = last ? 'Back to all cases' : 'Next case';
     }
@@ -941,6 +1193,11 @@ html.eink .levels li { width: 100%; }
     }
   });
 
+  on($('continue'), 'click', function () { openCase(+$('continue').getAttribute('data-case')); });
+  on($('route'), 'click', function (ev) {
+    var seg = closest(ev.target, 'data-tier');
+    if (seg) $('tier-' + seg.getAttribute('data-tier')).scrollIntoView();
+  });
   on($('tiers'), 'click', function (ev) {
     var btn = closest(ev.target, 'data-case');
     if (btn && !btn.disabled) openCase(+btn.getAttribute('data-case'));
@@ -960,6 +1217,7 @@ html.eink .levels li { width: 100%; }
     showRules(open);
     if (open) $('rules').scrollIntoView();
   });
+  on($('view-board'), 'click', function () { removeClass($('solved'), 'modal'); });
   on($('next'), 'click', function () {
     if (current.index >= data.cases.length - 1) showCases();
     else openCase(current.index + 1);
@@ -1037,10 +1295,20 @@ html.eink .levels li { width: 100%; }
     if (letter && personByInitial(letter)) { ev.preventDefault(); place(letter, sel); }
   });
 
+  on($('intro-more'), 'click', function () {
+    var open = hasClass($('case-intro'), 'clamp');
+    toggleClass($('case-intro'), 'clamp', !open);
+    $('intro-more').innerHTML = open ? 'Less' : 'More';
+    $('intro-more').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) fitIntro();
+  });
+
   var resizeTimer = null;
   on(window, 'resize', function () {
     if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(sizeGrid, 150);
+    resizeTimer = setTimeout(function () {
+      if (current && !hasClass($('screen-play'), 'hide')) { sizeGrid(); fitIntro(); }
+    }, 150);
   });
 
   load();

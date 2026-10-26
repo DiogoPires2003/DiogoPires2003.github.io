@@ -65,7 +65,7 @@
      },
      {
       "initial": "S",
-      "text": "Mr. Fenwick now owns row 2 and column 1, so nobody else can use them (they are shaded). Mr. Sutton was on the Platform, room 1 at the top left. Only one Platform cell is still free. Tap the statement of Mr. Sutton, then tap that cell."
+      "text": "Mr. Fenwick now owns row 2 and column 1, so nobody else can use them (they are shaded). Mr. Sutton was on the Platform, at the top left. Only one Platform cell is still free. Tap the statement of Mr. Sutton, then tap that cell."
      },
      {
       "initial": "L",
@@ -73,7 +73,7 @@
      },
      {
       "initial": "M",
-      "text": "Mrs. Marsh was in the Lounge Car (room 3). Rows 1, 2 and 4 are taken, so that leaves row 3, in the only column nobody has yet. Tap the statement of Mrs. Marsh and place them there."
+      "text": "Mrs. Marsh was in the Lounge Car, the bottom half of the plan. Rows 1, 2 and 4 are taken, so that leaves row 3, in the only column nobody has yet. Tap the statement of Mrs. Marsh and place them there."
      }
     ],
     "accuse": "Everyone is in place. The murderer is the only person who was alone with the victim. Mr. Fenwick is on the Platform with just one other person. Tap Accuse and name them."

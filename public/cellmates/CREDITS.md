@@ -19,3 +19,8 @@ Object icons from [game-icons.net](https://game-icons.net), licensed under
 | firebox | furnace | Delapouite |
 
 The table, stove, desk, bench and rug icons were drawn for Cellmates.
+
+Portraits are busts drawn for Cellmates wearing hats from game-icons.net
+(CC BY 3.0): top-hat and fedora by Lorc; skimmer-hat, captain-hat-profile,
+chef-toque, western-hat, fez, flower-hat, tiara and turban by Delapouite.
+The route map's train is steam-locomotive by Delapouite.
