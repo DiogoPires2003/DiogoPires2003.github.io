@@ -1,0 +1,114 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const jobs = [
+    {
+        start: "March 2026",
+        end: "Present",
+        title: "Software Engineering Intern",
+        company: "IFR Group",
+        description:
+            "Working on Microsoft Dynamics ERP, across AX 2012 and Dynamics 365 Finance & Operations, and building apps and automated flows on the Power Platform.",
+        stack: [
+            { group: "ERP", items: ["D365 F&O", "AX 2012"] },
+            { group: "Power Platform", items: ["Power Apps", "Power Automate"] },
+        ],
+        current: true,
+    },
+];
+
+const current = jobs.find((job) => job.current);
+const stats = [
+    { n: "01", value: String(jobs.length), label: jobs.length === 1 ? "Role" : "Roles" },
+    {
+        n: "02",
+        value: String(jobs.reduce((n, job) => n + job.stack.reduce((m, g) => m + g.items.length, 0), 0)),
+        label: "Technologies in use",
+    },
+    { n: "03", value: current ? current.company : "Open", label: current ? "Current company" : "To new roles" },
+];
+---
+
+<Layout title="Diogo Pires | Experience">
+    <section class="screen-page grid grid-rows-[auto_minmax(0,1fr)_auto]">
+        <header data-reveal class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 items-end px-4 sm:px-6 lg:px-10 py-10 sm:py-12 lg:py-5 border-b-2 border-ink dark:border-paper">
+            <div class="lg:col-span-6">
+                <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-4" data-scramble>
+                    [04] Experience
+                </p>
+                <h1 class="fit-h1-sm text-4xl sm:text-6xl font-black uppercase leading-[0.95] tracking-[-0.035em]">
+                    <span class="reveal-line" style="--i:0"><span>Work</span></span><span class="reveal-line" style="--i:1"><span>Experience<span class="text-accent stamp-dot">.</span></span></span>
+                </h1>
+            </div>
+            <p class="reveal-up lg:col-span-6 text-sm sm:text-base lg:text-sm xl:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                Where I put what I study to work. Right now that means
+                enterprise software: Microsoft Dynamics ERP and the Power
+                Platform, at IFR Group.
+            </p>
+        </header>
+
+        <ol data-stagger="70" class="fit-scroll min-h-0">
+            {jobs.map((job, i) => (
+                <li
+                    class:list={[
+                        "stagger-item grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 px-4 sm:px-6 lg:px-10 py-8 lg:py-10",
+                        i !== jobs.length - 1 && "border-b border-neutral-300 dark:border-neutral-700",
+                    ]}
+                >
+                    <div class="lg:col-span-3 flex lg:flex-col justify-between lg:justify-start gap-3 font-mono text-xs uppercase tracking-widest">
+                        <span class="text-accent-text">{String(i + 1).padStart(2, "0")}</span>
+                        <span class="text-neutral-500 dark:text-neutral-400">
+                            {job.current && <span class="live-dot live-dot-inline" aria-hidden="true"></span>}{job.start} — {job.end}
+                        </span>
+                    </div>
+
+                    <div class="lg:col-span-5">
+                        <h2 class="text-2xl sm:text-4xl font-black uppercase tracking-tight leading-[1.02]">
+                            {job.title}
+                        </h2>
+                        <p class="mt-3 font-mono text-xs uppercase tracking-[0.25em] text-accent-text">
+                            @ {job.company}
+                        </p>
+                        <p class="mt-4 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-xl">
+                            {job.description}
+                        </p>
+                    </div>
+
+                    <dl class="lg:col-span-4 grid gap-5 content-start">
+                        {job.stack.map((group) => (
+                            <div>
+                                <dt class="font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                                    <span class="text-accent-text">/</span> {group.group}
+                                </dt>
+                                <dd class="mt-2 flex flex-wrap gap-2">
+                                    {group.items.map((item) => (
+                                        <span class="border-2 border-ink dark:border-paper px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-widest">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </li>
+            ))}
+        </ol>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 border-t-2 border-ink dark:border-paper">
+            {stats.map((stat, i) => (
+                <div
+                    data-reveal
+                    style={`--i:${i}`}
+                    class:list={[
+                        "stat-line grid grid-cols-[auto_1fr] items-baseline gap-x-3 px-4 sm:px-6 lg:px-8 py-4 lg:py-3 min-w-0",
+                        i !== stats.length - 1 && "border-b sm:border-b-0 sm:border-r border-neutral-300 dark:border-neutral-700",
+                    ]}
+                >
+                    <span class="font-mono text-xs text-accent-text">{stat.n}</span>
+                    <p class="text-2xl font-black uppercase shrink-0">{stat.value}</p>
+                    <p class="col-start-2 text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 leading-snug">{stat.label}</p>
+                </div>
+            ))}
+        </div>
+    </section>
+</Layout>

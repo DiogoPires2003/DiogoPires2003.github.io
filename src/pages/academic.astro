@@ -15,14 +15,6 @@ const milestones = [
         tags: ["Docker", "Universitat de Lleida"],
     },
     {
-        date: "March 2026",
-        title: "Internship at IFR Group",
-        description:
-            "Started internship experience focused on real-world software engineering.",
-        tags: ["IFR Group", "Internship"],
-        current: true,
-    },
-    {
         date: "2027",
         title: "Expected Graduation",
         description: "Planned completion of the Software Engineering degree.",
@@ -57,7 +49,7 @@ const stats = [
         <header data-reveal class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 items-end px-4 sm:px-6 lg:px-10 py-10 sm:py-12 lg:py-5 border-b-2 border-ink dark:border-paper">
             <div class="lg:col-span-6">
                 <p class="eyebrow font-mono text-xs text-accent-text uppercase tracking-[0.25em] mb-4" data-scramble>
-                    [04] Journey
+                    [05] Journey
                 </p>
                 <h1 class="fit-h1-sm text-4xl sm:text-6xl font-black uppercase leading-[0.95] tracking-[-0.035em]">
                     <span class="reveal-line" style="--i:0"><span>Education &amp;</span></span><span class="reveal-line" style="--i:1"><span>Certifications<span class="text-accent stamp-dot">.</span></span></span>
@@ -74,7 +66,7 @@ const stats = [
             </p>
         </header>
 
-        <ol data-stagger="70" class="timeline fit-scroll grid grid-cols-1 lg:grid-cols-4 min-h-0">
+        <ol data-stagger="70" class="timeline fit-scroll grid grid-cols-1 lg:grid-cols-3 min-h-0">
             {milestones.map((item, i) => (
                 <li
                     class:list={[

@@ -439,7 +439,7 @@ export function bindShell() {
                 break;
             }
             default:
-                if (menu && !value && /^[1-5]$/.test(event.key)) {
+                if (menu && !value && /^[1-6]$/.test(event.key)) {
                     event.preventDefault();
                     menuItems()[Number(event.key) - 1]?.click();
                 }
