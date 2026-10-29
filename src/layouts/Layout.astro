@@ -21,8 +21,9 @@ const sections = [
     { n: "1", label: "Profile", href: "/profile", cmd: "cd profile" },
     { n: "2", label: "Skills", href: "/skills", cmd: "cd skills" },
     { n: "3", label: "Projects", href: "/projects", cmd: "cd projects" },
-    { n: "4", label: "Academic", href: "/academic", cmd: "cd academic" },
-    { n: "5", label: "Contact", href: "/contact", cmd: "cd contact" },
+    { n: "4", label: "Experience", href: "/experience", cmd: "cd experience" },
+    { n: "5", label: "Academic", href: "/academic", cmd: "cd academic" },
+    { n: "6", label: "Contact", href: "/contact", cmd: "cd contact" },
 ];
 const currentSection = sections.find((s) => s.href === currentPath);
 const pathLabel =
@@ -584,8 +585,9 @@ const keyRows = [
                 "1": "cd profile",
                 "2": "cd skills",
                 "3": "cd projects",
-                "4": "cd academic",
-                "5": "cd contact",
+                "4": "cd experience",
+                "5": "cd academic",
+                "6": "cd contact",
             };
             const ALIASES: Record<string, string> = {
                 "": "/",
@@ -600,7 +602,8 @@ const keyRows = [
                 work: "/projects",
                 academic: "/academic",
                 education: "/academic",
-                experience: "/academic",
+                experience: "/experience",
+                jobs: "/experience",
                 contact: "/contact",
             };
             const LINKS = {
@@ -650,7 +653,7 @@ const keyRows = [
 
             function keyName(event: KeyboardEvent) {
                 const key = event.key;
-                if (/^[1-5]$/.test(key)) return "f" + key;
+                if (/^[1-6]$/.test(key)) return "f" + key;
                 if (key === " ") return "space";
                 return key.toLowerCase();
             }
@@ -1004,8 +1007,8 @@ const keyRows = [
                 name: "cd",
                 aliases: ["open", "goto"],
                 usage: "cd <section>",
-                summary: "Go to profile, skills, projects, academic or contact",
-                complete: () => ["profile", "skills", "projects", "academic", "contact"],
+                summary: "Go to profile, skills, projects, experience, academic or contact",
+                complete: () => ["profile", "skills", "projects", "experience", "academic", "contact"],
                 run({ args, print }) {
                     const arg = args.join(" ").toLowerCase().replace(/^\/+|\/+$/g, "");
                     const target = ALIASES[arg];
@@ -1020,7 +1023,7 @@ const keyRows = [
                 name: "ls",
                 aliases: ["dir"],
                 summary: "List sections",
-                run: ({ print }) => print("profile/   skills/   projects/   academic/   contact/"),
+                run: ({ print }) => print("profile/   skills/   projects/   experience/   academic/   contact/"),
             });
             register({
                 name: "whoami",
@@ -1208,8 +1211,8 @@ const keyRows = [
                     }
                     return;
                 }
-                const fn = /^F([1-5])$/.exec(event.key);
-                const n = fn ? fn[1] : /^[1-5]$/.test(event.key) ? event.key : null;
+                const fn = /^F([1-6])$/.exec(event.key);
+                const n = fn ? fn[1] : /^[1-6]$/.test(event.key) ? event.key : null;
                 if (n) {
                     event.preventDefault();
                     exec(SECTIONS[n], { source: "key" });
