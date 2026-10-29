@@ -42,7 +42,7 @@ on GitHub Pages at [diogopires2003.github.io](https://diogopires2003.github.io).
 │       ├── index.astro             # Home — hero, about, highlights, tech stack
 │       ├── hexterra/index.astro    # Full-screen game page (no shared Layout)
 │       ├── skills.astro            # Technical stack table
-│       ├── academic.astro          # Education & certifications timeline
+│       ├── academic.astro          # Work experience, education & certifications
 │       └── contact.astro           # Contact links
 └── astro.config.mjs
 ```

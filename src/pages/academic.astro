@@ -1,7 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-const milestones = [
+const experience = [
+    {
+        date: "March 2026 — Present",
+        title: "Software Engineering Intern",
+        description:
+            "Internship at IFR Group focused on real-world software engineering.",
+        tags: ["IFR Group", "Internship"],
+        current: true,
+    },
+];
+
+const education = [
     {
         date: "2021 — 2027",
         title: "Software Engineering Degree",
@@ -15,20 +26,18 @@ const milestones = [
         tags: ["Docker", "Universitat de Lleida"],
     },
     {
-        date: "March 2026",
-        title: "Internship at IFR Group",
-        description:
-            "Started internship experience focused on real-world software engineering.",
-        tags: ["IFR Group", "Internship"],
-        current: true,
-    },
-    {
         date: "2027",
         title: "Expected Graduation",
         description: "Planned completion of the Software Engineering degree.",
         tags: ["Milestone"],
         future: true,
     },
+];
+
+// On large screens the groups sit side by side, one column per entry.
+const groups = [
+    { label: "Work Experience", items: experience },
+    { label: "Education & Certifications", items: education },
 ];
 
 const stats = [
@@ -60,7 +69,7 @@ const stats = [
                     [04] Journey
                 </p>
                 <h1 class="fit-h1-sm text-4xl sm:text-6xl font-black uppercase leading-[0.95] tracking-[-0.035em]">
-                    <span class="reveal-line" style="--i:0"><span>Education &amp;</span></span><span class="reveal-line" style="--i:1"><span>Certifications<span class="text-accent stamp-dot">.</span></span></span>
+                    <span class="reveal-line" style="--i:0"><span>Experience &amp;</span></span><span class="reveal-line" style="--i:1"><span>Education<span class="text-accent stamp-dot">.</span></span></span>
                 </h1>
             </div>
             <p class="reveal-up lg:col-span-6 text-sm sm:text-base lg:text-sm xl:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
@@ -74,40 +83,58 @@ const stats = [
             </p>
         </header>
 
-        <ol data-stagger="70" class="timeline fit-scroll grid grid-cols-1 lg:grid-cols-4 min-h-0">
-            {milestones.map((item, i) => (
-                <li
+        <div
+            class="fit-scroll min-h-0 grid grid-cols-1 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] lg:content-start"
+            style={`--cols:${groups.reduce((n, group) => n + group.items.length, 0)}`}
+        >
+            {groups.map((group, g) => (
+                <section
                     class:list={[
-                        "timeline-item stagger-item relative flex flex-col px-4 sm:px-6 lg:px-8 pb-8 lg:pb-5 pt-8 lg:pt-12",
-                        i !== milestones.length - 1 && "lg:border-r border-neutral-300 dark:border-neutral-700",
-                        item.current && "is-current",
-                        item.future && "is-future",
+                        "lg:[grid-column:span_var(--span)/span_var(--span)]",
+                        g > 0 && "border-t lg:border-t-0 lg:border-l border-neutral-300 dark:border-neutral-700",
                     ]}
+                    style={`--span:${group.items.length}`}
                 >
-                    <span class="timeline-node" aria-hidden="true"></span>
-                    <div class="flex items-center justify-between gap-3 font-mono text-xs uppercase tracking-widest">
-                        <span class="text-accent-text">{String(i + 1).padStart(2, "0")}</span>
-                        <span class="text-neutral-500 dark:text-neutral-400">
-                            {item.current && <span class="live-dot live-dot-inline" aria-hidden="true"></span>}{item.date}
-                        </span>
-                    </div>
-                    <h3 class="timeline-title mt-3 text-xl sm:text-2xl font-black uppercase tracking-tight leading-[1.05]">
-                        {item.title}
-                    </h3>
-                    <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                        {item.description}
-                    </p>
-                    <div class="mt-auto pt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                        {item.tags.map((tag) => (
-                            <span class="flex items-center gap-2">
-                                <span class="text-accent-text">/</span>
-                                {tag}
-                            </span>
+                    <h2 class="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-4 font-mono text-xs uppercase tracking-[0.25em] text-neutral-500 dark:text-neutral-400">
+                        <span class="text-accent-text">{String(g + 1).padStart(2, "0")} /</span> {group.label}
+                    </h2>
+                    <ol data-stagger="70" class="timeline grid grid-cols-1 lg:grid-cols-[repeat(var(--span),minmax(0,1fr))]">
+                        {group.items.map((item, i) => (
+                            <li
+                                class:list={[
+                                    "timeline-item stagger-item relative flex flex-col px-4 sm:px-6 lg:px-8 pb-8 lg:pb-5 pt-8 lg:pt-12",
+                                    i !== group.items.length - 1 && "lg:border-r border-neutral-300 dark:border-neutral-700",
+                                    item.current && "is-current",
+                                    item.future && "is-future",
+                                ]}
+                            >
+                                <span class="timeline-node" aria-hidden="true"></span>
+                                <div class="flex items-center justify-between gap-3 font-mono text-xs uppercase tracking-widest">
+                                    <span class="text-accent-text">{String(i + 1).padStart(2, "0")}</span>
+                                    <span class="text-neutral-500 dark:text-neutral-400">
+                                        {item.current && <span class="live-dot live-dot-inline" aria-hidden="true"></span>}{item.date}
+                                    </span>
+                                </div>
+                                <h3 class="timeline-title mt-3 text-xl sm:text-2xl font-black uppercase tracking-tight leading-[1.05]">
+                                    {item.title}
+                                </h3>
+                                <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                                    {item.description}
+                                </p>
+                                <div class="mt-auto pt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                                    {item.tags.map((tag) => (
+                                        <span class="flex items-center gap-2">
+                                            <span class="text-accent-text">/</span>
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </li>
                         ))}
-                    </div>
-                </li>
+                    </ol>
+                </section>
             ))}
-        </ol>
+        </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 border-t-2 border-ink dark:border-paper">
             {stats.map((stat, i) => (
